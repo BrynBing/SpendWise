@@ -1,93 +1,119 @@
 # Personal Finance and Budget Tracker
-Finance web app for managing your daily expenditures, personal finances, and expense tracking with AI recommended advices.
-Key features from this project includes secure login system, a dashboard with clear overview
 
+---
 
 ## Table of Contents
+
 1. [Login/Sign Up Navigation](#1-login-sign-up-navigation-page)
 2. [Dashboard (Home Page)](#2-dashboard-home-page)
 3. [History](#3-history)
 4. [Expense Tracking](#4-expense-tracking)
 5. [AI Recommendation Chat](#5-ai-recommendation-chat)
 6. [Saving Goals](#6-saving-goals)
-7. [Analytics of current data](#analytics-of-current-data)
-8. [Settings](#settings)
+7. [Analytics of Current Data](#7-analytics-of-current-data)
+8. [Settings](#8-settings)
 9. [Tech Stack](#tech-stack)
-10. [Key Features](#key-features-high-level-goals)
+10. [Key Features](#key-features)
 11. [Team Roles and Responsibilities](#team-roles-and-responsibilities)
 
+---
 
-## 1. Login/Sign up navigation page
-- User authentication (sign up, login)
-- Secure password handling (bcrypt) to prevent data breaches
+## 1. Login/Sign Up Navigation Page
+
+- User authentication (sign-up, login)
+- Secure password handling using bcrypt to prevent data breaches
 - JWT tokens for secure user sessions
 - Implementing caching to improve performance and reduce loading times
 
-## 2. Dashboard (Home page)
+---
+
+## 2. Dashboard (Home Page)
 
 - **Monthly Overview**
-  - Add new transaction easily
+  - Easily add new transactions
   - Track progress towards savings goals
+
+---
 
 ## 3. History
 
 - View a table of all historical transactions
-- Ability to add new transactions directly from history
+- Add new transactions directly from the history view
+
+---
 
 ## 4. Expense Tracking
 
-- Visualize spending with a pie/bar chart
-- Get a quick overview of which categories the all the expenses have been to
+- Visualise spending with pie and bar charts
+- Quickly see which categories most expenses belong to
+
+---
 
 ## 5. AI Recommendation Chat
 
-- Integrates with the Gemini API to provide tailored financial recommendations based on user's data within the web app
-- Includes a chat interface for real-time conversations and a chat history page to review previous interactions and advices.
+- Integrates with the Gemini API to provide tailored financial recommendations based on the user’s data
+- Real-time chat interface for financial guidance
+- Chat history page to review previous conversations and advice
 
-## 6. Saving goals
+---
+
+## 6. Saving Goals
 
 - Set targeted savings goals
-- Monitor progress on each goals
+- Monitor progress for each goal
 
-## Analytics of current data
+---
+
+## 7. Analytics of Current Data
 
 - Detailed breakdown and analysis for each goal
 - Insights into spending and saving patterns
 
-## Settings
+---
+
+## 8. Settings
 
 - Edit profile information
 - Change password
 - Adjust monthly budget restrictions
 
-# Tech Stack
+---
+
+## Tech Stack
+
 - **Frontend:** React
 - **Backend:** Node.js
 - **Database:** PostgreSQL
-- **Related APIs:** (to be decided)
+- **Related APIs:** To be decided
 
-## Key features
-- AI integrated recommendations (Gemini API / prompt engineering)
-- Pop up notifications regarding overspending
-- Secure user auth and password hashing for privacy concerns
-- Visual analysis (pie / bar charts) for spending and savings overview
-- Filtering option for transaction history
-- Customizable saving goals and progress tracking
-- Responsive UI/UX webapp for various devices (phones, tablets, laptops)
-- Option to import data (previous spending/savings data)
+---
+
+## Key Features
+
+- AI-integrated recommendations (Gemini API / prompt engineering)
+- Pop-up notifications for overspending
+- Secure user authentication and password hashing for privacy
+- Visual analysis (pie/bar charts) for spending and savings
+- Filtering options for transaction history
+- Customisable saving goals and progress tracking
+- Responsive UI/UX for various devices (phones, tablets, laptops)
+- Option to import past spending/savings data
+
+---
 
 ## Team Roles and Responsibilities
+
 - **Mingxiang Zhang:**
-Frontend development, assisting with UI components and user interaction features. Also responsible for testing frontend functionality to ensure quality and reliability.
+  Frontend development, assisting with UI components and user interaction features. Responsible for testing frontend functionality to ensure quality and reliability.
 
 - **Ellis Mon:**
-Frontend development, including implementing user interfaces and ensuring a seamless user experience. Also manages project tasks and progress using Jira.
+  Frontend development, implementing user interfaces and ensuring a seamless user experience. Manages project tasks and progress using Jira.
 
 - **Shengming Cui:**
-Backend development, focusing on server-side logic and database integration. Acts as the project tracker, maintaining clear and consistent git commit messages and managing pull requests.
+  Backend development, focusing on server-side logic and database integration. Acts as project tracker, maintaining clear and consistent Git commit messages and managing pull requests.
 
 - **Bing Zhou:**
-Backend development, implementing APIs, server logic, and SQL/database operations. Also performs backend testing to verify system stability and performance.
+  Backend development, implementing APIs, server logic, and SQL/database operations. Performs backend testing to verify system stability and performance.
 
 - **Yuchuan Hu:**
-Backend development, focusing on database operations and API integration. Responsible for backend testing and ensuring data integrity.
+  Backend development, focusing on database operations and API integration. Responsible for backend testing and ensuring data integrity.
