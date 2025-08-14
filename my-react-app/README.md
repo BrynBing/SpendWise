@@ -18,6 +18,7 @@ To address these challenges, our project offers an intuitive platform that bring
 9. [Tech Stack](#tech-stack)
 10. [Key Features](#key-features)
 11. [Team Roles and Responsibilities](#team-roles-and-responsibilities)
+12. [Local Installation](#12-local-installation)
 
 ---
 
@@ -87,7 +88,7 @@ To address these challenges, our project offers an intuitive platform that bring
 - **Frontend:** React
 - **Backend:** Node.js
 - **Database:** PostgreSQL
-- **Related APIs:** To be decided
+- **Related APIs:** Gemini API, others to be decided
 
 ---
 
@@ -120,3 +121,20 @@ To address these challenges, our project offers an intuitive platform that bring
 
 - **Yuchuan Hu:**
   Backend development, focusing on database operations and API integration. Responsible for backend testing and ensuring data integrity.
+
+---
+
+## 12. Local Installation
+
+**Prerequisites:**
+- Node.js
+- React.js
+- npm or yarn
+
+**Steps(to be specified after development):**
+1. Clone the repo
+2. Install backend and frontend dependencies
+3. Configure environment variables:
+4. Run DB
+5. Start backend and frontend
+6. Open browser with local host link
