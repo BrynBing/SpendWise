@@ -94,7 +94,6 @@ Generates statistical reports based on the user's historical expense data to hel
 
 - If the user has defined spending goals or preferred reporting dimensions, the system will automatically include comparative analysis in the report.
 
-
 ## 4.Page Settings (Dark/Light & Dyslexia‑Friendly Font)
 
 ### Description
@@ -310,4 +309,5 @@ US3: No Data / Regenerate
 AC‑3.1: No relevant transactions → zero progress + “insufficient data”.
 
 AC‑3.2: Re‑generation updates the existing (goal, month) report (no duplicates).
+
 
