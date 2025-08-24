@@ -10,7 +10,7 @@ Provides secure authentication for users to access the app.
 
 - The system shall deny access, shows an error pop up message with "invalid credentials", and prompts for retry when invalid credentials are entered.
 
-- The system shall sent the user an email verification to reset user's password, when "Forgot Password" is selected.
+- The system shall take users to reset password security questions to reset user's password, when "Forgot Password" is selected.
 
 - The system shall keep users signed in until they manually log out or their session expires.
 
