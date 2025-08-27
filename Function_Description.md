@@ -315,7 +315,7 @@ savings goals: progress = actualSaved / targetAmount.
 - FR‑4: Forecast rules (example):
 on_track: projection within target ± small buffer;
 at_risk: projection breaches by ≤10%;
-off_track: projection breaches by >10%.
+off_track: projection breaches by >10%. 
 
 - FR‑5: Upsert by (goalId, month); update updatedAt on regeneration.
 
