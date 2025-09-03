@@ -42,7 +42,7 @@ Allows new users to create an account in order to access the full features of th
 
 - After submitting the registration form, users are required to **activate their account via email verification**.
 
-## 3. User Login
+## 3. Password Reset
 
 ### Function Overview
 Provides a security question–based recovery method for users who forget their password.
