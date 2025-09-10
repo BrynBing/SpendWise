@@ -16,7 +16,6 @@
 * **Recommendation**: AI- or rule-based suggestions generated from FeatureSnapshots. Includes summary and status.
 * **Achievement**: Defines gamified milestones with name, description, icon, and criteria.
 * **UserAchievement**: Tracks unlocked achievements per user (composite key `(user_id, achievement_id)`).
-* **ExchangeRate**: Currency conversion table with base/target currencies, rate, and fetch timestamp.
 
 ---
 
