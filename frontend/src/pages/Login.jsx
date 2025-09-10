@@ -99,9 +99,12 @@ export default function Login() {
         </form>
 
         <div className="text-center mt-4">
-          <Link to="/register" className="text-blue-600 hover:text-blue-800">
-            Create new account
-          </Link>
+          <p className="text-sm text-gray-600">
+            Don't have an account?{" "}
+            <Link to="/signup" className="text-blue-600 hover:text-blue-800">
+              Signup here 
+            </Link>
+          </p>
         </div>
       </div>
     </div>
