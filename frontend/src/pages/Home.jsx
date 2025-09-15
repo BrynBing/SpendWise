@@ -1,6 +1,5 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FiLogIn, FiUserPlus } from "react-icons/fi";
 
 // Inline SVG from the design (converted to React-friendly attributes)
 function FinanceHero({ className = "w-52 h-52" }) {
@@ -64,24 +63,26 @@ export default function Home() {
           <p className="text-gray-600">Smart finance starts here.</p>
         </div>
 
-        <div className="flex items-center justify-center gap-4">
+        <p className="text-sm text-gray-500 mb-4">Choose an option to get started</p>
+
+        <div className="w-full max-w-md mx-auto grid grid-cols-1 md:grid-cols-2 gap-3">
           <Link
             to="/login"
             aria-label="Go to Login"
-            className="inline-flex items-center gap-2 px-8 py-3 rounded-lg bg-gray-900 text-white shadow-sm hover:bg-gray-800 active:scale-[0.99] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2"
+            className="text-center px-8 py-3 rounded-lg bg-gray-900 text-white shadow-sm hover:bg-gray-800 active:scale-[0.99] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2"
           >
-            <FiLogIn className="text-lg" />
             Login
           </Link>
           <Link
             to="/signup"
             aria-label="Go to Register"
-            className="inline-flex items-center gap-2 px-8 py-3 rounded-lg bg-gray-100 text-gray-800 hover:bg-gray-200 active:scale-[0.99] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2"
+            className="text-center px-8 py-3 rounded-lg bg-gray-100 text-gray-800 hover:bg-gray-200 active:scale-[0.99] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2"
           >
-            <FiUserPlus className="text-lg" />
             Register
           </Link>
         </div>
+
+        <p className="mt-4 text-xs text-gray-500">Returning users can login; new users can create an account in minutes.</p>
       </div>
     </div>
   );
