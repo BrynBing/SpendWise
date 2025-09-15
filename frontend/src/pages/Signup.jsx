@@ -43,7 +43,7 @@ export default function Signup() {
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-800">Create Account</h1>
           <p className="mt-2 text-gray-600">
-            Create an account so you can explore start your financial journey
+            Create an account so you can start your financial journey
             today.
           </p>
         </div>

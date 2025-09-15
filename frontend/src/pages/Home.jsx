@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { FiLogIn, FiUserPlus } from "react-icons/fi";
 
 // Inline SVG from the design (converted to React-friendly attributes)
 function FinanceHero({ className = "w-52 h-52" }) {
@@ -52,29 +53,35 @@ function FinanceHero({ className = "w-52 h-52" }) {
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white text-center px-4">
-      <FinanceHero className="w-48 h-48 md:w-56 md:h-56 mb-8" />
+    <div className="min-h-screen w-full bg-gradient-to-b from-gray-50 to-white flex items-center justify-center px-4">
+      <div className="max-w-xl w-full text-center bg-white/80 backdrop-blur-sm border border-gray-100 rounded-2xl shadow-sm px-8 py-12 animate-fade-in">
+        <FinanceHero className="w-48 h-48 md:w-56 md:h-56 mx-auto mb-8 animate-float" />
 
-      <div className="space-y-3 mb-8">
-        <h1 className="text-2xl md:text-3xl font-semibold text-gray-900">
-          Welcome to SpendWise
-        </h1>
-        <p className="text-gray-600">Smart finance starts here.</p>
-      </div>
+        <div className="space-y-2 mb-8">
+          <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-gray-900">
+            Welcome to SpendWise
+          </h1>
+          <p className="text-gray-600">Smart finance starts here.</p>
+        </div>
 
-      <div className="flex items-center gap-6">
-        <Link
-          to="/login"
-          className="px-8 py-3 rounded-md bg-gray-800 text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
-        >
-          Login
-        </Link>
-        <Link
-          to="/signup"
-          className="px-8 py-3 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300"
-        >
-          Register
-        </Link>
+        <div className="flex items-center justify-center gap-4">
+          <Link
+            to="/login"
+            aria-label="Go to Login"
+            className="inline-flex items-center gap-2 px-8 py-3 rounded-lg bg-gray-900 text-white shadow-sm hover:bg-gray-800 active:scale-[0.99] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2"
+          >
+            <FiLogIn className="text-lg" />
+            Login
+          </Link>
+          <Link
+            to="/signup"
+            aria-label="Go to Register"
+            className="inline-flex items-center gap-2 px-8 py-3 rounded-lg bg-gray-100 text-gray-800 hover:bg-gray-200 active:scale-[0.99] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2"
+          >
+            <FiUserPlus className="text-lg" />
+            Register
+          </Link>
+        </div>
       </div>
     </div>
   );
