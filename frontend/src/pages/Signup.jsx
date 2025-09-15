@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 export default function Signup() {
+  const navigate = useNavigate();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -33,12 +34,13 @@ export default function Signup() {
         password,
       });
       setLoading(false);
-      // Add actual signup logic here later
+      // Navigate to set security questions as part of onboarding
+      navigate("/security-questions");
     }, 1500);
   };
 
   return (
-    <div className="flex items-center justify-center max-h-[85%] mt-2 ">
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <div className="w-full max-w-md p-8 space-y-5 bg-white rounded-lg shadow-md">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-800">Create Account</h1>
@@ -144,7 +146,7 @@ export default function Signup() {
                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
                 onClick={toggleConfirmPasswordVisibility}
               >
-                {showPassword ? (
+                {showConfirmPassword ? (
                   <FaEye className="h-5 w-5" />
                 ) : (
                   <FaEyeSlash className="h-5 w-5" />
