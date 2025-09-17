@@ -13,11 +13,14 @@ import Achievements from "./pages/Achievements";
 import Settings from "./pages/Settings";
 import DashboardLayout from "./components/DashboardLayout";
 import Suggestions from "./pages/Suggestions";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
 
 function App() {
   return (
     <>
       <BrowserRouter>
+      <Header />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
@@ -38,6 +41,7 @@ function App() {
 
           <Route path="*" element={<div>404 Not Found</div>} />
         </Routes>
+        <Footer />
       </BrowserRouter>
     </>
   );
