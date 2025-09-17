@@ -4,11 +4,12 @@
 
 Provide per-user appearance & accessibility settings. If a row does not exist for a user, return defaults without inserting.
 
-###  Actors
+### Actors
+
 User (authenticated)
 System (settings service + repository)
 
-###  Data Model
+### Data Model
 
 Entity: UserSettings
 userId (PK; unique per user)
@@ -25,7 +26,7 @@ updatedBy ENUM(user|system)
 
 - URS‑3: If no record exists, defaults are applied (System theme; dyslexia font off).
 
-###  Functional Requirements (FR)
+### Functional Requirements (FR)
 
 - FR‑1: Repository exposes getOrDefault(userId); if absent, return defaults without inserting.
 
@@ -45,7 +46,6 @@ updatedBy ENUM(user|system)
 ### User Stories & Acceptance Criteria
 
 - US1: Change ThemeAs a user, I want to switch theme so the UI matches my preference.
-
   - AC‑1.1: If no record exists, service returns {theme:"system", dyslexiaFontEnabled:false}.
 
   - AC‑1.2: After saving, subsequent loads show the saved theme.
@@ -53,7 +53,6 @@ updatedBy ENUM(user|system)
   - AC‑1.3: theme=system follows OS setting.
 
 - US2: Dyslexia‑Friendly FontAs a user with dyslexia, I want a font that improves readability.
-
   - AC‑2.1: Toggling applies site‑wide immediately and persists.
 
   - AC‑2.2: Next login shows the same font state.
@@ -162,15 +161,15 @@ URS‑5: Re‑generating for the same (goal, month) updates the existing report 
 - FR‑1: Validate goal payload: enums valid; targetAmount > 0; supported currency.
 
 - FR‑2: Progress calculations:
-budget goals: show % of target spent (or an equivalent clearly stated metric).
-savings goals: progress = actualSaved / targetAmount.
+  budget goals: show % of target spent (or an equivalent clearly stated metric).
+  savings goals: progress = actualSaved / targetAmount.
 
 - FR‑3: Variance = actual − target (signed); label over/under.
 
 - FR‑4: Forecast rules (example):
-on_track: projection within target ± small buffer;
-at_risk: projection breaches by ≤10%;
-off_track: projection breaches by >10%. 
+  on_track: projection within target ± small buffer;
+  at_risk: projection breaches by ≤10%;
+  off_track: projection breaches by >10%.
 
 - FR‑5: Upsert by (goalId, month); update updatedAt on regeneration.
 
