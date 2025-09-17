@@ -1,9 +1,11 @@
 ## 3. User Login
 
 ### Function Overview
+
 Provides a security question–based recovery method for users who forget their password.
 
 ### Functional Details
+
 - The system shall allow users to reset their password when they forget it by answering their pre-set security questions.
 
 - The system shall require users to provide their username or partial identifying information before presenting the security questions.
@@ -23,9 +25,11 @@ Provides a security question–based recovery method for users who forget their 
 ## 10. Set Spending Goal
 
 ### Function Overview
+
 Allows users to define and manage personalized spending or saving goals by category, amount, and time period.
 
 ### Functional Details
+
 - The system shall allow users to create a new spending goal by selecting a category (e.g., Food, Transport, Entertainment, Overall), entering a target amount, and specifying a time period (weekly, monthly, or yearly).
 
 - The system shall save the spending goal once all required details are entered correctly.
@@ -41,9 +45,11 @@ Allows users to define and manage personalized spending or saving goals by categ
 ## 11. Track Spending Goal
 
 ### Function Overview
+
 Allows users to track their expenses against previously set spending goals. The system calculates progress, displays remaining budget, and provides alerts when users are nearing or exceeding their goals.
 
 ### Functional Details
+
 - The system shall compare all recorded expenses against the user’s active spending goals.
 
 - The system shall calculate and display goal progress (e.g., “$150 spent of $200 goal = 75%”).
