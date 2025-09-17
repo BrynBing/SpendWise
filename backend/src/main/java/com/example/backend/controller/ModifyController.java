@@ -13,6 +13,20 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 
+//Return
+//{
+//    "user_id": 1,
+//    "username": "newName",
+//    "email": "newemail@example.com",
+//    "password_hash": "password123",
+//    "phone_number": "123456789",
+//    "profile_picture_url": "http://localhost:8080/picture/user_1_275850_1.jpg",
+//    "created_at": "2025-09-13T08:42:35.389108",
+//    "updated_at": "2025-09-17T19:19:34.2601697",
+//    "last_login_at": null
+//}
+
+
 @RestController
 @RequestMapping("/api/users")
 public class ModifyController {
