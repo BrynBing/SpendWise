@@ -15,6 +15,8 @@ import DashboardLayout from "./components/DashboardLayout";
 import Suggestions from "./pages/Suggestions";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import Account from "./pages/Account";
+import CurrencyConversion from "./pages/CurrencyConversion";
 
 function App() {
   return (
@@ -37,6 +39,8 @@ function App() {
             <Route path="/suggestions" element={<Suggestions />} />
             <Route path="/achievements" element={<Achievements />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/account" element={<Account />} />
+            <Route path="/currency-conversion" element={<CurrencyConversion />} />
           </Route>
 
           <Route path="*" element={<div>404 Not Found</div>} />
