@@ -1,9 +1,11 @@
 package com.example.backend.controller;
 
-import com.example.backend.model.User;
 import com.example.backend.auth.AuthService;
 import com.example.backend.auth.LoginRequest;
 import com.example.backend.auth.LoginResponse;
+import com.example.backend.auth.SessionKeys;
+import com.example.backend.dto.UserDTO;
+import com.example.backend.model.User;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,8 +29,8 @@ public class SigninController {
         }
 
         User user = result.getUser();
-        session.setAttribute("USER_ID", user.getUser_id());
-        session.setAttribute("USERNAME", user.getUsername());
+        UserDTO dto = new UserDTO(user.getUser_id(), user.getUsername());
+        session.setAttribute(SessionKeys.USER_DTO, dto);
 
         return ResponseEntity.ok(new LoginResponse("Login successful."));
     }
@@ -42,8 +44,8 @@ public class SigninController {
         }
 
         User user = result.getUser();
-        session.setAttribute("USER_ID", user.getUser_id());
-        session.setAttribute("USERNAME", user.getUsername());
+        UserDTO dto = new UserDTO(user.getUser_id(), user.getUsername());
+        session.setAttribute(SessionKeys.USER_DTO, dto);
 
         return ResponseEntity.status(302).header("Location", "/home").build();
     }

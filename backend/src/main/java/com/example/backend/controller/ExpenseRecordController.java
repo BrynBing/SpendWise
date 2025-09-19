@@ -130,7 +130,7 @@ public class ExpenseRecordController {
 
         // User
         UserDTO userDTO = new UserDTO();
-        userDTO.setId(Long.valueOf(record.getUser().getUser_id()));
+        userDTO.setId(record.getUser().getUser_id());
         userDTO.setUsername(record.getUser().getUsername());
         dto.setUser(userDTO);
 
