@@ -1,6 +1,9 @@
 # Project Timeline Planning Outline
+
 This document provides a high-level scheduling plan and outlines the proposed timeline and key milestones for the ELEC5619 Capstone Project.
+
 ## Sprint 0: Project Initialization (Due Week 3)
+
 **13 Aug – 26 Aug 2025**
 
 - Create GitHub repository and folder structure
@@ -11,6 +14,7 @@ This document provides a high-level scheduling plan and outlines the proposed ti
 ---
 
 ## Sprint 1: Minimum Viabl`e Features (Due Week 5)
+
 **27 Aug – 9 Sep 2025**`
 
 - Define project scope and core features
@@ -21,6 +25,7 @@ This document provides a high-level scheduling plan and outlines the proposed ti
 ---
 
 ## 🛠 Sprint 2: Feature Implementation (Due Week 8)
+
 **10 Sep – 30 Sep 2025**
 
 - Implement authentication (register/login/recovery)
@@ -32,6 +37,7 @@ This document provides a high-level scheduling plan and outlines the proposed ti
 ---
 
 ## Sprint 3: Feature Expansion, Testing & Deployment (Due Week 11)
+
 **1 Oct – 21 Oct 2025**
 
 - Add AI-based suggestions and achievement list
@@ -42,6 +48,7 @@ This document provides a high-level scheduling plan and outlines the proposed ti
 ---
 
 ## Final Submission & Presentation (Due Week 13)
+
 **22 Oct – 5 Nov 2025**
 
 - Prepare final presentation slides and live demo

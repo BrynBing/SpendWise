@@ -1,9 +1,11 @@
 ## 1. User Login
 
 ### Function Overview
+
 Provides secure authentication for users to access the app.
 
 ### Functional Details
+
 - The system shall user to access their accounts securely through logging in with a registeres email and password to access the full features of the expense tracking application.
 
 - The system shall validate users credentials, if the credentials are valid, the system grants access.
@@ -14,10 +16,10 @@ Provides secure authentication for users to access the app.
 
 - The system shall keep users signed in until they manually log out or their session expires.
 
-
 ## 2. User Registration
 
 ### Function Overview
+
 Allows new users to create an account in order to access the full features of the expense tracking application.
 
 ### Function Details
@@ -26,17 +28,17 @@ Allows new users to create an account in order to access the full features of th
   When registering with a Google account, the system automatically uses the associated Gmail address as the registered email.
 
 - The registration form includes the following fields:
-    - Username
-    - Password
-    - Confirm Password
-    - Email Address
-    - Verification Code
+  - Username
+  - Password
+  - Confirm Password
+  - Email Address
+  - Verification Code
 
 - The **email address** is validated using regular expressions to ensure proper format.
 
 - The **password** must meet strength requirements:
-    - Minimum of 8 characters
-    - Must include both **letters** and **numbers**
+  - Minimum of 8 characters
+  - Must include both **letters** and **numbers**
 
 - During registration, the system automatically checks whether the chosen **username** or **email** is already in use and displays a prompt if a conflict is detected.
 
@@ -45,9 +47,11 @@ Allows new users to create an account in order to access the full features of th
 ## 3. Password Reset
 
 ### Function Overview
+
 Provides a security question–based recovery method for users who forget their password.
 
 ### Functional Details
+
 - The system shall allow users to reset their password when they forget it by answering their pre-set security questions.
 
 - The system shall require users to provide their username or partial identifying information before presenting the security questions.
@@ -70,11 +74,12 @@ Provides a security question–based recovery method for users who forget their 
 
 Provide per-user appearance & accessibility settings. If a row does not exist for a user, return defaults without inserting.
 
-###  Actors
+### Actors
+
 User (authenticated)
 System (settings service + repository)
 
-###  Data Model
+### Data Model
 
 Entity: UserSettings
 userId (PK; unique per user)
@@ -91,7 +96,7 @@ updatedBy ENUM(user|system)
 
 - URS‑3: If no record exists, defaults are applied (System theme; dyslexia font off).
 
-###  Functional Requirements (FR)
+### Functional Requirements (FR)
 
 - FR‑1: Repository exposes getOrDefault(userId); if absent, return defaults without inserting.
 
@@ -111,7 +116,6 @@ updatedBy ENUM(user|system)
 ### User Stories & Acceptance Criteria
 
 - US1: Change ThemeAs a user, I want to switch theme so the UI matches my preference.
-
   - AC‑1.1: If no record exists, service returns {theme:"system", dyslexiaFontEnabled:false}.
 
   - AC‑1.2: After saving, subsequent loads show the saved theme.
@@ -119,7 +123,6 @@ updatedBy ENUM(user|system)
   - AC‑1.3: theme=system follows OS setting.
 
 - US2: Dyslexia‑Friendly FontAs a user with dyslexia, I want a font that improves readability.
-
   - AC‑2.1: Toggling applies site‑wide immediately and persists.
 
   - AC‑2.2: Next login shows the same font state.
@@ -132,36 +135,36 @@ Allow authenticated users to view and update their personal profile information,
 
 ### Actors
 
-* **User** (authenticated)
-* **System** (profile service + repository)
+- **User** (authenticated)
+- **System** (profile service + repository)
 
 ### Data Model
 
 **Entity:** UserProfile
 
-* userId (PK; unique per user)
-* username STRING (immutable; unique)
-* email STRING (unique; validated)
-* phoneNumber STRING (optional; validated format)
-* profilePictureURL STRING (optional)
-* updatedAt TIMESTAMP
+- userId (PK; unique per user)
+- username STRING (immutable; unique)
+- email STRING (unique; validated)
+- phoneNumber STRING (optional; validated format)
+- profilePictureURL STRING (optional)
+- updatedAt TIMESTAMP
 
 ### User Requirements (URS)
 
-* **URS-1:** View current personal profile (username, email, phone, profile picture).
-* **URS-2:** Update editable fields (email, phone, profile picture).
-* **URS-3:** Require re-authentication (enter current password) before saving for security.
-* **URS-4:** Input validation (email format, phone format, file size/type for picture).
-* **URS-5:** Persist changes and reflect immediately in UI.
+- **URS-1:** View current personal profile (username, email, phone, profile picture).
+- **URS-2:** Update editable fields (email, phone, profile picture).
+- **URS-3:** Require re-authentication (enter current password) before saving for security.
+- **URS-4:** Input validation (email format, phone format, file size/type for picture).
+- **URS-5:** Persist changes and reflect immediately in UI.
 
 ### Functional Requirements (FR)
 
-* **FR-1:** Repository exposes `getProfile(userId)` and `updateProfile(userId, payload)`; validates all inputs.
-* **FR-2:** Email uniqueness enforced; reject if duplicate.
-* **FR-3:** Profile picture upload: validate file size ≤2MB; allowed formats JPG/PNG.
-* **FR-4:** Save changes updates `updatedAt` and `updatedBy`.
-* **FR-5:** Authorization: only owner can CRUD own profile; unauthorized → 401/403.
-* **FR-6:** All updates logged for audit.
+- **FR-1:** Repository exposes `getProfile(userId)` and `updateProfile(userId, payload)`; validates all inputs.
+- **FR-2:** Email uniqueness enforced; reject if duplicate.
+- **FR-3:** Profile picture upload: validate file size ≤2MB; allowed formats JPG/PNG.
+- **FR-4:** Save changes updates `updatedAt` and `updatedBy`.
+- **FR-5:** Authorization: only owner can CRUD own profile; unauthorized → 401/403.
+- **FR-6:** All updates logged for audit.
 
 ### Main Flow
 
@@ -169,29 +172,30 @@ Allow authenticated users to view and update their personal profile information,
 2. Call `getProfile(userId)` to load current data.
 3. User edits allowed fields.
 4. On Save:
-    * System prompts current password for verification.
-    * Validate inputs.
-    * Persist changes.
+   - System prompts current password for verification.
+   - Validate inputs.
+   - Persist changes.
 5. Return updated profile; UI reflects changes immediately.
 
 ### User Stories & Acceptance Criteria
 
-* **US1: View Profile**
+- **US1: View Profile**
+  - **AC-1.1:** API returns username, email, phone, profilePictureURL.
+  - **AC-1.2:** Unauthorized request → 401.
 
-  * **AC-1.1:** API returns username, email, phone, profilePictureURL.
-  * **AC-1.2:** Unauthorized request → 401.
-
-* **US2: Update Profile**
-
-  * **AC-2.1:** Invalid email/phone/file rejected with clear error.
-  * **AC-2.2:** Valid changes persist; subsequent loads reflect updated data.
-  * **AC-2.3:** Require current password; missing/wrong password → reject.
+- **US2: Update Profile**
+  - **AC-2.1:** Invalid email/phone/file rejected with clear error.
+  - **AC-2.2:** Valid changes persist; subsequent loads reflect updated data.
+  - **AC-2.3:** Require current password; missing/wrong password → reject.
 
 ## 6. Manage Expense Records
+
 ### Function Overview
+
 Provides users the ability to record, edit, and delete expense entries.
 
 ### Functional Details
+
 - The system shall allow users to **create** a new expense record by entering details such as: amount, category, date, payment method, and notes.
 
 - The system shall allow users to **edit** existing expense records to update details.
@@ -201,10 +205,13 @@ Provides users the ability to record, edit, and delete expense entries.
 - The system shall store all changes in real time and reflect updates in the user's expense history.
 
 ## 7. Scheduled logging
+
 ### Function Overview
+
 Supports automatic logging of recurring expenses for consistent spending habits by allowing users to schedule and automate recurring expense entries.
 
 ### Functional Details
+
 - The system shall allow users to set up **recurring expense records** for fixed spending habits (e.g., rent, subscriptions, or utility bills).
 
 - The system shall automatically log these recurring expenses at the specified frequency (e.e., daily, weekly, monthly) or on the scheduled date.
@@ -216,74 +223,78 @@ Supports automatic logging of recurring expenses for consistent spending habits 
 ## 8. View/Search Transactions
 
 ### Function Overview
+
 Allows users to view their own expense records, with options to filter, sort, and search as needed.
 
 ### Function Details
 
 - Supports filtering by **time range**, including:
-    - Today
-    - This week
-    - This month
-    - Custom date range
+  - Today
+  - This week
+  - This month
+  - Custom date range
 
 - Supports filtering by **expense category**, such as:
-    - Food & Dining
-    - Transportation
-    - Shopping
-    - Medical
-    - Others
+  - Food & Dining
+  - Transportation
+  - Shopping
+  - Medical
+  - Others
 
 - Supports **keyword search**, e.g., entering "coffee" will return all transactions containing that keyword in the description.
 
 - Supports **amount range filtering** and **sorting**:
-    - Filter by minimum and maximum amounts
-    - Sort by amount in ascending or descending order
+  - Filter by minimum and maximum amounts
+  - Sort by amount in ascending or descending order
 
 - Supports **pagination**, with a default number of records displayed per page.
 
 - Each transaction record displays the following fields:
-    - Date
-    - Expense item
-    - Category
-    - Amount
-    - Notes
-    - Recurrence status (e.g., fixed/recurring expense)
+  - Date
+  - Expense item
+  - Category
+  - Amount
+  - Notes
+  - Recurrence status (e.g., fixed/recurring expense)
 
 ## 9. Generate Expense Reports
 
 ### Function Overview
+
 Generates statistical reports based on the user's historical expense data to help them understand spending trends and patterns.
 
 ### Function Details
 
 - **Report Types**:
-    - Monthly / Quarterly / Yearly reports
-    - Category-based expense analysis (e.g., proportion spent on dining, entertainment, etc.)
-    - Time-based trend charts (e.g., daily or weekly spending changes)
+  - Monthly / Quarterly / Yearly reports
+  - Category-based expense analysis (e.g., proportion spent on dining, entertainment, etc.)
+  - Time-based trend charts (e.g., daily or weekly spending changes)
 
 - **Chart Visualizations**:
-    - Pie charts
-    - Bar charts
-    - Line charts
+  - Pie charts
+  - Bar charts
+  - Line charts
 
 - **Export Options**:
-    - Reports can be exported as **PDF** or **Excel** files
-    - Option to send reports via **email**
+  - Reports can be exported as **PDF** or **Excel** files
+  - Option to send reports via **email**
 
 - **Report Content Includes**:
-    - Total spending amount
-    - Category and date with the highest spending
-    - Comparison with previous periods (e.g., last month or last quarter)
-    - Whether the spending exceeded the set budget goals
+  - Total spending amount
+  - Category and date with the highest spending
+  - Comparison with previous periods (e.g., last month or last quarter)
+  - Whether the spending exceeded the set budget goals
 
 - If the user has defined spending goals or preferred reporting dimensions, the system will automatically include comparative analysis in the report.
 
 ## 10. Set Spending Goal
 
 ### Function Overview
+
 Allows users to define and manage personalized spending or saving goals by category, amount, and time period.
 
 ### Functional Details
+
 - The system shall allow users to create a new spending goal by selecting a category (e.g., Food, Transport, Entertainment, Overall), entering a target amount, and specifying a time period (weekly, monthly, or yearly).
 
 - The system shall save the spending goal once all required details are entered correctly.
@@ -299,9 +310,11 @@ Allows users to define and manage personalized spending or saving goals by categ
 ## 11. Track Spending Goal
 
 ### Function Overview
+
 Allows users to track their expenses against previously set spending goals. The system calculates progress, displays remaining budget, and provides alerts when users are nearing or exceeding their goals.
 
 ### Functional Details
+
 - The system shall compare all recorded expenses against the user’s active spending goals.
 
 - The system shall calculate and display goal progress (e.g., “$150 spent of $200 goal = 75%”).
@@ -422,15 +435,15 @@ URS‑5: Re‑generating for the same (goal, month) updates the existing report 
 - FR‑1: Validate goal payload: enums valid; targetAmount > 0; supported currency.
 
 - FR‑2: Progress calculations:
-budget goals: show % of target spent (or an equivalent clearly stated metric).
-savings goals: progress = actualSaved / targetAmount.
+  budget goals: show % of target spent (or an equivalent clearly stated metric).
+  savings goals: progress = actualSaved / targetAmount.
 
 - FR‑3: Variance = actual − target (signed); label over/under.
 
 - FR‑4: Forecast rules (example):
-on_track: projection within target ± small buffer;
-at_risk: projection breaches by ≤10%;
-off_track: projection breaches by >10%. 
+  on_track: projection within target ± small buffer;
+  at_risk: projection breaches by ≤10%;
+  off_track: projection breaches by >10%.
 
 - FR‑5: Upsert by (goalId, month); update updatedAt on regeneration.
 
@@ -474,41 +487,41 @@ Gamified feature that tracks and displays user achievements/milestones in expens
 
 ### Actors
 
-* **User** (authenticated)
-* **System** (achievement service + repository)
+- **User** (authenticated)
+- **System** (achievement service + repository)
 
 ### Data Model
 
 **Entity:** Achievement
 
-* achievementId (PK)
-* name STRING
-* description STRING
-* iconURL STRING
-* criteria JSON (rules to unlock)
+- achievementId (PK)
+- name STRING
+- description STRING
+- iconURL STRING
+- criteria JSON (rules to unlock)
 
 **Entity:** UserAchievement
 
-* userId (PK composite with achievementId)
-* achievementId (FK)
-* earned BOOLEAN
-* earnedAt TIMESTAMP
+- userId (PK composite with achievementId)
+- achievementId (FK)
+- earned BOOLEAN
+- earnedAt TIMESTAMP
 
 ### User Requirements (URS)
 
-* **URS-1:** View list of achievements (earned and locked).
-* **URS-2:** Each achievement shows name, description, icon, earned date if applicable.
-* **URS-3:** Auto-update earned achievements based on user activity (expense logs, goals).
-* **URS-4:** Filter by earned/locked.
-* **URS-5:** Notify user when a new achievement is unlocked (optional).
+- **URS-1:** View list of achievements (earned and locked).
+- **URS-2:** Each achievement shows name, description, icon, earned date if applicable.
+- **URS-3:** Auto-update earned achievements based on user activity (expense logs, goals).
+- **URS-4:** Filter by earned/locked.
+- **URS-5:** Notify user when a new achievement is unlocked (optional).
 
 ### Functional Requirements (FR)
 
-* **FR-1:** Repository provides `listAchievements(userId)` merging static definitions + user earned status.
-* **FR-2:** Criteria engine updates UserAchievement when criteria met.
-* **FR-3:** Earned achievements set `earned=true` and timestamp.
-* **FR-4:** Read-only for users; criteria evaluated by system.
-* **FR-5:** Notifications triggered on newly earned.
+- **FR-1:** Repository provides `listAchievements(userId)` merging static definitions + user earned status.
+- **FR-2:** Criteria engine updates UserAchievement when criteria met.
+- **FR-3:** Earned achievements set `earned=true` and timestamp.
+- **FR-4:** Read-only for users; criteria evaluated by system.
+- **FR-5:** Notifications triggered on newly earned.
 
 ### Main Flow
 
@@ -519,15 +532,13 @@ Gamified feature that tracks and displays user achievements/milestones in expens
 
 ### User Stories & Acceptance Criteria
 
-* **US1: View Achievements**
+- **US1: View Achievements**
+  - **AC-1.1:** API returns full list with earned flags.
+  - **AC-1.2:** Earned entries include earnedAt date.
 
-  * **AC-1.1:** API returns full list with earned flags.
-  * **AC-1.2:** Earned entries include earnedAt date.
-
-* **US2: Unlock Achievement**
-
-  * **AC-2.1:** Criteria engine marks earned, persists with timestamp.
-  * **AC-2.2:** User receives notification (if enabled).
+- **US2: Unlock Achievement**
+  - **AC-2.1:** Criteria engine marks earned, persists with timestamp.
+  - **AC-2.2:** User receives notification (if enabled).
 
 ## 15. Currency Exchange Calculator
 
@@ -537,45 +548,45 @@ Provides real-time currency conversion between multiple supported currencies usi
 
 ### Actors
 
-* **User** (authenticated)
-* **System** (exchange service + external API)
+- **User** (authenticated)
+- **System** (exchange service + external API)
 
 ### Data Model
 
 **Entity:** ExchangeRate
 
-* baseCurrency STRING (ISO 4217)
-* targetCurrency STRING (ISO 4217)
-* rate DECIMAL
-* fetchedAt TIMESTAMP
+- baseCurrency STRING (ISO 4217)
+- targetCurrency STRING (ISO 4217)
+- rate DECIMAL
+- fetchedAt TIMESTAMP
 
 **Entity:** ExchangeRequest (optional, for logs)
 
-* requestId PK
-* userId
-* amount DECIMAL
-* baseCurrency
-* targetCurrency
-* convertedAmount DECIMAL
-* rateUsed DECIMAL
-* requestedAt TIMESTAMP
+- requestId PK
+- userId
+- amount DECIMAL
+- baseCurrency
+- targetCurrency
+- convertedAmount DECIMAL
+- rateUsed DECIMAL
+- requestedAt TIMESTAMP
 
 ### User Requirements (URS)
 
-* **URS-1:** User selects source currency, target currency, and amount.
-* **URS-2:** System returns converted amount and last updated timestamp.
-* **URS-3:** Support major currencies; easily extendable.
-* **URS-4:** Cache rates (e.g., 30 min) to reduce API calls.
-* **URS-5:** Handle API failures gracefully with error or fallback cached data.
+- **URS-1:** User selects source currency, target currency, and amount.
+- **URS-2:** System returns converted amount and last updated timestamp.
+- **URS-3:** Support major currencies; easily extendable.
+- **URS-4:** Cache rates (e.g., 30 min) to reduce API calls.
+- **URS-5:** Handle API failures gracefully with error or fallback cached data.
 
 ### Functional Requirements (FR)
 
-* **FR-1:** Validate inputs: amount >0; currency codes valid.
-* **FR-2:** Fetch exchange rates from trusted provider; cache with TTL.
-* **FR-3:** Conversion formula: convertedAmount = amount \* rate.
-* **FR-4:** API error handling: fallback to cached rate; else return error.
-* **FR-5:** Authorization: only authenticated users can access.
-* **FR-6:** Rate responses include timestamp of rate used.
+- **FR-1:** Validate inputs: amount >0; currency codes valid.
+- **FR-2:** Fetch exchange rates from trusted provider; cache with TTL.
+- **FR-3:** Conversion formula: convertedAmount = amount \* rate.
+- **FR-4:** API error handling: fallback to cached rate; else return error.
+- **FR-5:** Authorization: only authenticated users can access.
+- **FR-6:** Rate responses include timestamp of rate used.
 
 ### Main Flow
 
@@ -587,12 +598,10 @@ Provides real-time currency conversion between multiple supported currencies usi
 
 ### User Stories & Acceptance Criteria
 
-* **US1: Convert Currency**
+- **US1: Convert Currency**
+  - **AC-1.1:** Valid request returns convertedAmount, rateUsed, fetchedAt.
+  - **AC-1.2:** Invalid input returns 400 with clear message.
 
-  * **AC-1.1:** Valid request returns convertedAmount, rateUsed, fetchedAt.
-  * **AC-1.2:** Invalid input returns 400 with clear message.
-
-* **US2: API Failure Handling**
-
-  * **AC-2.1:** If API fails, fallback to cached rate if available.
-  * **AC-2.2:** If no cache, return error message.
+- **US2: API Failure Handling**
+  - **AC-2.1:** If API fails, fallback to cached rate if available.
+  - **AC-2.2:** If no cache, return error message.
