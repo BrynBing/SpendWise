@@ -17,25 +17,21 @@ public class RegisterService {
         this.userRepository = userRepository;
     }
 
-    public String register(User user) {
-        // 检查用户名是否已存在
+    public User register(User user) {
         if (userRepository.findByUsername(user.getUsername()) != null) {
-            return "Username already exists";
+            throw new RuntimeException("Username already exists");
         }
-
-        // 检查邮箱是否已存在
         if (userRepository.findByEmail(user.getEmail()) != null) {
-            return "Email already exists";
+            throw new RuntimeException("Email already exists");
         }
 
-        // 设置创建/更新时间戳
+        //TODO: hash password
+        user.setPasswordHash(hashPassword(user.getPassword()));
+
         LocalDateTime now = LocalDateTime.now();
         user.setCreated_at(now);
         user.setUpdated_at(now);
 
-        // 保存用户（密码暂时明文，建议后续加密）
-        userRepository.save(user);
-
-        return "User registered successfully";
+        return userRepository.save(user);
     }
 }
