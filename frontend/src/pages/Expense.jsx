@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { FaChevronDown } from "react-icons/fa";
+import { FaChevronDown, FaEdit, FaTrash, FaExclamationTriangle } from "react-icons/fa";
 
 const CATEGORY_OPTIONS = {
   expense: [
@@ -85,17 +85,22 @@ const formatDate = (value) =>
     day: "numeric",
   });
 
+const createEmptyFormState = () => ({
+  amount: "",
+  currency: "USD",
+  mode: "expense",
+  category: CATEGORY_OPTIONS.expense[0],
+  description: "",
+});
+
 export default function Expense() {
   const [transactions, setTransactions] = useState(INITIAL_TRANSACTIONS);
-  const [form, setForm] = useState({
-    amount: "",
-    currency: "USD",
-    mode: "expense",
-    category: CATEGORY_OPTIONS.expense[0],
-    description: "",
-  });
+  const [form, setForm] = useState(() => createEmptyFormState());
   const [errors, setErrors] = useState({});
   const [filter, setFilter] = useState("all");
+  const [editingId, setEditingId] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState({ show: false, transaction: null });
+  const [dropdownOpen, setDropdownOpen] = useState(null);
 
   const { mode } = form;
 
@@ -113,6 +118,17 @@ export default function Expense() {
       return { ...prev, category: nextCategory };
     });
   }, [mode]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.relative')) {
+        setDropdownOpen(null);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
 
   const totalsByCurrency = useMemo(
     () =>
@@ -189,30 +205,104 @@ export default function Expense() {
       return;
     }
 
-    const newTransaction = {
-      id: Date.now(),
+    const baseTransaction = {
       amount: Number(numericAmount.toFixed(2)),
       currency: form.currency,
       mode: form.mode,
       category: form.category,
       description: form.description.trim(),
-      date: new Date().toISOString(),
     };
 
-    setTransactions((prev) => [newTransaction, ...prev]);
+    if (editingId) {
+      setTransactions((prev) =>
+        prev.map((transaction) =>
+          transaction.id === editingId
+            ? {
+                ...transaction,
+                ...baseTransaction,
+                date: new Date().toISOString(),
+              }
+            : transaction
+        )
+      );
+    } else {
+      setTransactions((prev) => [
+        {
+          id: Date.now(),
+          date: new Date().toISOString(),
+          ...baseTransaction,
+        },
+        ...prev,
+      ]);
+    }
+
     setForm((prev) => ({
       ...prev,
       amount: "",
       description: "",
     }));
     setErrors({});
+    setEditingId(null);
+  };
+
+  const startEditing = (transaction) => {
+    setForm({
+      amount: String(transaction.amount),
+      currency: transaction.currency,
+      mode: transaction.mode,
+      category: transaction.category,
+      description: transaction.description,
+    });
+    setErrors({});
+    setEditingId(transaction.id);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const cancelEditing = () => {
+    setForm(createEmptyFormState());
+    setErrors({});
+    setEditingId(null);
+  };
+
+  const openDeleteConfirm = (transaction) => {
+    setConfirmDelete({ show: true, transaction });
+    setDropdownOpen(null);
+  };
+
+  const closeDeleteConfirm = () => {
+    setConfirmDelete({ show: false, transaction: null });
+  };
+
+  const toggleDropdown = (transactionId) => {
+    setDropdownOpen(dropdownOpen === transactionId ? null : transactionId);
+  };
+
+  const handleEdit = (transaction) => {
+    startEditing(transaction);
+    setDropdownOpen(null);
+  };
+
+  const confirmDeleteTransaction = () => {
+    if (!confirmDelete.transaction) {
+      return;
+    }
+
+    setTransactions((prev) =>
+      prev.filter((transaction) => transaction.id !== confirmDelete.transaction.id)
+    );
+
+    if (editingId === confirmDelete.transaction.id) {
+      cancelEditing();
+    }
+
+    closeDeleteConfirm();
   };
 
   return (
     <div className="max-w-6xl mx-auto">
       <div className="flex flex-col gap-2 mb-10">
         <span className="text-sm uppercase tracking-[0.3em] text-gray-400">
-          Add Transaction
+          {editingId ? "Update Transaction" : "Add Transaction"}
         </span>
         <h1 className="text-3xl font-semibold text-gray-900">Transaction</h1>
         <p className="text-gray-500">
@@ -222,13 +312,18 @@ export default function Expense() {
 
       <div className="bg-white border border-gray-100 rounded-3xl shadow-sm px-6 sm:px-10 py-10 mb-10">
         <div className="flex items-center justify-between text-gray-400 text-sm uppercase tracking-[0.3em]">
-          <span>Add Transaction</span>
+          <span>{editingId ? "Update Transaction" : "Add Transaction"}</span>
         </div>
 
         <div className="max-w-xl mx-auto mt-10">
-          <h2 className="text-center text-2xl font-semibold text-gray-900 mb-10">
-            Transaction
-          </h2>
+          <div className="mb-10 text-center">
+            <h2 className="text-2xl font-semibold text-gray-900">Transaction</h2>
+            {editingId && (
+              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-500">
+                Editing existing entry
+              </p>
+            )}
+          </div>
 
           <form className="space-y-8" onSubmit={handleSubmit} noValidate>
             <div>
@@ -332,12 +427,23 @@ export default function Expense() {
               )}
             </div>
 
-            <button
-              type="submit"
-              className="w-full rounded-full bg-gray-900 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-gray-700"
-            >
-              Save
-            </button>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              {editingId && (
+                <button
+                  type="button"
+                  onClick={cancelEditing}
+                  className="w-full rounded-full border border-gray-200 px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-gray-600 transition-colors hover:bg-gray-100 sm:w-auto sm:min-w-[140px]"
+                >
+                  Cancel
+                </button>
+              )}
+              <button
+                type="submit"
+                className="w-full rounded-full bg-gray-900 px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-gray-700 sm:w-auto sm:min-w-[140px]"
+              >
+                Save
+              </button>
+            </div>
           </form>
         </div>
       </div>
@@ -395,7 +501,7 @@ export default function Expense() {
             {visibleTransactions.map((transaction) => (
               <li
                 key={transaction.id}
-                className="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between relative"
               >
                 <div>
                   <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
@@ -406,23 +512,79 @@ export default function Expense() {
                   </p>
                   <p className="text-sm text-gray-500">{transaction.description}</p>
                 </div>
-                <div className="text-right text-base font-semibold">
-                  <span
-                    className={
-                      transaction.mode === "expense"
-                        ? "text-rose-500"
-                        : "text-emerald-500"
-                    }
+                <div className="flex flex-col items-end gap-3 sm:flex-row sm:items-center sm:gap-6">
+                  <button
+                    onClick={() => toggleDropdown(transaction.id)}
+                    className="flex items-center gap-2 cursor-pointer"
                   >
-                    {transaction.mode === "expense" ? "-" : "+"}
-                    {formatCurrency(transaction.amount, transaction.currency)}
-                  </span>
+                    <span
+                      className={`text-base font-semibold ${
+                        transaction.mode === "expense"
+                          ? "text-rose-500"
+                          : "text-emerald-500"
+                      }`}
+                    >
+                      {transaction.mode === "expense" ? "-" : "+"}
+                      {formatCurrency(transaction.amount, transaction.currency)}
+                    </span>
+                    <FaChevronDown className="text-gray-400 text-sm" />
+                  </button>
+                  
+                  {dropdownOpen === transaction.id && (
+                    <div className="absolute right-0 top-full mt-2 z-10 bg-white border border-gray-200 rounded-2xl shadow-lg min-w-[120px]">
+                      <button
+                        type="button"
+                        onClick={() => handleEdit(transaction)}
+                        className="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-2xl"
+                      >
+                        <FaEdit className="text-gray-500" /> Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openDeleteConfirm(transaction)}
+                        className="w-full flex items-center gap-2 px-4 py-3 text-sm text-rose-600 hover:bg-rose-50 last:rounded-b-2xl border-t border-gray-100"
+                      >
+                        <FaTrash className="text-rose-500" /> Delete
+                      </button>
+                    </div>
+                  )}
                 </div>
               </li>
             ))}
           </ul>
         )}
       </div>
+      {confirmDelete.show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl border border-gray-100 bg-white p-6 shadow-xl">
+            <div className="flex items-center gap-3 text-rose-500">
+              <FaExclamationTriangle />
+              <p className="text-xs font-semibold uppercase tracking-[0.3em]">Delete Transaction</p>
+            </div>
+            <h3 className="mt-4 text-xl font-semibold text-gray-900">Are you sure?</h3>
+            <p className="mt-2 text-sm text-gray-500">
+              This will permanently remove "{confirmDelete.transaction?.description}" from
+              your history. You can’t undo this action.
+            </p>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={closeDeleteConfirm}
+                className="w-full rounded-full border border-gray-200 px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-gray-600 transition-colors hover:bg-gray-100 sm:w-auto sm:min-w-[120px]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteTransaction}
+                className="w-full rounded-full bg-rose-500 px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-rose-600 sm:w-auto sm:min-w-[120px]"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
