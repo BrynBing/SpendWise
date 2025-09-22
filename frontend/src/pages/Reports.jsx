@@ -259,22 +259,22 @@ export default function Reports() {
             {topCategoriesData.map((category) => (
               <li
                 key={category.id}
-                className="rounded-2xl border border-gray-100 p-4 flex flex-col h-full"
+                className="rounded-2xl border border-gray-100 p-4 flex flex-col h-full min-h-[120px]"
               >
-                <div className="flex items-center gap-3">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-lg text-gray-600">
-                    {cloneElement(category.icon, { className: "" })}
+                <div className="flex items-start gap-3 mb-3">
+                  <span className="flex h-10 w-10 min-h-[2.5rem] min-w-[2.5rem] items-center justify-center rounded-full bg-gray-100 text-lg text-gray-600 flex-shrink-0 mt-1">
+                    {cloneElement(category.icon, { className: "w-4 h-4" })}
                   </span>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 leading-tight">
                       {category.name}
                     </p>
-                    <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
+                    <p className="text-xs uppercase tracking-[0.3em] text-gray-400 mt-1">
                       Spent
                     </p>
                   </div>
                 </div>
-                <div className="mt-auto pt-3 flex items-center justify-between">
+                <div className="mt-auto pt-2 flex items-center justify-between">
                   <p className="text-lg font-semibold text-gray-900">
                     {formatCurrency(category.amount)}
                   </p>

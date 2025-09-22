@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { FaChevronDown, FaEdit, FaTrash, FaExclamationTriangle } from "react-icons/fa";
 
 const CATEGORY_OPTIONS = {
@@ -101,6 +101,7 @@ export default function Expense() {
   const [editingId, setEditingId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState({ show: false, transaction: null });
   const [dropdownOpen, setDropdownOpen] = useState(null);
+  const formRef = useRef(null);
 
   const { mode } = form;
 
@@ -255,7 +256,7 @@ export default function Expense() {
     });
     setErrors({});
     setEditingId(transaction.id);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const cancelEditing = () => {
@@ -301,16 +302,123 @@ export default function Expense() {
   return (
     <div className="max-w-6xl mx-auto">
       <div className="flex flex-col gap-2 mb-10">
-        <span className="text-sm uppercase tracking-[0.3em] text-gray-400">
-          {editingId ? "Update Transaction" : "Add Transaction"}
-        </span>
-        <h1 className="text-3xl font-semibold text-gray-900">Transaction</h1>
+        <span className="text-sm uppercase tracking-[0.3em] text-gray-400">Overview</span>
+        <h1 className="text-3xl font-semibold text-gray-900">Transactions</h1>
         <p className="text-gray-500">
           Log your spending and income to keep an eye on your cash flow.
         </p>
       </div>
 
-      <div className="bg-white border border-gray-100 rounded-3xl shadow-sm px-6 sm:px-10 py-10 mb-10">
+      <div className="grid gap-4 sm:grid-cols-3 mb-10">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Total Expense</p>
+          <p className="mt-3 text-2xl font-semibold text-rose-500">
+            {formatCurrency(currencyTotals.expense, form.currency)}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Total Income</p>
+          <p className="mt-3 text-2xl font-semibold text-emerald-500">
+            {formatCurrency(currencyTotals.income, form.currency)}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Balance</p>
+          <p
+            className={`mt-3 text-2xl font-semibold ${
+              netBalance >= 0 ? "text-emerald-600" : "text-rose-500"
+            }`}
+          >
+            {formatCurrency(netBalance, form.currency)}
+          </p>
+        </div>
+      </div>
+
+      <div className="bg-white border border-gray-100 rounded-3xl shadow-sm p-6 sm:p-10">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-xl font-semibold text-gray-900">Recent Activity</h2>
+          <div className="flex gap-2">
+            {FILTER_OPTIONS.map(({ value, label }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setFilter(value)}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                  filter === value
+                    ? "bg-gray-900 text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {visibleTransactions.length === 0 ? (
+          <p className="text-sm text-gray-500">No transactions logged yet.</p>
+        ) : (
+          <ul className="divide-y divide-gray-100">
+            {visibleTransactions.map((transaction) => (
+              <li
+                key={transaction.id}
+                className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between relative"
+              >
+                <div>
+                  <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
+                    {formatDate(transaction.date)}
+                  </p>
+                  <p className="text-base font-semibold text-gray-900">
+                    {transaction.category}
+                  </p>
+                  <p className="text-sm text-gray-500">{transaction.description}</p>
+                </div>
+                <div className="flex flex-col items-end gap-3 sm:flex-row sm:items-center sm:gap-6">
+                  <button
+                    onClick={() => toggleDropdown(transaction.id)}
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <span
+                      className={`text-base font-semibold ${
+                        transaction.mode === "expense"
+                          ? "text-rose-500"
+                          : "text-emerald-500"
+                      }`}
+                    >
+                      {transaction.mode === "expense" ? "-" : "+"}
+                      {formatCurrency(transaction.amount, transaction.currency)}
+                    </span>
+                    <FaChevronDown className="text-gray-400 text-sm" />
+                  </button>
+                  
+                  {dropdownOpen === transaction.id && (
+                    <div className="absolute right-0 top-full mt-2 z-10 bg-white border border-gray-200 rounded-2xl shadow-lg min-w-[120px]">
+                      <button
+                        type="button"
+                        onClick={() => handleEdit(transaction)}
+                        className="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-2xl"
+                      >
+                        <FaEdit className="text-gray-500" /> Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openDeleteConfirm(transaction)}
+                        className="w-full flex items-center gap-2 px-4 py-3 text-sm text-rose-600 hover:bg-rose-50 last:rounded-b-2xl border-t border-gray-100"
+                      >
+                        <FaTrash className="text-rose-500" /> Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <div
+        ref={formRef}
+        className="bg-white border border-gray-100 rounded-3xl shadow-sm px-6 sm:px-10 py-10 mt-10"
+      >
         <div className="flex items-center justify-between text-gray-400 text-sm uppercase tracking-[0.3em]">
           <span>{editingId ? "Update Transaction" : "Add Transaction"}</span>
         </div>
@@ -441,118 +549,11 @@ export default function Expense() {
                 type="submit"
                 className="w-full rounded-full bg-gray-900 px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-gray-700 sm:w-auto sm:min-w-[140px]"
               >
-                Save
+                {editingId ? "Save Changes" : "Save"}
               </button>
             </div>
           </form>
         </div>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-3 mb-10">
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Total Expense</p>
-          <p className="mt-3 text-2xl font-semibold text-rose-500">
-            {formatCurrency(currencyTotals.expense, form.currency)}
-          </p>
-        </div>
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Total Income</p>
-          <p className="mt-3 text-2xl font-semibold text-emerald-500">
-            {formatCurrency(currencyTotals.income, form.currency)}
-          </p>
-        </div>
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Balance</p>
-          <p
-            className={`mt-3 text-2xl font-semibold ${
-              netBalance >= 0 ? "text-emerald-600" : "text-rose-500"
-            }`}
-          >
-            {formatCurrency(netBalance, form.currency)}
-          </p>
-        </div>
-      </div>
-
-      <div className="bg-white border border-gray-100 rounded-3xl shadow-sm p-6 sm:p-10">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-xl font-semibold text-gray-900">Recent Activity</h2>
-          <div className="flex gap-2">
-            {FILTER_OPTIONS.map(({ value, label }) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setFilter(value)}
-                className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                  filter === value
-                    ? "bg-gray-900 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {visibleTransactions.length === 0 ? (
-          <p className="text-sm text-gray-500">No transactions logged yet.</p>
-        ) : (
-          <ul className="divide-y divide-gray-100">
-            {visibleTransactions.map((transaction) => (
-              <li
-                key={transaction.id}
-                className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between relative"
-              >
-                <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
-                    {formatDate(transaction.date)}
-                  </p>
-                  <p className="text-base font-semibold text-gray-900">
-                    {transaction.category}
-                  </p>
-                  <p className="text-sm text-gray-500">{transaction.description}</p>
-                </div>
-                <div className="flex flex-col items-end gap-3 sm:flex-row sm:items-center sm:gap-6">
-                  <button
-                    onClick={() => toggleDropdown(transaction.id)}
-                    className="flex items-center gap-2 cursor-pointer"
-                  >
-                    <span
-                      className={`text-base font-semibold ${
-                        transaction.mode === "expense"
-                          ? "text-rose-500"
-                          : "text-emerald-500"
-                      }`}
-                    >
-                      {transaction.mode === "expense" ? "-" : "+"}
-                      {formatCurrency(transaction.amount, transaction.currency)}
-                    </span>
-                    <FaChevronDown className="text-gray-400 text-sm" />
-                  </button>
-                  
-                  {dropdownOpen === transaction.id && (
-                    <div className="absolute right-0 top-full mt-2 z-10 bg-white border border-gray-200 rounded-2xl shadow-lg min-w-[120px]">
-                      <button
-                        type="button"
-                        onClick={() => handleEdit(transaction)}
-                        className="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-2xl"
-                      >
-                        <FaEdit className="text-gray-500" /> Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => openDeleteConfirm(transaction)}
-                        className="w-full flex items-center gap-2 px-4 py-3 text-sm text-rose-600 hover:bg-rose-50 last:rounded-b-2xl border-t border-gray-100"
-                      >
-                        <FaTrash className="text-rose-500" /> Delete
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
       </div>
       {confirmDelete.show && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
