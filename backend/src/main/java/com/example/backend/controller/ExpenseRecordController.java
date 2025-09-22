@@ -48,7 +48,8 @@ public class ExpenseRecordController {
         //    },
         //        ...
         // ]
-        Integer userId = (Integer) session.getAttribute("USER_ID");
+        UserDTO user = (UserDTO) session.getAttribute("USER");
+        Integer userId = user.getId();
         List<ExpenseRecordDTO> dtoList = recordService.getRecordsForUser(userId)
                 .stream()
                 .map(this::toDTO)
@@ -77,7 +78,8 @@ public class ExpenseRecordController {
         //    "recurringScheduleId": null,
         //    "paymentMethod": null
         //}
-        Integer userId = (Integer) session.getAttribute("USER_ID");
+        UserDTO user = (UserDTO) session.getAttribute("USER");
+        Integer userId = user.getId();
         ExpenseRecord created = recordService.createRecord(userId, recordData);
         ExpenseRecordDTO dto = toDTO(created);
         return ResponseEntity.ok(dto);
@@ -106,7 +108,8 @@ public class ExpenseRecordController {
         //    "recurringScheduleId": null,
         //    "paymentMethod": null
         //}
-        Integer userId = (Integer) session.getAttribute("USER_ID");
+        UserDTO user = (UserDTO) session.getAttribute("USER");
+        Integer userId = user.getId();
         ExpenseRecord updated = recordService.updateRecord(userId, id, updatedData);
         ExpenseRecordDTO dto = toDTO(updated);
         return ResponseEntity.ok(dto);
@@ -117,7 +120,8 @@ public class ExpenseRecordController {
         //{
         //    "message": "Record deleted successfully"
         //}
-        Integer userId = (Integer) session.getAttribute("USER_ID");
+        UserDTO user = (UserDTO) session.getAttribute("USER");
+        Integer userId = user.getId();
         recordService.deleteRecord(userId, id);
         Map<String, String> response = new HashMap<>();
         response.put("message", "Record deleted successfully");

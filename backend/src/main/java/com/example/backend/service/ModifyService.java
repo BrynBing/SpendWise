@@ -21,7 +21,6 @@ public class ModifyService {
 
         if (updatedData.getUsername() != null) user.setUsername(updatedData.getUsername());
         if (updatedData.getEmail() != null) user.setEmail(updatedData.getEmail());
-        if (updatedData.getPassword_hash() != null) user.setPassword_hash(updatedData.getPassword_hash());
         if (updatedData.getPhone_number() != null) user.setPhone_number(updatedData.getPhone_number());
         if (updatedData.getProfile_picture_url() != null) user.setProfile_picture_url(updatedData.getProfile_picture_url());
 
