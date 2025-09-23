@@ -4,6 +4,7 @@ import com.example.backend.model.User;
 import com.example.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 
@@ -11,10 +12,12 @@ import java.time.LocalDateTime;
 public class RegisterService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public RegisterService(UserRepository userRepository) {
+    public RegisterService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public User register(User user) {
@@ -25,9 +28,8 @@ public class RegisterService {
             throw new RuntimeException("Email already exists");
         }
 
-        //TODO: hash password
-        // user.setPasswordHash(hashPassword(user.getPassword()));
-        user.setPassword_hash(user.getPassword());
+        //hash password
+        user.setPassword_hash(passwordEncoder.encode(user.getPassword()));
 
         LocalDateTime now = LocalDateTime.now();
         user.setCreated_at(now);
