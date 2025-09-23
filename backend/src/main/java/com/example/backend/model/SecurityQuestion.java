@@ -10,7 +10,8 @@ import lombok.Setter;
 public class SecurityQuestion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer question_id;
+    @Column(name = "question_id")
+    private Integer id;
 
     @Column(unique = true, nullable = false)
     private String questionText;
