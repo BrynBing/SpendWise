@@ -46,7 +46,4 @@ public class User {
 
     private LocalDateTime last_login_at;
 
-    @Transient
-    private String password;
-
 }
