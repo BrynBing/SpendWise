@@ -1,5 +1,6 @@
 package com.example.backend.controller;
 
+import com.example.backend.dto.UserDTO;
 import com.example.backend.model.User;
 import com.example.backend.service.RegisterService;
 import org.springframework.http.HttpStatus;
@@ -20,7 +21,13 @@ public class RegisterController {
     public ResponseEntity<?> registerUser(@RequestBody User user) {
         try {
             User createdUser = registerService.register(user);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+            UserDTO dto = new UserDTO(
+                createdUser.getUser_id(),
+                createdUser.getUsername()
+                // createdUser.getEmail(),
+                // createdUser.getPhone_number()
+            );
+            return ResponseEntity.status(HttpStatus.CREATED).body(dto);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }

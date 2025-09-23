@@ -7,6 +7,8 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.time.LocalDateTime;
 
 @Data
@@ -26,6 +28,7 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
 
+    @JsonIgnore
     @Column(nullable = false)
     private String password_hash;
 
@@ -42,5 +45,8 @@ public class User {
     private LocalDateTime updated_at;
 
     private LocalDateTime last_login_at;
+
+    @Transient
+    private String password;
 
 }
