@@ -26,7 +26,8 @@ public class RegisterService {
         }
 
         //TODO: hash password
-        user.setPasswordHash(hashPassword(user.getPassword()));
+        // user.setPasswordHash(hashPassword(user.getPassword()));
+        user.setPassword_hash(user.getPassword());
 
         LocalDateTime now = LocalDateTime.now();
         user.setCreated_at(now);
