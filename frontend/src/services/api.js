@@ -13,10 +13,10 @@ const api = axios.create({
 // 认证相关API
 export const authService = {
   login: (identifier, password) => {
-    return api.post('/auth/login', { identifier, password });
+    return api.post('/api/auth/login', { identifier, password });
   },
   logout: () => {
-    return api.post('/auth/logout');
+    return api.post('/api/auth/logout');
   }
 };
 
