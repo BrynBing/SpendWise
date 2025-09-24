@@ -1,10 +1,13 @@
 package com.example.backend.controller;
 
+import com.example.backend.dto.ModifyUserDTO;
+import com.example.backend.dto.UserDTO;
 import com.example.backend.model.User;
 import com.example.backend.service.ModifyService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -12,19 +15,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
-
-//Return
-//{
-//    "user_id": 1,
-//    "username": "newName",
-//    "email": "newemail@example.com",
-//    "password_hash": "password123",
-//    "phone_number": "123456789",
-//    "profile_picture_url": "http://localhost:8080/picture/user_1_275850_1.jpg",
-//    "created_at": "2025-09-13T08:42:35.389108",
-//    "updated_at": "2025-09-17T19:19:34.2601697",
-//    "last_login_at": null
-//}
 
 
 @RestController
@@ -37,19 +27,40 @@ public class ModifyController {
         this.modifyService = modifyService;
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(
-            @PathVariable Integer id,
+    @PutMapping("/myself")
+    public ResponseEntity<ModifyUserDTO> updateUser(
+            HttpSession session,
             @RequestBody User updatedUser) {
-        User user = modifyService.updateUser(id, updatedUser);
-        return ResponseEntity.ok(user);
+        //{
+        //    "id": 6,
+        //    "username": "bob",
+        //    "email": "bob@example.com",
+        //    "phoneNumber": null,
+        //    "profilePictureUrl": "http://localhost:8080/picture/user_6_275850_1.jpg",
+        //    "updatedAt": "2025-09-22T15:08:21.755413"
+        //}
+        UserDTO userSession = (UserDTO) session.getAttribute("USER");
+        Integer userId = userSession.getId();
+        User user = modifyService.updateUser(userId, updatedUser);
+        ModifyUserDTO userDTO = toDTO(user);
+        return ResponseEntity.ok(userDTO);
     }
 
-    @PostMapping("/{id}/picture")
-    public ResponseEntity<User> uploadAvatar(
-            @PathVariable Integer id,
+    @PostMapping("/myself/picture")
+    public ResponseEntity<ModifyUserDTO> uploadAvatar(
+            HttpSession session,
             @RequestParam("picture_file") MultipartFile file) throws IOException {
+        //{
+        //    "id": 6,
+        //    "username": "bob",
+        //    "email": "bob@example.com",
+        //    "phoneNumber": null,
+        //    "profilePictureUrl": "http://localhost:8080/picture/user_6_275850_1.jpg",
+        //    "updatedAt": "2025-09-22T15:08:21.755413"
+        //}
 
+        UserDTO userSession = (UserDTO) session.getAttribute("USER");
+        Integer id = userSession.getId();
         String fileName = "user_" + id + "_" + file.getOriginalFilename();
         Path uploadPath = Paths.get("uploads/picture");
         Files.createDirectories(uploadPath);
@@ -63,7 +74,19 @@ public class ModifyController {
         updatedData.setUpdated_at(LocalDateTime.now());
 
         User updatedUser = modifyService.updateUser(id, updatedData);
+        ModifyUserDTO userDTO = toDTO(updatedUser);
 
-        return ResponseEntity.ok(updatedUser);
+        return ResponseEntity.ok(userDTO);
+    }
+
+    private ModifyUserDTO toDTO(User user) {
+        ModifyUserDTO dto = new ModifyUserDTO();
+        dto.setId(user.getUser_id());
+        dto.setUsername(user.getUsername());
+        dto.setEmail(user.getEmail());
+        dto.setPhoneNumber(user.getPhone_number());
+        dto.setProfilePictureUrl(user.getProfile_picture_url());
+        dto.setUpdatedAt(user.getUpdated_at());
+        return dto;
     }
 }

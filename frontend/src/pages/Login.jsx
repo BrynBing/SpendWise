@@ -1,22 +1,58 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
+import { FaEye, FaEyeSlash, FaCheckCircle, FaExclamationCircle, FaInfoCircle, FaExclamationTriangle } from "react-icons/fa";
+import { authService } from "../services/api";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [toast, setToast] = useState({ show: false, message: "", type: "info" });
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const TOAST_ICON = {
+    success: FaCheckCircle,
+    error: FaExclamationCircle,
+    warning: FaExclamationTriangle,
+    info: FaInfoCircle,
+  };
+
+  const ToastIcon = toast.type ? TOAST_ICON[toast.type] : TOAST_ICON.info;
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Login attempt with:", { email, password });
+    
+    try {
+      const response = await authService.login(identifier, password);
+      
+      // 登录成功，显示toast
+      showToast(response.data.message || "Login successful.", "success");
+      
+      // 2秒后跳转到dashboard
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 2000);
+      
+    } catch (error) {
+      // 登录失败，显示toast
+      const errorMessage = error.response?.data?.message || "Login failed. Please try again.";
+      showToast(errorMessage, "error");
       setLoading(false);
-      // Add actual login logic here later
-    }, 1500);
+    }
+  };
+
+  const showToast = (message, type = "info") => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast((prev) => ({ ...prev, show: false }));
+      
+      // 如果是成功消息，淡出后跳转
+      if (type === "success") {
+        navigate("/dashboard");
+      }
+    }, 3000);
   };
 
   const togglePasswordVisibility = () => {
@@ -36,18 +72,18 @@ export default function Login() {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="sr-only">
-                Email
+              <label htmlFor="identifier" className="sr-only">
+                Email or Username
               </label>
               <input
-                id="email"
-                name="email"
-                type="email"
+                id="identifier"
+                name="identifier"
+                type="text"
                 required
                 className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email or Username"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
               />
             </div>
 
@@ -132,6 +168,28 @@ export default function Login() {
           </p>
         </div>
       </div>
+      
+      {/* 成功/失败toast通知 */}
+      {toast.show && (
+        <div className="toast toast-top toast-end z-50">
+          <div
+            className={`alert shadow-lg ${
+              toast.type === "success"
+                ? "alert-success"
+                : toast.type === "error"
+                  ? "alert-error"
+                  : toast.type === "warning"
+                    ? "alert-warning"
+                    : "alert-info"
+            }`}
+          >
+            <div className="flex items-center gap-2 text-sm">
+              <ToastIcon className="text-lg" />
+              <span>{toast.message}</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
