@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/records")
+@RequestMapping("/records")
 public class ExpenseRecordController {
 
     private final ExpenseRecordService recordService;

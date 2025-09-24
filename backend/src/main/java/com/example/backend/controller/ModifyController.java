@@ -28,7 +28,7 @@ import java.time.LocalDateTime;
 
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/users")
 public class ModifyController {
 
     private final ModifyService modifyService;
