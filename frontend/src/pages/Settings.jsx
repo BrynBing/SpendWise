@@ -8,10 +8,11 @@ import {
   FaChevronRight,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { useFont } from "../context/FontContext";
 
 export default function Settings() {
   const [notifications, setNotifications] = useState(true);
-  const [dyslexiaFont, setDyslexiaFont] = useState(false);
+  const { dyslexiaFont, setDyslexiaFont } = useFont();
   const [darkTheme, setDarkTheme] = useState(false);
 
   const preferenceToggles = [
