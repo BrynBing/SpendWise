@@ -1,12 +1,13 @@
 import React from "react";
-import { FaTrophy, FaCheck, FaCalendarCheck, FaRibbon, FaBullseye, FaStar, FaMedal, FaCrown, FaAward } from "react-icons/fa";
+// 保留现有的React Icons导入
+import { FaTrophy, FaCheck, FaCalendarCheck, FaRibbon, FaBullseye, FaStar, FaMedal, FaCrown, FaAward, FaGem, FaShieldAlt } from "react-icons/fa";
 
 export default function Achievements() {
-  // 成就数据，包括图标、标题、完成日期和是否已解锁
+  // 成就数据，使用已知可用的图标
   const achievements = [
     {
       id: 1,
-      icon: <FaCalendarCheck className="text-white" />,
+      icon: <FaCalendarCheck size={36} weight="fill" className="text-white" />,
       title: "1 Month Streak",
       description: "Logged in for 30 consecutive days",
       completedDate: "2023-08-15",
@@ -14,7 +15,7 @@ export default function Achievements() {
     },
     {
       id: 2,
-      icon: <FaCheck className="text-white" />,
+      icon: <FaShieldAlt size={36} weight="fill" className="text-white" />,
       title: "Successfully accomplished 1 goal",
       description: "Set and achieved your first financial goal",
       completedDate: "2023-07-22",
@@ -89,6 +90,22 @@ export default function Achievements() {
     });
   };
 
+  // 添加一个渐变背景函数，为每个成就提供独特的背景色
+  const getGradientBackground = (id) => {
+    const gradients = [
+      "bg-gradient-to-tr from-blue-600 to-purple-600",
+      "bg-gradient-to-tr from-green-500 to-teal-400",
+      "bg-gradient-to-tr from-yellow-400 to-orange-500",
+      "bg-gradient-to-tr from-red-500 to-pink-500",
+      "bg-gradient-to-tr from-purple-600 to-indigo-600",
+      "bg-gradient-to-tr from-pink-500 to-rose-500",
+      "bg-gradient-to-tr from-teal-400 to-cyan-500",
+      "bg-gradient-to-tr from-amber-400 to-yellow-500",
+      "bg-gradient-to-tr from-gray-700 to-gray-900",
+    ];
+    return gradients[(id - 1) % gradients.length];
+  };
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="text-center mb-10">
@@ -96,15 +113,16 @@ export default function Achievements() {
         <p className="text-gray-600 mt-2">Track your financial milestones and progress</p>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-8">
         {achievements.map((achievement) => (
           <div 
             key={achievement.id}
-            className={`flex items-center p-4 border-b ${achievement.unlocked ? 'opacity-100' : 'opacity-50'}`}
+            className={`flex items-center p-6 border rounded-xl shadow-sm transition-all hover:shadow-md ${achievement.unlocked ? 'opacity-100' : 'opacity-60'}`}
           >
             <div className="flex-shrink-0 mr-6">
-              <div className="w-20 h-20 rounded-full bg-gray-900 flex items-center justify-center">
-                {React.cloneElement(achievement.icon, { className: "text-white text-3xl" })}
+              {/* 使用动态渐变背景和增大的图标尺寸 */}
+              <div className={`w-24 h-24 rounded-full ${getGradientBackground(achievement.id)} flex items-center justify-center shadow-lg`}>
+                {React.cloneElement(achievement.icon, { className: "text-white text-4xl" })}
               </div>
             </div>
             
@@ -125,7 +143,12 @@ export default function Achievements() {
 
             {achievement.unlocked && (
               <div className="flex-shrink-0 ml-4">
-                <FaAward className="text-yellow-500 text-3xl" />
+                {/* 替换不存在的 UilAward 和 AnimatedStar */}
+                {achievement.id % 3 === 0 ? (
+                  <FaGem className="text-yellow-500 text-4xl" />
+                ) : (
+                  <FaAward className="text-yellow-500 text-3xl" />
+                )}
               </div>
             )}
           </div>
