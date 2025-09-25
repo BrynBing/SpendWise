@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   FaCamera,
   FaCheckCircle,
@@ -8,6 +8,7 @@ import {
   FaTimes,
   FaUser,
 } from "react-icons/fa";
+import { userService } from "../services/api";
 
 const INPUT_CLASSES =
   "mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-300 focus:border-gray-400 focus:outline-none";
@@ -24,12 +25,17 @@ const TOAST_ICON = {
 
 export default function Account() {
   const [user, setUser] = useState({
-    username: "John Doe",
-    email: "johndoe@email.com",
-    phone_number: "123456789",
-    profile_picture_url: null,
+    id: null,
+    username: "",
+    email: "",
+    phoneNumber: "", // 注意字段名已更改为驼峰命名
+    profilePictureUrl: null, // 注意字段名已更改为驼峰命名
+    updatedAt: null
   });
+  
+  const [loading, setLoading] = useState(false);
   const [profileImage, setProfileImage] = useState(null);
+  const [profileImageFile, setProfileImageFile] = useState(null);
   const fileInputRef = useRef(null);
   const [toast, setToast] = useState({ show: false, message: "", type: "info" });
   const [passwordModal, setPasswordModal] = useState({
@@ -38,6 +44,36 @@ export default function Account() {
     newPassword: "",
     confirmPassword: "",
   });
+
+  // 获取用户资料
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await userService.getCurrentUser();
+        const userData = response.data;
+        
+        // 更新用户数据
+        setUser({
+          id: userData.id,
+          username: userData.username,
+          email: userData.email,
+          phoneNumber: userData.phoneNumber || "",
+          profilePictureUrl: userData.profilePictureUrl,
+          updatedAt: userData.updatedAt
+        });
+        
+        // 如果有头像URL，设置预览图片
+        if (userData.profilePictureUrl) {
+          setProfileImage(userData.profilePictureUrl);
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        showToast("Failed to load user profile", "error");
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -54,33 +90,116 @@ export default function Account() {
     }
 
     const file = event.target.files[0];
+    setProfileImageFile(file);
+    
     const imageUrl = URL.createObjectURL(file);
     setProfileImage(imageUrl);
-    setUser((prev) => ({ ...prev, profile_picture_url: imageUrl }));
-    showToast("Profile image updated", "success");
   };
 
-  const handleUpdateProfile = (event) => {
+  // 更新用户资料
+  const handleUpdateProfile = async (event) => {
     event.preventDefault();
+    setLoading(true);
 
-    if (!user.username.trim()) {
-      showToast("Username cannot be empty", "error");
-      return;
+    try {
+      // 基本表单验证
+      if (!user.username.trim()) {
+        showToast("Username cannot be empty", "error");
+        setLoading(false);
+        return;
+      }
+
+      if (!user.email.trim()) {
+        showToast("Email cannot be empty", "error");
+        setLoading(false);
+        return;
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(user.email)) {
+        showToast("Please enter a valid email address", "error");
+        setLoading(false);
+        return;
+      }
+
+      // 如果有新头像，先上传头像
+      if (profileImageFile) {
+        try {
+          await uploadProfilePicture();
+          // 短暂延迟确保头像上传处理完成
+          await new Promise(resolve => setTimeout(resolve, 500));
+        } catch (error) {
+          console.error("Error uploading profile picture:", error);
+          showToast("Profile updated but failed to upload picture", "warning");
+        }
+      }
+
+      // 准备更新数据
+      const updatedUserData = {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        phoneNumber: user.phoneNumber || null,
+        profilePictureUrl: user.profilePictureUrl
+      };
+
+      // 发送更新请求
+      const response = await userService.updateProfile(updatedUserData);
+      
+      // 更新本地状态
+      setUser(prev => ({
+        ...prev,
+        ...response.data,
+        updatedAt: response.data.updatedAt
+      }));
+      
+      showToast("Profile updated successfully", "success");
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || "Failed to update profile";
+      showToast(errorMessage, "error");
+      console.error("Error updating profile:", error);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    if (!user.email.trim()) {
-      showToast("Email cannot be empty", "error");
-      return;
+  // 上传头像
+  const uploadProfilePicture = async () => {
+    try {
+      const formData = new FormData();
+      // 确保使用后端期望的字段名称，这可能是"file"或其他名称
+      formData.append('picture_file', profileImageFile);
+      // 或者尝试
+      // formData.append('picture', profileImageFile);
+      
+      const response = await userService.uploadAvatar(formData);
+      
+      // 检查响应格式并更新用户头像URL
+      if (response.data && response.data.profilePictureUrl) {
+        setUser(prev => ({
+          ...prev,
+          profilePictureUrl: response.data.profilePictureUrl
+        }));
+        setProfileImage(response.data.profilePictureUrl);
+      } else {
+        console.log("Response format:", response.data);
+        // 如果响应格式不符合预期，尝试从其他字段获取URL
+        const pictureUrl = response.data?.url || response.data?.picture || response.data?.profilePictureUrl;
+        if (pictureUrl) {
+          setUser(prev => ({
+            ...prev,
+            profilePictureUrl: pictureUrl
+          }));
+          setProfileImage(pictureUrl);
+        }
+      }
+      
+      // 清除文件对象
+      setProfileImageFile(null);
+    } catch (error) {
+      console.error("Error uploading profile picture:", error);
+      showToast("Failed to upload profile picture. Please try again.", "error");
     }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(user.email)) {
-      showToast("Please enter a valid email address", "error");
-      return;
-    }
-
-    console.log("Profile update data:", user);
-    showToast("Profile updated successfully", "success");
   };
 
   const handleChangePassword = () => {
@@ -99,35 +218,9 @@ export default function Account() {
 
   const handlePasswordSubmit = (event) => {
     event.preventDefault();
-
-    if (!passwordModal.currentPassword) {
-      showToast("Current password cannot be empty", "error");
-      return;
-    }
-
-    if (!passwordModal.newPassword) {
-      showToast("New password cannot be empty", "error");
-      return;
-    }
-
-    if (passwordModal.newPassword !== passwordModal.confirmPassword) {
-      showToast("New passwords do not match", "error");
-      return;
-    }
-
-    if (passwordModal.currentPassword !== "password123") {
-      showToast("Current password is incorrect", "error");
-      return;
-    }
-
-    if (passwordModal.newPassword.length < 8) {
-      showToast("Password must be at least 8 characters", "error");
-      return;
-    }
-
-    console.log("Password change submitted");
-    setPasswordModal({ show: false, currentPassword: "", newPassword: "", confirmPassword: "" });
-    showToast("Password updated successfully", "success");
+    // 密码更新功能暂不实现
+    closePasswordModal();
+    showToast("Password change functionality is not available yet", "info");
   };
 
   const closePasswordModal = () => {
@@ -151,6 +244,13 @@ export default function Account() {
 
   const ToastIcon = TOAST_ICON[toast.type] ?? FaInfoCircle;
 
+  // 格式化更新日期
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleString();
+  };
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-10 flex flex-col gap-2">
@@ -167,9 +267,9 @@ export default function Account() {
               onClick={handleImageClick}
               className="relative h-24 w-24 overflow-hidden rounded-full border border-gray-200 bg-gray-100 transition-transform hover:scale-[1.02]"
             >
-              {profileImage || user.profile_picture_url ? (
+              {profileImage ? (
                 <img
-                  src={profileImage || user.profile_picture_url}
+                  src={profileImage}
                   alt="Profile"
                   className="h-full w-full object-cover"
                 />
@@ -236,14 +336,14 @@ export default function Account() {
             </div>
 
             <div>
-              <label className={LABEL_CLASSES} htmlFor="phone_number">
+              <label className={LABEL_CLASSES} htmlFor="phoneNumber">
                 Phone Number
               </label>
               <input
-                id="phone_number"
-                name="phone_number"
+                id="phoneNumber"
+                name="phoneNumber"
                 type="tel"
-                value={user.phone_number}
+                value={user.phoneNumber || ""}
                 onChange={handleInputChange}
                 className={INPUT_CLASSES}
               />
@@ -259,9 +359,18 @@ export default function Account() {
               </button>
               <button
                 type="submit"
-                className="w-full rounded-full bg-gray-900 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-gray-700 sm:w-auto"
+                disabled={loading}
+                className="w-full rounded-full bg-gray-900 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-gray-700 sm:w-auto disabled:opacity-50"
               >
-                Save Changes
+                {loading ? (
+                  <span className="flex items-center justify-center">
+                    <svg className="w-5 h-5 mr-2 animate-spin" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Saving...
+                  </span>
+                ) : "Save Changes"}
               </button>
             </div>
           </form>
@@ -286,8 +395,13 @@ export default function Account() {
             </p>
             <p className="flex items-center gap-2">
               <span className="text-gray-400">☎</span>
-              <span>{user.phone_number || "No number added"}</span>
+              <span>{user.phoneNumber || "No number added"}</span>
             </p>
+            {user.updatedAt && (
+              <p className="text-xs text-gray-400 mt-4">
+                Last updated: {formatDate(user.updatedAt)}
+              </p>
+            )}
           </div>
         </section>
       </div>

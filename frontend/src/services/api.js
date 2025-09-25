@@ -20,4 +20,26 @@ export const authService = {
   }
 };
 
+// 用户相关API
+export const userService = {
+  // 获取当前用户信息 - 使用/api/auth/me路径
+  getCurrentUser: () => {
+    return api.get('/api/auth/me');
+  },
+  
+  // 更新用户资料
+  updateProfile: (userData) => {
+    return api.put('/api/users/myself', userData);
+  },
+  
+  // 上传头像 - 使用/api/users/myself/picture路径
+  uploadAvatar: (formData) => {
+    return api.post('/api/users/myself/picture', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+  }
+};
+
 export default api;
