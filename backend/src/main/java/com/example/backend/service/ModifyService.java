@@ -21,7 +21,8 @@ public class ModifyService {
 
         if (updatedData.getUsername() != null) user.setUsername(updatedData.getUsername());
         if (updatedData.getEmail() != null) user.setEmail(updatedData.getEmail());
-        if (updatedData.getPhone_number() != null) user.setPhone_number(updatedData.getPhone_number());
+//        if (updatedData.getPhone_number() != null) user.setPhone_number(updatedData.getPhone_number());
+        user.setPhone_number(updatedData.getPhone_number());
         if (updatedData.getProfile_picture_url() != null) user.setProfile_picture_url(updatedData.getProfile_picture_url());
 
         user.setUpdated_at(LocalDateTime.now());
