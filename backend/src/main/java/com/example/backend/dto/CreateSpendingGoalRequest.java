@@ -24,4 +24,6 @@ public class CreateSpendingGoalRequest {
 
     private LocalDate startDate;
     private LocalDate endDate;
+
+    private boolean startNextPeriod;
 }
