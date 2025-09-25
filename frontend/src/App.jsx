@@ -17,12 +17,15 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Account from "./pages/Account";
 import CurrencyConversion from "./pages/CurrencyConversion";
+import { FontProvider } from "./context/FontContext";
+
 
 function App() {
   return (
     <>
       <BrowserRouter>
-      <Header />
+      <FontProvider>
+        <Header />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
@@ -46,7 +49,8 @@ function App() {
           <Route path="*" element={<div>404 Not Found</div>} />
         </Routes>
         <Footer />
-      </BrowserRouter>
+      </FontProvider>
+    </BrowserRouter>
     </>
   );
 }
