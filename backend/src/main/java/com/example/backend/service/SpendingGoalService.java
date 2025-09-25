@@ -58,7 +58,7 @@ public class SpendingGoalService {
         var start = req.getStartDate();
         var end = req.getEndDate();
         if (start == null || end == null) {
-            var range = computeRange(LocalDate.now(), req.getPeriod());
+            var range = computeRange(LocalDate.now(), req.getPeriod(), req.isStartNextPeriod());
             start = range[0]; end = range[1];
         }
 
@@ -80,7 +80,15 @@ public class SpendingGoalService {
         return toResp(saved);
     }
 
-    private LocalDate[] computeRange(LocalDate today, GoalPeriod period) {
+    private LocalDate[] computeRange(LocalDate today, GoalPeriod period, boolean startNext) {
+        if (startNext) {
+            switch (period) {
+                case WEEKLY -> today = today.with(java.time.DayOfWeek.MONDAY).plusWeeks(1);
+                case MONTHLY -> today = today.withDayOfMonth(1).plusMonths(1);
+                case YEARLY -> today = LocalDate.of(today.getYear() + 1, 1, 1);
+            }
+        }
+
         switch (period) {
             case WEEKLY -> {
                 var start = today.with(java.time.DayOfWeek.MONDAY);
