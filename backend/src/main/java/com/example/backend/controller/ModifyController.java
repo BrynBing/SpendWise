@@ -67,7 +67,7 @@ public class ModifyController {
         Path filePath = uploadPath.resolve(fileName);
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-        String fileUrl = "http://localhost:8080/picture/" + fileName;
+        String fileUrl = "http://localhost:8080/api/picture/" + fileName;
 
         User updatedData = new User();
         updatedData.setProfile_picture_url(fileUrl);
