@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaUser, FaTachometerAlt, FaSignOutAlt } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext'; // 导入useAuth
@@ -8,13 +8,27 @@ export default function Header() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const navigate = useNavigate();
 
+  // 获取Header高度并设置页面内容的padding
+  useEffect(() => {
+    const header = document.querySelector('nav');
+    if (header) {
+      const headerHeight = header.offsetHeight;
+      document.body.style.paddingTop = `${headerHeight}px`;
+    }
+    
+    return () => {
+      // 清理函数
+      document.body.style.paddingTop = '0';
+    };
+  }, []);
+
   // 切换下拉菜单状态
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);
   };
 
   // 点击外部关闭下拉菜单
-  React.useEffect(() => {
+  useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownOpen && !event.target.closest('.dropdown')) {
         setDropdownOpen(false);
@@ -45,13 +59,13 @@ export default function Header() {
         <img 
           src={user.profilePictureUrl} 
           alt={user.username} 
-          className="w-10 h-10 rounded-full object-cover"
+          className="w-8 h-8 rounded-full object-cover"
         />
       );
     } else {
       const initial = user?.username ? user.username.charAt(0).toUpperCase() : 'U';
       return (
-        <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white font-medium">
+        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center text-white font-medium">
           {initial}
         </div>
       );
@@ -59,90 +73,87 @@ export default function Header() {
   };
 
   return (
-    <div className="navbar bg-base-100 shadow-sm">
-      <div className="navbar-start">
-        <Link className="btn btn-ghost text-xl" to="/">SpendWise</Link>
-      </div>
-      
-      <div className="navbar-center"></div>
-      
-      <div className="navbar-end">
-        {loading ? (
-          // 加载中显示一个骨架屏
-          <div className="w-24 h-10 bg-gray-200 rounded animate-pulse"></div>
-        ) : user ? (
-          // 用户已登录，显示用户名和头像
-          <div className="flex items-center gap-3 border border-gray-200 rounded-full px-4 py-2 bg-white shadow-sm">
-            {/* 用户名显示在外面 */}
-            <div className="text-right hidden md:block">
-              <div className="text-xs text-gray-500">Signed in as</div>
-              <div className="font-semibold text-sm">{user.username}</div>
-            </div>
-            
-            {/* 头像和下拉菜单 */}
-            <div className="dropdown dropdown-end relative">
+    <nav className="bg-white py-4 px-6 shadow-sm fixed w-full top-0 z-50">
+      <div className="max-w-7xl mx-auto flex justify-between items-center">
+        {/* Logo和网站名称 - 仅更新Logo样式匹配截图 */}
+        <Link to="/" className="flex items-center space-x-2">
+          <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center">
+            <span className="text-white font-bold">SW</span>
+          </div>
+          <span className="text-xl font-bold text-gray-800">SpendWise</span>
+        </Link>
+
+        {/* 右侧导航项 */}
+        <div className="flex items-center space-x-4">
+          {loading ? (
+            // 加载中显示骨架屏
+            <div className="w-24 h-10 bg-gray-200 rounded animate-pulse"></div>
+          ) : user ? (
+            // 用户已登录，显示用户信息和下拉菜单 (保持原样)
+            <div className="relative dropdown">
               <button 
                 onClick={toggleDropdown}
-                className="btn btn-ghost btn-circle p-0"
+                className="flex items-center space-x-3 focus:outline-none"
                 aria-label="User menu"
               >
+                {/* 在中等尺寸以上的屏幕显示用户名 */}
+                <span className="hidden md:block text-gray-700 font-medium">
+                  {user.username}
+                </span>
                 {getUserAvatar()}
               </button>
               
               {dropdownOpen && (
-                <ul className="dropdown-content menu p-2 shadow-lg bg-base-100 rounded-box w-52 mt-2 absolute right-0 z-10 border border-gray-200">
+                <div className="absolute right-0 mt-2 w-52 bg-white rounded-md shadow-lg border border-gray-200 py-1 z-50">
                   {/* 在移动端显示用户名 */}
-                  <li className="menu-title px-4 py-2 text-sm font-medium text-gray-600 md:hidden">
+                  <div className="px-4 py-2 text-sm font-medium text-gray-600 border-b border-gray-100 md:hidden">
                     <span>Signed in as</span>
                     <p className="font-semibold text-gray-800">{user.username}</p>
-                  </li>
-                  <div className="divider my-1 md:hidden"></div>
-                  <li>
-                    <Link 
-                      to="/dashboard" 
-                      className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-100"
-                      onClick={() => setDropdownOpen(false)}
-                    >
-                      <FaTachometerAlt className="text-gray-500" />
-                      Dashboard
-                    </Link>
-                  </li>
-                  <li>
-                    <Link 
-                      to="/settings" 
-                      className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-100"
-                      onClick={() => setDropdownOpen(false)}
-                    >
-                      <FaUser className="text-gray-500" />
-                      Account Settings
-                    </Link>
-                  </li>
-                  <div className="divider my-1"></div>
-                  <li>
-                    <button 
-                      onClick={handleLogout}
-                      className="flex items-center gap-3 px-4 py-2 text-red-600 hover:bg-gray-100 w-full text-left"
-                    >
-                      <FaSignOutAlt className="text-red-500" />
-                      Sign Out
-                    </button>
-                  </li>
-                </ul>
+                  </div>
+                  
+                  <Link 
+                    to="/dashboard" 
+                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    <FaTachometerAlt className="text-gray-500" />
+                    Dashboard
+                  </Link>
+                  
+                  <Link 
+                    to="/settings" 
+                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    <FaUser className="text-gray-500" />
+                    Account Settings
+                  </Link>
+                  
+                  <hr className="my-1" />
+                  
+                  <button 
+                    onClick={handleLogout}
+                    className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left"
+                  >
+                    <FaSignOutAlt className="text-red-500" />
+                    Sign Out
+                  </button>
+                </div>
               )}
             </div>
-          </div>
-        ) : (
-          // 用户未登录，显示登录和注册按钮
-          <>
-            <Link to="/login" className="mr-2">
-              <button className="btn">Login</button>
-            </Link>
-            <Link to="/signup">
-              <button className="btn">Sign up</button>
-            </Link>
-          </>
-        )}
+          ) : (
+            // 用户未登录，显示登录和注册按钮 - 更新样式匹配截图
+            <>
+              <Link to="/login" className="text-indigo-600 font-medium hover:text-indigo-800 transition">
+                Log In
+              </Link>
+              <Link to="/signup" className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition">
+                Sign Up
+              </Link>
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </nav>
   );
 }

@@ -15,6 +15,7 @@ export function AuthProvider({ children }) {
         const response = await userService.getCurrentUser();
         setUser(response.data);
         setIsAuthenticated(true);
+      // eslint-disable-next-line no-unused-vars
       } catch (error) {
         setUser(null);
         setIsAuthenticated(false);
@@ -104,6 +105,7 @@ export function AuthProvider({ children }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   return useContext(AuthContext);
 }
