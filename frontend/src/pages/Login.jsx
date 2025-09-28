@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { FaEye, FaEyeSlash, FaCheckCircle, FaExclamationCircle, FaInfoCircle, FaExclamationTriangle } from "react-icons/fa";
-import { authService } from "../services/api";
+import { useNavigate, Link, useLocation } from "react-router-dom";
+import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaCheckCircle, FaExclamationCircle, FaInfoCircle, FaExclamationTriangle } from "react-icons/fa";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const [identifier, setIdentifier] = useState("");
@@ -10,6 +10,8 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [toast, setToast] = useState({ show: false, message: "", type: "info" });
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
 
   const TOAST_ICON = {
     success: FaCheckCircle,
@@ -20,24 +22,23 @@ export default function Login() {
 
   const ToastIcon = toast.type ? TOAST_ICON[toast.type] : TOAST_ICON.info;
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const from = location.state?.from?.pathname || "/dashboard";
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setLoading(true);
     
     try {
-      const response = await authService.login(identifier, password);
+      await login(identifier, password);
       
-      // 登录成功，显示toast
-      showToast(response.data.message || "Login successful.", "success");
+      showToast("Login successful!", "success");
       
-      // 2秒后跳转到dashboard
       setTimeout(() => {
-        navigate("/dashboard");
-      }, 2000);
-      
+        navigate(from, { replace: true });
+      }, 1500);
     } catch (error) {
-      // 登录失败，显示toast
-      const errorMessage = error.response?.data?.message || "Login failed. Please try again.";
+      console.error("Login error:", error);
+      const errorMessage = error.response?.data?.message || "Login failed. Please check your credentials.";
       showToast(errorMessage, "error");
       setLoading(false);
     }
@@ -48,9 +49,8 @@ export default function Login() {
     setTimeout(() => {
       setToast((prev) => ({ ...prev, show: false }));
       
-      // 如果是成功消息，淡出后跳转
       if (type === "success") {
-        navigate("/dashboard");
+        navigate(from, { replace: true });
       }
     }, 3000);
   };
@@ -169,7 +169,6 @@ export default function Login() {
         </div>
       </div>
       
-      {/* 成功/失败toast通知 */}
       {toast.show && (
         <div className="toast toast-top toast-end z-50">
           <div

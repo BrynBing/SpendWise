@@ -1,5 +1,6 @@
 package com.example.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
@@ -32,6 +33,7 @@ public class User {
     @Column(nullable = false)
     private String password_hash;
 
+    @JsonProperty("phoneNumber")
     private String phone_number;
 
     private String profile_picture_url;

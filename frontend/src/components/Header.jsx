@@ -1,26 +1,159 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { FaUser, FaTachometerAlt, FaSignOutAlt } from 'react-icons/fa';
+import { useAuth } from '../context/AuthContext'; // 导入useAuth
 
 export default function Header() {
+  const { user, loading, logout } = useAuth(); // 使用AuthContext提供的状态和方法
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const navigate = useNavigate();
+
+  // 获取Header高度并设置页面内容的padding
+  useEffect(() => {
+    const header = document.querySelector('nav');
+    if (header) {
+      const headerHeight = header.offsetHeight;
+      document.body.style.paddingTop = `${headerHeight}px`;
+    }
+    
+    return () => {
+      // 清理函数
+      document.body.style.paddingTop = '0';
+    };
+  }, []);
+
+  // 切换下拉菜单状态
+  const toggleDropdown = () => {
+    setDropdownOpen(!dropdownOpen);
+  };
+
+  // 点击外部关闭下拉菜单
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownOpen && !event.target.closest('.dropdown')) {
+        setDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [dropdownOpen]);
+
+  // 处理登出
+  const handleLogout = async () => {
+    try {
+      await logout(); // 使用AuthContext提供的logout方法
+      setDropdownOpen(false);
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
+  // 获取用户头像或初始字母
+  const getUserAvatar = () => {
+    if (user?.profilePictureUrl) {
+      return (
+        <img 
+          src={user.profilePictureUrl} 
+          alt={user.username} 
+          className="w-8 h-8 rounded-full object-cover"
+        />
+      );
+    } else {
+      const initial = user?.username ? user.username.charAt(0).toUpperCase() : 'U';
+      return (
+        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center text-white font-medium">
+          {initial}
+        </div>
+      );
+    }
+  };
+
   return (
-    <div className="navbar bg-base-100 shadow-sm">
-      <div className="navbar-start">
-        {/* Your commented dropdown code */}
-        <Link className="btn btn-ghost text-xl" to="/">SpendWise</Link>
-      </div>
-      
-      {/* This empty div helps push the login/signup buttons to the right */}
-      <div className="navbar-center"></div>
-      
-      {/* The navbar-end class will position these elements at the right */}
-      <div className="navbar-end">
-        <Link to="/login" className="mr-2">
-          <button className="btn">Login</button>
+    <nav className="bg-white py-4 px-6 shadow-sm fixed w-full top-0 z-50">
+      <div className="max-w-7xl mx-auto flex justify-between items-center">
+        {/* Logo和网站名称 - 仅更新Logo样式匹配截图 */}
+        <Link to="/" className="flex items-center space-x-2">
+          <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center">
+            <span className="text-white font-bold">SW</span>
+          </div>
+          <span className="text-xl font-bold text-gray-800">SpendWise</span>
         </Link>
-        <Link to="/signup">
-          <button className="btn">Sign up</button>
-        </Link>
+
+        {/* 右侧导航项 */}
+        <div className="flex items-center space-x-4">
+          {loading ? (
+            // 加载中显示骨架屏
+            <div className="w-24 h-10 bg-gray-200 rounded animate-pulse"></div>
+          ) : user ? (
+            // 用户已登录，显示用户信息和下拉菜单 (保持原样)
+            <div className="relative dropdown">
+              <button 
+                onClick={toggleDropdown}
+                className="flex items-center space-x-3 focus:outline-none"
+                aria-label="User menu"
+              >
+                {/* 在中等尺寸以上的屏幕显示用户名 */}
+                <span className="hidden md:block text-gray-700 font-medium">
+                  {user.username}
+                </span>
+                {getUserAvatar()}
+              </button>
+              
+              {dropdownOpen && (
+                <div className="absolute right-0 mt-2 w-52 bg-white rounded-md shadow-lg border border-gray-200 py-1 z-50">
+                  {/* 在移动端显示用户名 */}
+                  <div className="px-4 py-2 text-sm font-medium text-gray-600 border-b border-gray-100 md:hidden">
+                    <span>Signed in as</span>
+                    <p className="font-semibold text-gray-800">{user.username}</p>
+                  </div>
+                  
+                  <Link 
+                    to="/dashboard" 
+                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    <FaTachometerAlt className="text-gray-500" />
+                    Dashboard
+                  </Link>
+                  
+                  <Link 
+                    to="/settings" 
+                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    <FaUser className="text-gray-500" />
+                    Account Settings
+                  </Link>
+                  
+                  <hr className="my-1" />
+                  
+                  <button 
+                    onClick={handleLogout}
+                    className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left"
+                  >
+                    <FaSignOutAlt className="text-red-500" />
+                    Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            // 用户未登录，显示登录和注册按钮 - 更新样式匹配截图
+            <>
+              <Link to="/login" className="text-indigo-600 font-medium hover:text-indigo-800 transition">
+                Log In
+              </Link>
+              <Link to="/signup" className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition">
+                Sign Up
+              </Link>
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </nav>
   );
 }

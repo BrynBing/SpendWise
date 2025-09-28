@@ -1,8 +1,6 @@
 package com.example.backend.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -10,10 +8,16 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ModifyUserDTO {
+    @Getter @Setter
     private Integer id;
+    @Getter @Setter
     private String username;
+    @Getter @Setter
     private String email;
+    @Getter @Setter
     private String phoneNumber;
+    @Getter @Setter
     private String profilePictureUrl;
+    @Getter @Setter
     private LocalDateTime updatedAt;
 }

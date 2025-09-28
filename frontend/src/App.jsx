@@ -17,35 +17,46 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Account from "./pages/Account";
 import CurrencyConversion from "./pages/CurrencyConversion";
+import { FontProvider } from "./context/FontContext";
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute"; 
 
 function App() {
   return (
     <>
       <BrowserRouter>
-      <Header />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/security-questions" element={<SecurityQuestions />} />
-          {/* Dashboard and related pages wrapped in the layout */}
-          <Route element={<DashboardLayout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/expense" element={<Expense />} />
-            <Route path="/schedule" element={<Schedule />} />
-            <Route path="/goals" element={<Goals />} />
-            <Route path="/reports" element={<Reports />} />
-            <Route path="/suggestions" element={<Suggestions />} />
-            <Route path="/achievements" element={<Achievements />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/account" element={<Account />} />
-            <Route path="/currency-conversion" element={<CurrencyConversion />} />
-          </Route>
+        <FontProvider>
+          <AuthProvider>
+            <Header />
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/security-questions" element={<SecurityQuestions />} />
+              
+              {/* 使用ProtectedRoute保护需要登录的路由 */}
+              <Route element={<ProtectedRoute />}>
+                {/* Dashboard相关页面包装在DashboardLayout中 */}
+                <Route element={<DashboardLayout />}>
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/expense" element={<Expense />} />
+                  <Route path="/schedule" element={<Schedule />} />
+                  <Route path="/goals" element={<Goals />} />
+                  <Route path="/reports" element={<Reports />} />
+                  <Route path="/suggestions" element={<Suggestions />} />
+                  <Route path="/achievements" element={<Achievements />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/account" element={<Account />} />
+                  <Route path="/currency-conversion" element={<CurrencyConversion />} />
+                </Route>
+              </Route>
 
-          <Route path="*" element={<div>404 Not Found</div>} />
-        </Routes>
-        <Footer />
+              <Route path="*" element={<div>404 Not Found</div>} />
+            </Routes>
+            <Footer />
+          </AuthProvider>
+        </FontProvider>
       </BrowserRouter>
     </>
   );

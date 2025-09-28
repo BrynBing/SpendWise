@@ -34,7 +34,7 @@ export default function SideBar() {
 
   return (
     <div
-      className={`h-screen ${collapsed ? "w-16" : "w-64"} bg-gray-100 transition-all duration-300 flex flex-col shadow-lg`}
+      className={`h-screen ${collapsed ? "w-16" : "w-64"} bg-gray-100 transition-all duration-300 flex flex-col `}
     >
       <div className="p-4 flex justify-between items-center border-b border-gray-200">
         <button
@@ -72,7 +72,7 @@ export default function SideBar() {
         </ul>
       </nav>
 
-      <div className="p-4 border-t border-gray-200">
+      {/* <div className="p-4 border-t border-gray-200">
         <div
           className={`flex ${collapsed ? "justify-center" : "items-center"}`}
         >
@@ -92,7 +92,7 @@ export default function SideBar() {
             </>
           )}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }
