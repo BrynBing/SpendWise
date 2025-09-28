@@ -17,12 +17,15 @@ public interface ExpenseRecordRepository extends JpaRepository<ExpenseRecord, In
 
     // Weekly report for a specific year + week
     @Query("SELECT new com.example.backend.dto.ExpenseReportDTO(" +
-            "YEAR(e.expenseDate), FUNCTION('week', e.expenseDate), c.categoryName, SUM(e.amount)) " +
+            "CAST(YEAR(e.expenseDate) AS integer), " +
+            "CAST(FUNCTION('date_part', 'week', e.expenseDate) AS integer), " +
+            "c.categoryName, " +
+            "SUM(e.amount)) " +
             "FROM ExpenseRecord e JOIN e.category c " +
             "WHERE e.user.user_id = :userId " +
             "AND YEAR(e.expenseDate) = :year " +
-            "AND FUNCTION('week', e.expenseDate) = :week " +
-            "GROUP BY YEAR(e.expenseDate), FUNCTION('week', e.expenseDate), c.categoryName")
+            "AND CAST(FUNCTION('date_part', 'week', e.expenseDate) AS integer) = :week " +
+            "GROUP BY YEAR(e.expenseDate), CAST(FUNCTION('date_part', 'week', e.expenseDate) AS integer), c.categoryName")
     List<ExpenseReportDTO> getWeeklyReportFor(
             @Param("userId") Integer userId,
             @Param("year") Integer year,

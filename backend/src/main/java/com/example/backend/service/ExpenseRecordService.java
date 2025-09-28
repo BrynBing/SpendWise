@@ -15,13 +15,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.lowagie.text.Document;
-import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.Chunk;
 import java.io.ByteArrayOutputStream;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 
 @Service
