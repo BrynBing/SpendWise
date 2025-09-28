@@ -2,6 +2,7 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.CategoryDTO;
 import com.example.backend.dto.ExpenseRecordDTO;
+import com.example.backend.dto.ExpenseReportDTO;
 import com.example.backend.dto.UserDTO;
 import com.example.backend.model.ExpenseRecord;
 import com.example.backend.service.ExpenseRecordService;
@@ -154,4 +155,39 @@ public class ExpenseRecordController {
 //        dto.setRecurringScheduleId(record.getRecurringScheduleId());
         return dto;
     }
+
+    // === Reports ===
+
+    // Weekly
+    @GetMapping("/reports/weekly")
+    public ResponseEntity<List<ExpenseReportDTO>> getWeeklyReport(
+            @RequestParam Integer year,
+            @RequestParam Integer week,
+            HttpSession session) {
+        UserDTO user = (UserDTO) session.getAttribute("USER");
+        Integer userId = user.getId();
+        return ResponseEntity.ok(recordService.getWeeklyReport(userId, year, week));
+    }
+
+    // Monthly
+    @GetMapping("/reports/monthly")
+    public ResponseEntity<List<ExpenseReportDTO>> getMonthlyReport(
+            @RequestParam Integer year,
+            @RequestParam Integer month,
+            HttpSession session) {
+        UserDTO user = (UserDTO) session.getAttribute("USER");
+        Integer userId = user.getId();
+        return ResponseEntity.ok(recordService.getMonthlyReport(userId, year, month));
+    }
+
+    // Yearly
+    @GetMapping("/reports/yearly")
+    public ResponseEntity<List<ExpenseReportDTO>> getYearlyReport(
+            @RequestParam Integer year,
+            HttpSession session) {
+        UserDTO user = (UserDTO) session.getAttribute("USER");
+        Integer userId = user.getId();
+        return ResponseEntity.ok(recordService.getYearlyReport(userId, year));
+    }
+
 }

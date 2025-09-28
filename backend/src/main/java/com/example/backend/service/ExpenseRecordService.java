@@ -1,15 +1,24 @@
 package com.example.backend.service;
 
+import com.example.backend.dto.ExpenseReportDTO;
 import com.example.backend.model.Category;
 import com.example.backend.model.ExpenseRecord;
 import com.example.backend.model.User;
 import com.example.backend.repository.CategoryRepository;
 import com.example.backend.repository.ExpenseRecordRepository;
 import com.example.backend.repository.UserRepository;
+import com.lowagie.text.Chunk;
+import com.lowagie.text.Paragraph;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
+import com.lowagie.text.Document;
+import com.lowagie.text.pdf.PdfWriter;
+import com.lowagie.text.pdf.PdfPTable;
+import java.io.ByteArrayOutputStream;
+
 
 @Service
 public class ExpenseRecordService {
@@ -53,7 +62,6 @@ public class ExpenseRecordService {
         if (updatedData.getNotes() != null) existing.setNotes(updatedData.getNotes());
         if (updatedData.getPaymentMethod() != null) existing.setPaymentMethod(updatedData.getPaymentMethod());
         if (updatedData.getIsRecurring() != null) existing.setIsRecurring(updatedData.getIsRecurring());
-//        if (updatedData.getRecurringScheduleId() != null) existing.setRecurringScheduleId(updatedData.getRecurringScheduleId());
 
         existing.setUpdatedAt(LocalDateTime.now());
         return expenseRecordRepository.save(existing);
@@ -70,4 +78,88 @@ public class ExpenseRecordService {
 
         expenseRecordRepository.deleteById(recordId);
     }
+
+    // === Weekly Report ===
+    public List<ExpenseReportDTO> getWeeklyReport(Integer userId, Integer year, Integer week) {
+        return expenseRecordRepository.getWeeklyReportFor(userId, year, week);
+    }
+
+    // === Monthly Report ===
+    public List<ExpenseReportDTO> getMonthlyReport(Integer userId, Integer year, Integer month) {
+        return expenseRecordRepository.getMonthlyReportFor(userId, year, month);
+    }
+
+    // === Yearly Report ===
+    public List<ExpenseReportDTO> getYearlyReport(Integer userId, Integer year) {
+        return expenseRecordRepository.getYearlyReportFor(userId, year);
+    }
+
+    public byte[] exportReportPdf(Integer userId, String period, Integer year, Integer month, Integer week) {
+        List<ExpenseReportDTO> reports;
+
+        switch (period.toLowerCase()) {
+            case "weekly" -> {
+                if (year == null || week == null) {
+                    throw new IllegalArgumentException("Year and week are required for weekly reports.");
+                }
+                reports = expenseRecordRepository.getWeeklyReportFor(userId, year, week);
+            }
+            case "monthly" -> {
+                if (year == null || month == null) {
+                    throw new IllegalArgumentException("Year and month are required for monthly reports.");
+                }
+                reports = expenseRecordRepository.getMonthlyReportFor(userId, year, month);
+            }
+            case "yearly" -> {
+                if (year == null) {
+                    throw new IllegalArgumentException("Year is required for yearly reports.");
+                }
+                reports = expenseRecordRepository.getYearlyReportFor(userId, year);
+            }
+            default -> throw new IllegalArgumentException("Invalid period: " + period);
+        }
+
+        // Generate PDF
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            Document document = new Document();
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            document.add(new Paragraph(period.toUpperCase() + " Expense Report"));
+            document.add(new Paragraph("Year: " + year +
+                    (month != null ? ", Month: " + month : "") +
+                    (week != null ? ", Week: " + week : "")));
+            document.add(new Paragraph("Generated on: " + java.time.LocalDate.now()));
+            document.add(Chunk.NEWLINE);
+
+            PdfPTable table = new PdfPTable(4);
+            table.addCell("Year");
+            table.addCell("Period");
+            table.addCell("Category");
+            table.addCell("Amount");
+
+            double total = 0.0;
+            for (ExpenseReportDTO r : reports) {
+                table.addCell(String.valueOf(r.getYear()));
+                table.addCell(r.getPeriodValue() == null ? "-" : String.valueOf(r.getPeriodValue()));
+                table.addCell(r.getCategoryName());
+                table.addCell(r.getTotalAmount().toString());
+                total += r.getTotalAmount().doubleValue();
+            }
+
+            // Add total row
+            table.addCell("");
+            table.addCell("");
+            table.addCell("Total");
+            table.addCell(String.valueOf(total));
+
+            document.add(table);
+            document.close();
+
+            return out.toByteArray();
+        } catch (Exception e) {
+            throw new RuntimeException("Error generating PDF", e);
+        }
+    }
+
 }
