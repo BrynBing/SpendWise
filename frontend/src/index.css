@@ -3,31 +3,46 @@
 
 /* Small motion polish for the Home page */
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
 }
-.animate-float { animation: float 6s ease-in-out infinite; }
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.animate-fade-in { animation: fadeIn 500ms ease forwards; }
+.animate-fade-in {
+  animation: fadeIn 500ms ease forwards;
+}
 
 /* 删除Google Fonts导入，使用本地字体 */
 @font-face {
-  font-family: 'Open Dyslexic';
-  src: url('/OpenDyslexic-Regular.woff2') format('woff2'),
-       url('/OpenDyslexic-Regular.woff') format('woff');
+  font-family: "Open Dyslexic";
+  src: url("/OpenDyslexic-Regular.woff2") format("woff2"),
+    url("/OpenDyslexic-Regular.woff") format("woff");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Open Dyslexic';
-  src: url('/OpenDyslexic-Bold.woff2') format('woff2'),
-       url('/OpenDyslexic-Bold.woff') format('woff');
+  font-family: "Open Dyslexic";
+  src: url("/OpenDyslexic-Bold.woff2") format("woff2"),
+    url("/OpenDyslexic-Bold.woff") format("woff");
   font-weight: bold;
   font-style: normal;
   font-display: swap;
@@ -35,13 +50,13 @@
 
 /* 添加无障碍字体 */
 .dyslexia-friendly {
-  font-family: 'Open Dyslexic', sans-serif !important;
+  font-family: "Open Dyslexic", sans-serif !important;
   line-height: 1.5;
   letter-spacing: 0.5px;
   word-spacing: 3px;
 }
 
-.dyslexia-friendly p, 
+.dyslexia-friendly p,
 .dyslexia-friendly h1,
 .dyslexia-friendly h2,
 .dyslexia-friendly h3,
@@ -55,5 +70,108 @@
 .dyslexia-friendly textarea,
 .dyslexia-friendly label,
 .dyslexia-friendly li {
-  font-family: 'Open Dyslexic', sans-serif !important;
+  font-family: "Open Dyslexic", sans-serif !important;
+}
+
+/* Dark mode styles */
+.dark {
+  color-scheme: dark;
+}
+
+.dark body {
+  background-color: #1a1a1a;
+  color: #e5e5e5;
+}
+
+/* Dark mode specific styles for common elements */
+.dark .bg-white {
+  background-color: #2d2d2d !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: #1a1a1a !important;
+}
+
+.dark .bg-gray-100 {
+  background-color: #333333 !important;
+}
+
+.dark .bg-gray-200 {
+  background-color: #404040 !important;
+}
+
+.dark .text-gray-900 {
+  color: #e5e5e5 !important;
+}
+
+.dark .text-gray-800 {
+  color: #d4d4d4 !important;
+}
+
+.dark .text-gray-700 {
+  color: #b3b3b3 !important;
+}
+
+.dark .text-gray-600 {
+  color: #a0a0a0 !important;
+}
+
+.dark .text-gray-500 {
+  color: #8a8a8a !important;
+}
+
+.dark .text-gray-400 {
+  color: #737373 !important;
+}
+
+.dark .border-gray-100 {
+  border-color: #404040 !important;
+}
+
+.dark .border-gray-200 {
+  border-color: #4a4a4a !important;
+}
+
+.dark .border-gray-300 {
+  border-color: #555555 !important;
+}
+
+/* Dark mode for inputs */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #333333 !important;
+  border-color: #4a4a4a !important;
+  color: #e5e5e5 !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #737373 !important;
+}
+
+/* Dark mode hover states */
+.dark .hover\:bg-gray-50:hover {
+  background-color: #2d2d2d !important;
+}
+
+.dark .hover\:bg-gray-100:hover {
+  background-color: #404040 !important;
+}
+
+.dark .hover\:bg-gray-200:hover {
+  background-color: #4a4a4a !important;
+}
+
+/* Keep bright colors for accents */
+.dark .text-emerald-500,
+.dark .text-rose-500,
+.dark .text-indigo-500,
+.dark .text-purple-500,
+.dark .bg-emerald-500,
+.dark .bg-rose-500,
+.dark .bg-indigo-500,
+.dark .bg-purple-500,
+.dark .bg-gray-900 {
+  /* Keep original colors - these are accent colors */
 }
