@@ -1,6 +1,6 @@
 import React from "react";
 // 保留现有的React Icons导入
-import { FaTrophy, FaCheck, FaCalendarCheck, FaRibbon, FaBullseye, FaStar, FaMedal, FaCrown, FaAward, FaGem, FaShieldAlt } from "react-icons/fa";
+import { FaTrophy, FaCheck, FaCalendarCheck, FaRibbon, FaBullseye, FaStar, FaMedal, FaCrown, FaAward, FaGem, FaShieldAlt, FaCheckCircle } from "react-icons/fa";
 
 export default function Achievements() {
   // 成就数据，使用已知可用的图标
@@ -107,66 +107,103 @@ export default function Achievements() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="text-center mb-10">
-        <h1 className="text-3xl font-bold">Achievements</h1>
-        <p className="text-gray-600 mt-2">Track your financial milestones and progress</p>
+    <div className="max-w-6xl mx-auto px-4 py-8">
+      {/* Header Section */}
+      <div className="mb-10 flex flex-col gap-2">
+        <span className="text-sm uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
+          Progress
+        </span>
+        <h1 className="text-3xl font-semibold text-gray-900 dark:text-gray-100">Achievements</h1>
+        <p className="text-gray-500 dark:text-gray-400">
+          Track your financial milestones and celebrate your progress
+        </p>
       </div>
 
-      <div className="space-y-8">
+      {/* Progress Overview Card */}
+      <div className="mb-8 rounded-3xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Overall Progress</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-2">
+              {achievements.filter(a => a.unlocked).length} <span className="text-gray-500 dark:text-gray-400 text-lg font-normal">of {achievements.length}</span>
+            </p>
+          </div>
+          <div className="flex items-center justify-center w-20 h-20 rounded-full bg-indigo-100 dark:bg-indigo-900/30">
+            <FaTrophy className="text-3xl text-indigo-600 dark:text-indigo-400" />
+          </div>
+        </div>
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mt-4">
+          <div 
+            className="bg-gradient-to-r from-indigo-500 to-purple-600 h-3 rounded-full transition-all duration-500" 
+            style={{ width: `${(achievements.filter(a => a.unlocked).length / achievements.length) * 100}%` }}
+          ></div>
+        </div>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+          {Math.round((achievements.filter(a => a.unlocked).length / achievements.length) * 100)}% Complete
+        </p>
+      </div>
+
+      {/* Achievements Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {achievements.map((achievement) => (
           <div 
             key={achievement.id}
-            className={`flex items-center p-6 border rounded-xl shadow-sm transition-all hover:shadow-md ${achievement.unlocked ? 'opacity-100' : 'opacity-60'}`}
+            className={`group rounded-3xl border p-6 shadow-sm transition-all hover:shadow-md ${
+              achievement.unlocked 
+                ? 'border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 opacity-100' 
+                : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 opacity-60'
+            }`}
           >
-            <div className="flex-shrink-0 mr-6">
-              {/* 使用动态渐变背景和增大的图标尺寸 */}
-              <div className={`w-24 h-24 rounded-full ${getGradientBackground(achievement.id)} flex items-center justify-center shadow-lg`}>
-                {React.cloneElement(achievement.icon, { className: "text-white text-4xl" })}
+            <div className="flex items-start gap-4">
+              {/* Achievement Icon */}
+              <div className="flex-shrink-0">
+                <div className={`w-16 h-16 rounded-2xl ${
+                  achievement.unlocked 
+                    ? getGradientBackground(achievement.id) 
+                    : 'bg-gray-300 dark:bg-gray-700'
+                } flex items-center justify-center shadow-md transition-transform group-hover:scale-110`}>
+                  {React.cloneElement(achievement.icon, { 
+                    className: achievement.unlocked ? "text-white text-2xl" : "text-gray-500 dark:text-gray-600 text-2xl" 
+                  })}
+                </div>
               </div>
-            </div>
-            
-            <div className="flex-grow">
-              <h2 className="text-xl font-semibold">{achievement.title}</h2>
-              <p className="text-gray-600">{achievement.description}</p>
-              {achievement.unlocked && achievement.completedDate && (
-                <p className="text-sm text-gray-500 mt-1">
-                  Achieved on {formatDate(achievement.completedDate)}
+              
+              {/* Achievement Content */}
+              <div className="flex-grow min-w-0">
+                <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                  {achievement.title}
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  {achievement.description}
                 </p>
-              )}
-              {!achievement.unlocked && (
-                <p className="text-sm text-gray-500 mt-1">
-                  Locked - Complete required tasks to unlock
-                </p>
-              )}
-            </div>
-
-            {achievement.unlocked && (
-              <div className="flex-shrink-0 ml-4">
-                {/* 替换不存在的 UilAward 和 AnimatedStar */}
-                {achievement.id % 3 === 0 ? (
-                  <FaGem className="text-yellow-500 text-4xl" />
-                ) : (
-                  <FaAward className="text-yellow-500 text-3xl" />
+                {achievement.unlocked && achievement.completedDate && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <FaCheckCircle className="text-green-500 dark:text-green-400 text-sm" />
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Achieved on {formatDate(achievement.completedDate)}
+                    </p>
+                  </div>
+                )}
+                {!achievement.unlocked && (
+                  <p className="text-xs uppercase tracking-wider text-gray-400 dark:text-gray-500 mt-2">
+                    🔒 Locked
+                  </p>
                 )}
               </div>
-            )}
+
+              {/* Badge for unlocked achievements */}
+              {achievement.unlocked && (
+                <div className="flex-shrink-0">
+                  {achievement.id % 3 === 0 ? (
+                    <FaGem className="text-yellow-500 dark:text-yellow-400 text-2xl" />
+                  ) : (
+                    <FaAward className="text-yellow-500 dark:text-yellow-400 text-2xl" />
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         ))}
-      </div>
-
-      <div className="mt-10 text-center">
-        <div className="inline-block bg-gray-100 rounded-lg p-4">
-          <p className="text-gray-700">
-            <span className="font-bold">{achievements.filter(a => a.unlocked).length}</span> of {achievements.length} achievements unlocked
-          </p>
-          <div className="w-full bg-gray-300 rounded-full h-2.5 mt-2">
-            <div 
-              className="bg-gray-800 h-2.5 rounded-full" 
-              style={{ width: `${(achievements.filter(a => a.unlocked).length / achievements.length) * 100}%` }}
-            ></div>
-          </div>
-        </div>
       </div>
     </div>
   );
