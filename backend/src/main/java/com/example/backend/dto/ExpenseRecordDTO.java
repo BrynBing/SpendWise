@@ -21,4 +21,5 @@ public class ExpenseRecordDTO {
     private Boolean isRecurring;
     private Integer recurringScheduleId;
     private String paymentMethod;
+    private String transactionType;
 }
