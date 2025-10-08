@@ -94,6 +94,15 @@ const formatDate = (value) =>
     day: "numeric",
   });
 
+const RECURRENCE_OPTIONS = [
+  { value: "daily", label: "Daily" },
+  { value: "weekly", label: "Weekly" },
+  { value: "biweekly", label: "Bi-weekly" },
+  { value: "monthly", label: "Monthly" },
+  { value: "quarterly", label: "Quarterly" },
+  { value: "yearly", label: "Yearly" },
+];
+
 const createEmptyFormState = () => ({
   description: "",
   amount: "",
@@ -102,6 +111,7 @@ const createEmptyFormState = () => ({
   category: CATEGORY_OPTIONS.expense[0],
   date: new Date().toISOString().split('T')[0],
   isRecurring: false,
+  recurrenceFrequency: "monthly",
 });
 
 const LABEL_CLASSES = "text-sm uppercase tracking-[0.3em] text-gray-400";
@@ -139,6 +149,7 @@ export default function Schedule() {
           category: record.category.name,
           date: record.expenseDate,
           isRecurring: record.isRecurring || false,
+          recurrenceFrequency: record.recurrenceFrequency || 'monthly',
         }));
         
         setTransactions(formattedTransactions);
@@ -231,6 +242,7 @@ export default function Schedule() {
       expenseDate: form.date,
       transactionType: form.mode,
       isRecurring: form.isRecurring,
+      recurrenceFrequency: form.isRecurring ? form.recurrenceFrequency : null,
     };
 
     try {
@@ -249,6 +261,7 @@ export default function Schedule() {
                   category: response.data.category.name,
                   date: response.data.expenseDate,
                   isRecurring: response.data.isRecurring || false,
+                  recurrenceFrequency: response.data.recurrenceFrequency || 'monthly',
                 }
               : transaction
           )
@@ -265,6 +278,7 @@ export default function Schedule() {
           category: response.data.category.name,
           date: response.data.expenseDate,
           isRecurring: response.data.isRecurring || false,
+          recurrenceFrequency: response.data.recurrenceFrequency || 'monthly',
         };
         
         setTransactions((prev) => [newTransaction, ...prev]);
@@ -291,6 +305,7 @@ export default function Schedule() {
       category: transaction.category,
       date: new Date(transaction.date).toISOString().split('T')[0],
       isRecurring: transaction.isRecurring,
+      recurrenceFrequency: transaction.recurrenceFrequency || 'monthly',
     });
     setEditingId(transaction.id);
     setIsModalOpen(true);
@@ -418,7 +433,9 @@ export default function Schedule() {
                   <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
                     {formatDate(transaction.date)} • {transaction.category}
                     {transaction.isRecurring && (
-                      <span className="ml-2 text-emerald-600">• Recurring</span>
+                      <span className="ml-2 text-emerald-600">
+                        • Recurring ({RECURRENCE_OPTIONS.find(opt => opt.value === transaction.recurrenceFrequency)?.label || 'Monthly'})
+                      </span>
                     )}
                   </p>
                 </div>
@@ -605,6 +622,25 @@ export default function Schedule() {
                 </label>
               </div>
             </div>
+
+            {form.isRecurring && (
+              <div>
+                <label className={`${LABEL_CLASSES} dark:text-gray-500`}>Recurrence Frequency</label>
+                <div className={`${BORDER_SECTION_CLASSES} dark:border-gray-700`}>
+                  <select
+                    value={form.recurrenceFrequency}
+                    onChange={(e) => handleFormChange("recurrenceFrequency", e.target.value)}
+                    className={`${INPUT_BASE_CLASSES} dark:text-gray-100 cursor-pointer`}
+                  >
+                    {RECURRENCE_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
 
             {errors.submit && (
               <div className="rounded-lg bg-red-50 border border-red-200 p-4">
