@@ -1,5 +1,6 @@
-import React, { useRef, useState } from "react";
-import { FaChevronDown, FaEdit, FaTrash, FaExclamationTriangle } from "react-icons/fa";
+import React, { useState } from "react";
+import { FaChevronDown, FaEdit, FaTrash, FaExclamationTriangle, FaPlus } from "react-icons/fa";
+import Modal from "../components/Modal";
 
 const INITIAL_GOALS = [
   {
@@ -77,7 +78,7 @@ export default function Goals() {
   const [editingId, setEditingId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState({ show: false, goal: null });
   const [dropdownOpen, setDropdownOpen] = useState(null);
-  const formRef = useRef(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Calculate current and target savings
   const currentSaving = goals.reduce((sum, goal) => sum + goal.currentAmount, 0);
@@ -139,6 +140,7 @@ export default function Goals() {
     }
 
     setErrors({});
+    setIsModalOpen(false);
   };
 
   const startEditing = (goal) => {
@@ -150,13 +152,14 @@ export default function Goals() {
       deadline: goal.deadline,
     });
     setEditingId(goal.id);
-    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setIsModalOpen(true);
   };
 
   const cancelEditing = () => {
     setForm(createEmptyFormState());
     setEditingId(null);
     setErrors({});
+    setIsModalOpen(false);
   };
 
   const openDeleteConfirm = (goal) => {
@@ -309,33 +312,37 @@ export default function Goals() {
         )}
       </div>
 
-      <div
-        ref={formRef}
-        className="bg-white border border-gray-100 rounded-3xl shadow-sm px-6 sm:px-10 py-10 mt-10"
-      >
-        <div className="flex items-center justify-between text-gray-400 text-sm uppercase tracking-[0.3em]">
-          <span>{editingId ? "Update Goal" : "Add Goal"}</span>
-        </div>
+      <div className="mt-10 flex justify-center">
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-full bg-indigo-600 dark:bg-indigo-500 px-8 py-4 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-indigo-700 dark:hover:bg-indigo-600"
+        >
+          <FaPlus /> Add Goal
+        </button>
+      </div>
 
-        <div className="max-w-xl mx-auto mt-10">
-          <div className="mb-10 text-center">
-            <h2 className="text-2xl font-semibold text-gray-900">Goal</h2>
-            {editingId && (
-              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-500">
-                Editing existing entry
-              </p>
-            )}
-          </div>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={cancelEditing}
+        title={editingId ? "Update Goal" : "Add Goal"}
+        size="lg"
+      >
+        <div className="max-w-xl mx-auto">
+          {editingId && (
+            <p className="mb-6 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-500 text-center">
+              Editing existing entry
+            </p>
+          )}
 
           <form className="space-y-8" onSubmit={handleSubmit} noValidate>
             <div>
-              <label className={LABEL_CLASSES}>Goal Name</label>
-              <div className={BORDER_SECTION_CLASSES}>
+              <label className={`${LABEL_CLASSES} dark:text-gray-500`}>Goal Name</label>
+              <div className={`${BORDER_SECTION_CLASSES} dark:border-gray-700`}>
                 <input
                   type="text"
                   value={form.name}
                   onChange={(e) => handleFormChange("name", e.target.value)}
-                  className={INPUT_BASE_CLASSES}
+                  className={`${INPUT_BASE_CLASSES} dark:text-gray-100 dark:placeholder:text-gray-600`}
                   placeholder="e.g., Emergency Fund"
                 />
               </div>
@@ -344,13 +351,13 @@ export default function Goals() {
 
             <div className="grid gap-6 sm:grid-cols-2">
               <div>
-                <label className={LABEL_CLASSES}>Target Amount</label>
-                <div className={BORDER_SECTION_CLASSES}>
+                <label className={`${LABEL_CLASSES} dark:text-gray-500`}>Target Amount</label>
+                <div className={`${BORDER_SECTION_CLASSES} dark:border-gray-700`}>
                   <input
                     type="number"
                     value={form.targetAmount}
                     onChange={(e) => handleFormChange("targetAmount", e.target.value)}
-                    className={`${INPUT_BASE_CLASSES} appearance-none`}
+                    className={`${INPUT_BASE_CLASSES} appearance-none dark:text-gray-100 dark:placeholder:text-gray-600`}
                     placeholder="0.00"
                     min="0"
                     step="0.01"
@@ -362,13 +369,13 @@ export default function Goals() {
               </div>
 
               <div>
-                <label className={LABEL_CLASSES}>Current Amount</label>
-                <div className={BORDER_SECTION_CLASSES}>
+                <label className={`${LABEL_CLASSES} dark:text-gray-500`}>Current Amount</label>
+                <div className={`${BORDER_SECTION_CLASSES} dark:border-gray-700`}>
                   <input
                     type="number"
                     value={form.currentAmount}
                     onChange={(e) => handleFormChange("currentAmount", e.target.value)}
-                    className={`${INPUT_BASE_CLASSES} appearance-none`}
+                    className={`${INPUT_BASE_CLASSES} appearance-none dark:text-gray-100 dark:placeholder:text-gray-600`}
                     placeholder="0.00"
                     min="0"
                     step="0.01"
@@ -382,12 +389,12 @@ export default function Goals() {
 
             <div className="grid gap-6 sm:grid-cols-2">
               <div>
-                <label className={LABEL_CLASSES}>Category</label>
-                <div className={`${BORDER_SECTION_CLASSES} relative`}>
+                <label className={`${LABEL_CLASSES} dark:text-gray-500`}>Category</label>
+                <div className={`${BORDER_SECTION_CLASSES} relative dark:border-gray-700`}>
                   <select
                     value={form.category}
                     onChange={(e) => handleFormChange("category", e.target.value)}
-                    className={`${INPUT_BASE_CLASSES} appearance-none pr-10`}
+                    className={`${INPUT_BASE_CLASSES} appearance-none pr-10 dark:text-gray-100`}
                   >
                     <option value="Savings">Savings</option>
                     <option value="Electronics">Electronics</option>
@@ -401,13 +408,13 @@ export default function Goals() {
               </div>
 
               <div>
-                <label className={LABEL_CLASSES}>Deadline</label>
-                <div className={BORDER_SECTION_CLASSES}>
+                <label className={`${LABEL_CLASSES} dark:text-gray-500`}>Deadline</label>
+                <div className={`${BORDER_SECTION_CLASSES} dark:border-gray-700`}>
                   <input
                     type="date"
                     value={form.deadline}
                     onChange={(e) => handleFormChange("deadline", e.target.value)}
-                    className={INPUT_BASE_CLASSES}
+                    className={`${INPUT_BASE_CLASSES} dark:text-gray-100`}
                   />
                 </div>
                 {errors.deadline && (
@@ -421,21 +428,21 @@ export default function Goals() {
                 <button
                   type="button"
                   onClick={cancelEditing}
-                  className="w-full rounded-full border border-gray-200 px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-gray-600 transition-colors hover:bg-gray-100 sm:w-auto sm:min-w-[140px]"
+                  className="w-full rounded-full border border-gray-200 dark:border-gray-700 px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-gray-600 dark:text-gray-400 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 sm:w-auto sm:min-w-[140px]"
                 >
                   Cancel
                 </button>
               )}
               <button
                 type="submit"
-                className="w-full rounded-full bg-gray-900 px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-gray-700 sm:w-auto sm:min-w-[140px]"
+                className="w-full rounded-full bg-indigo-600 dark:bg-indigo-500 px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-indigo-700 dark:hover:bg-indigo-600 sm:w-auto sm:min-w-[140px]"
               >
                 {editingId ? "Save Changes" : "Save"}
               </button>
             </div>
           </form>
         </div>
-      </div>
+      </Modal>
 
       {/* Delete Confirmation Modal */}
       {confirmDelete.show && (

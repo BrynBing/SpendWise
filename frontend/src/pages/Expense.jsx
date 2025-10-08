@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { FaChevronDown, FaEdit, FaTrash, FaExclamationTriangle } from "react-icons/fa";
+import React, { useEffect, useMemo, useState } from "react";
+import { FaChevronDown, FaEdit, FaTrash, FaExclamationTriangle, FaPlus } from "react-icons/fa";
+import Modal from "../components/Modal";
 
 const CATEGORY_OPTIONS = {
   expense: [
@@ -101,7 +102,7 @@ export default function Expense() {
   const [editingId, setEditingId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState({ show: false, transaction: null });
   const [dropdownOpen, setDropdownOpen] = useState(null);
-  const formRef = useRef(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { mode } = form;
 
@@ -244,6 +245,7 @@ export default function Expense() {
     }));
     setErrors({});
     setEditingId(null);
+    setIsModalOpen(false);
   };
 
   const startEditing = (transaction) => {
@@ -256,13 +258,14 @@ export default function Expense() {
     });
     setErrors({});
     setEditingId(transaction.id);
-    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setIsModalOpen(true);
   };
 
   const cancelEditing = () => {
     setForm(createEmptyFormState());
     setErrors({});
     setEditingId(null);
+    setIsModalOpen(false);
   };
 
   const openDeleteConfirm = (transaction) => {
@@ -415,33 +418,38 @@ export default function Expense() {
           </ul>
         )}
       </div>
-      <div
-        ref={formRef}
-        className="bg-white border border-gray-100 rounded-3xl shadow-sm px-6 sm:px-10 py-10 mt-10"
-      >
-        <div className="flex items-center justify-between text-gray-400 text-sm uppercase tracking-[0.3em]">
-          <span>{editingId ? "Update Transaction" : "Add Transaction"}</span>
-        </div>
 
-        <div className="max-w-xl mx-auto mt-10">
-          <div className="mb-10 text-center">
-            <h2 className="text-2xl font-semibold text-gray-900">Transaction</h2>
-            {editingId && (
-              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-500">
-                Editing existing entry
-              </p>
-            )}
-          </div>
+      <div className="mt-10 flex justify-center">
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-full bg-indigo-600 dark:bg-indigo-500 px-8 py-4 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-indigo-700 dark:hover:bg-indigo-600"
+        >
+          <FaPlus /> Add Transaction
+        </button>
+      </div>
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={cancelEditing}
+        title={editingId ? "Update Transaction" : "Add Transaction"}
+        size="lg"
+      >
+        <div className="max-w-xl mx-auto">
+          {editingId && (
+            <p className="mb-6 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-500 text-center">
+              Editing existing entry
+            </p>
+          )}
 
           <form className="space-y-8" onSubmit={handleSubmit} noValidate>
             <div>
-              <label className="text-sm uppercase tracking-[0.3em] text-gray-400">
+              <label className="text-sm uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
                 Amount
               </label>
-              <div className="mt-3 border-b border-gray-200 pb-5">
+              <div className="mt-3 border-b border-gray-200 dark:border-gray-700 pb-5">
                 <div className="flex items-end justify-between">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-semibold text-gray-900">$</span>
+                    <span className="text-4xl font-semibold text-gray-900 dark:text-gray-100">$</span>
                     <input
                       type="number"
                       inputMode="decimal"
@@ -450,14 +458,14 @@ export default function Expense() {
                       placeholder="0.00"
                       value={form.amount}
                       onChange={handleChange("amount")}
-                      className="w-40 bg-transparent text-4xl font-semibold text-gray-900 placeholder:text-gray-300 focus:outline-none"
+                      className="w-40 bg-transparent text-4xl font-semibold text-gray-900 dark:text-gray-100 placeholder:text-gray-300 dark:placeholder:text-gray-600 focus:outline-none"
                     />
                   </div>
                   <div className="relative">
                     <select
                       value={form.currency}
                       onChange={handleChange("currency")}
-                      className="appearance-none bg-transparent text-sm font-medium tracking-[0.3em] uppercase text-gray-500 pr-6 focus:outline-none"
+                      className="appearance-none bg-transparent text-sm font-medium tracking-[0.3em] uppercase text-gray-500 dark:text-gray-400 pr-6 focus:outline-none"
                       aria-label="Select currency"
                     >
                       {CURRENCY_OPTIONS.map((currency) => (
@@ -476,14 +484,14 @@ export default function Expense() {
             </div>
 
             <div>
-              <label className="text-sm uppercase tracking-[0.3em] text-gray-400">
+              <label className="text-sm uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
                 Select mode
               </label>
-              <div className="relative mt-3 border-b border-gray-200">
+              <div className="relative mt-3 border-b border-gray-200 dark:border-gray-700">
                 <select
                   value={form.mode}
                   onChange={handleChange("mode")}
-                  className="w-full appearance-none bg-transparent py-3 text-lg font-medium text-gray-900 focus:outline-none"
+                  className="w-full appearance-none bg-transparent py-3 text-lg font-medium text-gray-900 dark:text-gray-100 focus:outline-none"
                   aria-label="Select mode"
                 >
                   <option value="expense">Expense</option>
@@ -494,14 +502,14 @@ export default function Expense() {
             </div>
 
             <div>
-              <label className="text-sm uppercase tracking-[0.3em] text-gray-400">
+              <label className="text-sm uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
                 Category
               </label>
-              <div className="relative mt-3 border-b border-gray-200">
+              <div className="relative mt-3 border-b border-gray-200 dark:border-gray-700">
                 <select
                   value={form.category}
                   onChange={handleChange("category")}
-                  className="w-full appearance-none bg-transparent py-3 text-lg font-medium text-gray-900 focus:outline-none"
+                  className="w-full appearance-none bg-transparent py-3 text-lg font-medium text-gray-900 dark:text-gray-100 focus:outline-none"
                   aria-label="Select category"
                 >
                   {CATEGORY_OPTIONS[form.mode].map((category) => (
@@ -518,16 +526,16 @@ export default function Expense() {
             </div>
 
             <div>
-              <label className="text-sm uppercase tracking-[0.3em] text-gray-400">
+              <label className="text-sm uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
                 Descriptions
               </label>
-              <div className="mt-3 border-b border-gray-200">
+              <div className="mt-3 border-b border-gray-200 dark:border-gray-700">
                 <textarea
                   rows={2}
                   value={form.description}
                   onChange={handleChange("description")}
                   placeholder="Enter description"
-                  className="w-full resize-none bg-transparent py-3 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none"
+                  className="w-full resize-none bg-transparent py-3 text-base text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none"
                 />
               </div>
               {errors.description && (
@@ -540,21 +548,22 @@ export default function Expense() {
                 <button
                   type="button"
                   onClick={cancelEditing}
-                  className="w-full rounded-full border border-gray-200 px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-gray-600 transition-colors hover:bg-gray-100 sm:w-auto sm:min-w-[140px]"
+                  className="w-full rounded-full border border-gray-200 dark:border-gray-700 px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-gray-600 dark:text-gray-400 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 sm:w-auto sm:min-w-[140px]"
                 >
                   Cancel
                 </button>
               )}
               <button
                 type="submit"
-                className="w-full rounded-full bg-gray-900 px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-gray-700 sm:w-auto sm:min-w-[140px]"
+                className="w-full rounded-full bg-indigo-600 dark:bg-indigo-500 px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-indigo-700 dark:hover:bg-indigo-600 sm:w-auto sm:min-w-[140px]"
               >
                 {editingId ? "Save Changes" : "Save"}
               </button>
             </div>
           </form>
         </div>
-      </div>
+      </Modal>
+
       {confirmDelete.show && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-3xl border border-gray-100 bg-white p-6 shadow-xl">
