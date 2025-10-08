@@ -81,4 +81,61 @@ export const passwordResetService = {
   },
 };
 
+// Expense Records API
+export const expenseService = {
+  // Get all expense records for current user
+  getRecords: () => {
+    return api.get("/api/records");
+  },
+
+  // Create a new expense record
+  createRecord: (recordData) => {
+    return api.post("/api/records", recordData);
+  },
+
+  // Update an expense record
+  updateRecord: (id, recordData) => {
+    return api.put(`/api/records/${id}`, recordData);
+  },
+
+  // Delete an expense record
+  deleteRecord: (id) => {
+    return api.delete(`/api/records/${id}`);
+  },
+
+  // Get weekly report
+  getWeeklyReport: (year, week) => {
+    return api.get("/api/records/reports/weekly", {
+      params: { year, week },
+    });
+  },
+
+  // Get monthly report
+  getMonthlyReport: (year, month) => {
+    return api.get("/api/records/reports/monthly", {
+      params: { year, month },
+    });
+  },
+
+  // Get yearly report
+  getYearlyReport: (year) => {
+    return api.get("/api/records/reports/yearly", {
+      params: { year },
+    });
+  },
+};
+
+// Spending Goals API
+export const goalService = {
+  // Get all active spending goals for current user
+  getActiveGoals: () => {
+    return api.get("/api/goals");
+  },
+
+  // Create a new spending goal
+  createGoal: (goalData) => {
+    return api.post("/api/goals", goalData);
+  },
+};
+
 export default api;

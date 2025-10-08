@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { FaChevronDown, FaEdit, FaTrash, FaExclamationTriangle, FaPlus } from "react-icons/fa";
 import Modal from "../components/Modal";
+import { expenseService } from "../services/api";
 
 const CATEGORY_OPTIONS = {
   expense: [
@@ -14,59 +15,19 @@ const CATEGORY_OPTIONS = {
     "Shopping",
     "Other",
   ],
-  income: ["Salary", "Freelance", "Investments", "Gift", "Refund", "Other"],
+  income: [
+    "Salary",
+    "Freelance",
+    "Investments",
+    "Gift",
+    "Refund",
+    "Other",
+  ],
 };
-
-const INITIAL_TRANSACTIONS = [
-  {
-    id: 1,
-    amount: 48.75,
-    currency: "USD",
-    mode: "expense",
-    category: "Groceries",
-    description: "Weekly supermarket shop",
-    date: "2024-05-09T09:15:00Z",
-  },
-  {
-    id: 2,
-    amount: 15.5,
-    currency: "USD",
-    mode: "expense",
-    category: "Transport",
-    description: "Rideshare to client meeting",
-    date: "2024-05-08T17:45:00Z",
-  },
-  {
-    id: 3,
-    amount: 3200,
-    currency: "USD",
-    mode: "income",
-    category: "Salary",
-    description: "Monthly payroll",
-    date: "2024-05-05T08:00:00Z",
-  },
-  {
-    id: 4,
-    amount: 89,
-    currency: "USD",
-    mode: "expense",
-    category: "Utilities",
-    description: "Internet and phone bill",
-    date: "2024-05-04T12:20:00Z",
-  },
-  {
-    id: 5,
-    amount: 210,
-    currency: "USD",
-    mode: "income",
-    category: "Freelance",
-    description: "Website design consultation",
-    date: "2024-05-02T19:10:00Z",
-  },
-];
 
 const CURRENCY_OPTIONS = ["USD", "AUD", "EUR", "GBP"];
 
+// Backend only supports expenses, not income
 const FILTER_OPTIONS = [
   { value: "all", label: "All" },
   { value: "expense", label: "Expenses" },
@@ -95,7 +56,7 @@ const createEmptyFormState = () => ({
 });
 
 export default function Expense() {
-  const [transactions, setTransactions] = useState(INITIAL_TRANSACTIONS);
+  const [transactions, setTransactions] = useState([]);
   const [form, setForm] = useState(() => createEmptyFormState());
   const [errors, setErrors] = useState({});
   const [filter, setFilter] = useState("all");
@@ -103,8 +64,41 @@ export default function Expense() {
   const [confirmDelete, setConfirmDelete] = useState({ show: false, transaction: null });
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const { mode } = form;
+
+  // Fetch transactions from backend on component mount
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await expenseService.getRecords();
+        
+        // Transform backend data to frontend format
+        const formattedTransactions = response.data.map(record => ({
+          id: record.expenseId,
+          amount: record.amount,
+          currency: record.currency,
+          mode: record.transactionType || 'expense', // Use transactionType from backend
+          category: record.category.name,
+          description: record.description || '',
+          date: record.expenseDate,
+        }));
+        
+        setTransactions(formattedTransactions);
+      } catch (err) {
+        console.error('Failed to fetch transactions:', err);
+        setError('Failed to load transactions. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTransactions();
+  }, []);
 
   useEffect(() => {
     const availableCategories = CATEGORY_OPTIONS[mode] ?? [];
@@ -184,7 +178,7 @@ export default function Expense() {
     });
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     const nextErrors = {};
@@ -207,45 +201,64 @@ export default function Expense() {
       return;
     }
 
-    const baseTransaction = {
+    const recordData = {
       amount: Number(numericAmount.toFixed(2)),
       currency: form.currency,
-      mode: form.mode,
-      category: form.category,
+      category: { categoryName: form.category },
       description: form.description.trim(),
+      expenseDate: new Date().toISOString().split('T')[0],
+      transactionType: form.mode, // "expense" or "income"
     };
 
-    if (editingId) {
-      setTransactions((prev) =>
-        prev.map((transaction) =>
-          transaction.id === editingId
-            ? {
-                ...transaction,
-                ...baseTransaction,
-                date: new Date().toISOString(),
-              }
-            : transaction
-        )
-      );
-    } else {
-      setTransactions((prev) => [
-        {
-          id: Date.now(),
-          date: new Date().toISOString(),
-          ...baseTransaction,
-        },
-        ...prev,
-      ]);
-    }
+    try {
+      if (editingId) {
+        const response = await expenseService.updateRecord(editingId, recordData);
+        
+        setTransactions((prev) =>
+          prev.map((transaction) =>
+            transaction.id === editingId
+              ? {
+                  id: response.data.expenseId,
+                  amount: response.data.amount,
+                  currency: response.data.currency,
+                  mode: response.data.transactionType || form.mode,
+                  category: response.data.category.name,
+                  description: response.data.description || '',
+                  date: response.data.expenseDate,
+                }
+              : transaction
+          )
+        );
+      } else {
+        const response = await expenseService.createRecord(recordData);
+        
+        const newTransaction = {
+          id: response.data.expenseId,
+          amount: response.data.amount,
+          currency: response.data.currency,
+          mode: response.data.transactionType || form.mode,
+          category: response.data.category.name,
+          description: response.data.description || '',
+          date: response.data.expenseDate,
+        };
+        
+        setTransactions((prev) => [newTransaction, ...prev]);
+      }
 
-    setForm((prev) => ({
-      ...prev,
-      amount: "",
-      description: "",
-    }));
-    setErrors({});
-    setEditingId(null);
-    setIsModalOpen(false);
+      setForm((prev) => ({
+        ...prev,
+        amount: "",
+        description: "",
+      }));
+      setErrors({});
+      setEditingId(null);
+      setIsModalOpen(false);
+    } catch (err) {
+      console.error('Failed to save transaction:', err);
+      console.error('Error response:', err.response?.data);
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to save transaction. Please try again.';
+      setErrors({ submit: errorMessage });
+    }
   };
 
   const startEditing = (transaction) => {
@@ -286,20 +299,27 @@ export default function Expense() {
     setDropdownOpen(null);
   };
 
-  const confirmDeleteTransaction = () => {
+  const confirmDeleteTransaction = async () => {
     if (!confirmDelete.transaction) {
       return;
     }
 
-    setTransactions((prev) =>
-      prev.filter((transaction) => transaction.id !== confirmDelete.transaction.id)
-    );
+    try {
+      await expenseService.deleteRecord(confirmDelete.transaction.id);
+      
+      setTransactions((prev) =>
+        prev.filter((transaction) => transaction.id !== confirmDelete.transaction.id)
+      );
 
-    if (editingId === confirmDelete.transaction.id) {
-      cancelEditing();
+      if (editingId === confirmDelete.transaction.id) {
+        cancelEditing();
+      }
+
+      closeDeleteConfirm();
+    } catch (err) {
+      console.error('Failed to delete transaction:', err);
+      // You could add error handling UI here if needed
     }
-
-    closeDeleteConfirm();
   };
 
   return (
@@ -312,32 +332,44 @@ export default function Expense() {
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3 mb-10">
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Total Expense</p>
-          <p className="mt-3 text-2xl font-semibold text-rose-500">
-            {formatCurrency(currencyTotals.expense, form.currency)}
-          </p>
+      {error && (
+        <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-600">
+          {error}
         </div>
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Total Income</p>
-          <p className="mt-3 text-2xl font-semibold text-emerald-500">
-            {formatCurrency(currencyTotals.income, form.currency)}
-          </p>
-        </div>
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Balance</p>
-          <p
-            className={`mt-3 text-2xl font-semibold ${
-              netBalance >= 0 ? "text-emerald-600" : "text-rose-500"
-            }`}
-          >
-            {formatCurrency(netBalance, form.currency)}
-          </p>
-        </div>
-      </div>
+      )}
 
-      <div className="bg-white border border-gray-100 rounded-3xl shadow-sm p-6 sm:p-10">
+      {loading ? (
+        <div className="flex justify-center items-center py-20">
+          <div className="text-gray-400">Loading transactions...</div>
+        </div>
+      ) : (
+        <>
+          <div className="grid gap-4 sm:grid-cols-3 mb-10">
+            <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Total Expense</p>
+              <p className="mt-3 text-2xl font-semibold text-rose-500">
+                {formatCurrency(currencyTotals.expense, form.currency)}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Total Income</p>
+              <p className="mt-3 text-2xl font-semibold text-emerald-500">
+                {formatCurrency(currencyTotals.income, form.currency)}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Balance</p>
+              <p
+                className={`mt-3 text-2xl font-semibold ${
+                  netBalance >= 0 ? "text-emerald-600" : "text-rose-500"
+                }`}
+              >
+                {formatCurrency(netBalance, form.currency)}
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white border border-gray-100 rounded-3xl shadow-sm p-6 sm:p-10">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-xl font-semibold text-gray-900">Recent Activity</h2>
           <div className="flex gap-2">
@@ -427,6 +459,8 @@ export default function Expense() {
           <FaPlus /> Add Transaction
         </button>
       </div>
+        </>
+      )}
 
       <Modal
         isOpen={isModalOpen}
@@ -542,6 +576,12 @@ export default function Expense() {
                 <p className="mt-2 text-xs text-red-500">{errors.description}</p>
               )}
             </div>
+
+            {errors.submit && (
+              <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-600">
+                {errors.submit}
+              </div>
+            )}
 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               {editingId && (
