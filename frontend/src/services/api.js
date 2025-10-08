@@ -52,4 +52,33 @@ export const userService = {
   },
 };
 
+export const securityQuestionService = {
+  getAllQuestions: () => {
+    return api.get("/api/security-questions/all");
+  },
+
+  saveAnswer: (username, questionId, answer) => {
+    return api.post("/api/security-questions/save", {
+      username,
+      questionId,
+      answer,
+    });
+  },
+};
+
+export const passwordResetService = {
+  requestSecurityQuestion: (identifier) => {
+    return api.post("/api/reset-password/request", { identifier });
+  },
+
+  resetPassword: (identifier, questionId, answer, newPassword) => {
+    return api.post("/api/reset-password/confirm", {
+      identifier,
+      questionId,
+      answer,
+      newPassword,
+    });
+  },
+};
+
 export default api;

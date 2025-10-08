@@ -44,12 +44,28 @@ export default function Signup() {
       // Create username from first and last name
       const username = `${firstName.toLowerCase()}${lastName.toLowerCase()}`;
 
-      // Call the registration API
-      await authService.register(username, email, password, null, null, null);
+      // Call the registration API (without security question for now)
+      const response = await authService.register(
+        username,
+        email,
+        password,
+        null,
+        null,
+        null
+      );
 
-      // Registration successful - navigate to login
-      navigate("/login", {
-        state: { message: "Registration successful! Please login." },
+      console.log("Registration response:", response);
+
+      // Registration successful - store username and navigate to security questions
+      sessionStorage.setItem("newUsername", username);
+      sessionStorage.setItem("registrationEmail", email);
+
+      navigate("/security-questions", {
+        state: {
+          username,
+          email,
+          fromRegistration: true,
+        },
       });
     } catch (err) {
       console.error("Signup error:", err);
