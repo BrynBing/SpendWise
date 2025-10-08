@@ -1,6 +1,6 @@
 import React from "react";
 // 保留现有的React Icons导入
-import { FaTrophy, FaCheck, FaCalendarCheck, FaRibbon, FaBullseye, FaStar, FaMedal, FaCrown, FaAward, FaGem, FaShieldAlt, FaCheckCircle } from "react-icons/fa";
+import { FaTrophy, FaCheck, FaCalendarCheck, FaRibbon, FaBullseye, FaStar, FaMedal, FaCrown, FaAward, FaGem, FaShieldAlt, FaCheckCircle, FaChartLine } from "react-icons/fa";
 
 export default function Achievements() {
   // 成就数据，使用已知可用的图标
@@ -71,6 +71,14 @@ export default function Achievements() {
     },
     {
       id: 9,
+      icon: <FaChartLine className="text-white" />,
+      title: "Budget Expert",
+      description: "Tracked expenses for 30 consecutive days without missing a single day",
+      completedDate: "2023-08-20",
+      unlocked: true,
+    },
+    {
+      id: 10,
       icon: <FaCrown className="text-white" />,
       title: "Finance Master",
       description: "Complete all basic financial tracking achievements",
