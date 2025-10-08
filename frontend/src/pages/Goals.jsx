@@ -1,57 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaChevronDown, FaEdit, FaTrash, FaExclamationTriangle, FaPlus } from "react-icons/fa";
 import Modal from "../components/Modal";
-
-const INITIAL_GOALS = [
-  {
-    id: 1,
-    name: "Phone",
-    targetAmount: 1500,
-    currentAmount: 450,
-    category: "Electronics",
-    deadline: "2024-12-01",
-  },
-  {
-    id: 2,
-    name: "Fitness watch",
-    targetAmount: 500,
-    currentAmount: 200,
-    category: "Health",
-    deadline: "2024-10-15",
-  },
-  {
-    id: 3,
-    name: "Laptop",
-    targetAmount: 2000,
-    currentAmount: 800,
-    category: "Electronics",
-    deadline: "2024-11-30",
-  },
-  {
-    id: 4,
-    name: "Emergency fund",
-    targetAmount: 2000,
-    currentAmount: 1200,
-    category: "Savings",
-    deadline: "2025-06-01",
-  },
-  {
-    id: 5,
-    name: "University Tuition",
-    targetAmount: 3000,
-    currentAmount: 900,
-    category: "Education",
-    deadline: "2024-12-31",
-  },
-  {
-    id: 6,
-    name: "Monthly savings",
-    targetAmount: 2000,
-    currentAmount: 1234.60,
-    category: "Savings",
-    deadline: "2024-09-30",
-  },
-];
+import { goalService } from "../services/api";
 
 const formatCurrency = (value, currency = "USD") =>
   new Intl.NumberFormat("en-US", {
@@ -72,13 +22,45 @@ const INPUT_BASE_CLASSES = "w-full bg-transparent py-3 text-base text-gray-900 p
 const BORDER_SECTION_CLASSES = "mt-3 border-b border-gray-200";
 
 export default function Goals() {
-  const [goals, setGoals] = useState(INITIAL_GOALS);
+  const [goals, setGoals] = useState([]);
   const [form, setForm] = useState(() => createEmptyFormState());
   const [errors, setErrors] = useState({});
   const [editingId, setEditingId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState({ show: false, goal: null });
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch goals from backend on component mount
+  useEffect(() => {
+    const fetchGoals = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await goalService.getActiveGoals();
+        
+        // Transform backend data to frontend format
+        const formattedGoals = response.data.map(goal => ({
+          id: goal.goalId,
+          name: goal.goalName,
+          targetAmount: goal.targetAmount,
+          currentAmount: goal.currentAmount,
+          category: goal.category || 'Other',
+          deadline: goal.deadline,
+        }));
+        
+        setGoals(formattedGoals);
+      } catch (err) {
+        console.error('Failed to fetch goals:', err);
+        setError('Failed to load goals. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGoals();
+  }, []);
 
   // Calculate current and target savings
   const currentSaving = goals.reduce((sum, goal) => sum + goal.currentAmount, 0);
@@ -110,7 +92,7 @@ export default function Goals() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateForm()) {
@@ -118,29 +100,58 @@ export default function Goals() {
     }
 
     const goalData = {
-      name: form.name.trim(),
+      goalName: form.name.trim(),
       targetAmount: Number(form.targetAmount),
       currentAmount: Number(form.currentAmount) || 0,
       category: form.category,
       deadline: form.deadline,
     };
 
-    if (editingId) {
-      setGoals(prev => prev.map(goal => 
-        goal.id === editingId ? { ...goal, ...goalData } : goal
-      ));
-      cancelEditing();
-    } else {
-      const newGoal = {
-        ...goalData,
-        id: Date.now(),
-      };
-      setGoals(prev => [newGoal, ...prev]);
-      setForm(createEmptyFormState());
-    }
+    console.log('Submitting goal data:', goalData);
 
-    setErrors({});
-    setIsModalOpen(false);
+    try {
+      if (editingId) {
+        const response = await goalService.updateGoal(editingId, goalData);
+        
+        const updatedGoal = {
+          id: response.data.data.goalId,
+          name: response.data.data.goalName,
+          targetAmount: response.data.data.targetAmount,
+          currentAmount: response.data.data.currentAmount,
+          category: response.data.data.category || 'Other',
+          deadline: response.data.data.deadline,
+        };
+        
+        setGoals(prev => prev.map(goal => 
+          goal.id === editingId ? updatedGoal : goal
+        ));
+        cancelEditing();
+      } else {
+        const response = await goalService.createGoal(goalData);
+        
+        const newGoal = {
+          id: response.data.data.goalId,
+          name: response.data.data.goalName,
+          targetAmount: response.data.data.targetAmount,
+          currentAmount: response.data.data.currentAmount,
+          category: response.data.data.category || 'Other',
+          deadline: response.data.data.deadline,
+        };
+        
+        setGoals(prev => [newGoal, ...prev]);
+        setForm(createEmptyFormState());
+      }
+
+      setErrors({});
+      setIsModalOpen(false);
+    } catch (err) {
+      console.error('Failed to save goal:', err);
+      console.error('Error response:', JSON.stringify(err.response?.data, null, 2));
+      console.error('Error status:', err.response?.status);
+      console.error('Goal data sent:', JSON.stringify(goalData, null, 2));
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to save goal. Please try again.';
+      setErrors({ submit: errorMessage });
+    }
   };
 
   const startEditing = (goal) => {
@@ -180,9 +191,16 @@ export default function Goals() {
     setDropdownOpen(null);
   };
 
-  const confirmDeleteGoal = () => {
-    setGoals(prev => prev.filter(goal => goal.id !== confirmDelete.goal.id));
-    closeDeleteConfirm();
+  const confirmDeleteGoal = async () => {
+    try {
+      await goalService.deleteGoal(confirmDelete.goal.id);
+      setGoals(prev => prev.filter(goal => goal.id !== confirmDelete.goal.id));
+      closeDeleteConfirm();
+    } catch (err) {
+      console.error('Failed to delete goal:', err);
+      alert('Failed to delete goal. Please try again.');
+      closeDeleteConfirm();
+    }
   };
 
   const handleFormChange = (field, value) => {
@@ -206,46 +224,58 @@ export default function Goals() {
         </p>
       </div>
 
-      {/* Savings Overview */}
-      <div className="grid gap-4 sm:grid-cols-2 mb-10">
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Current Saving</p>
-          <p className="mt-3 text-2xl font-semibold text-gray-900">
-            {formatCurrency(currentSaving)}
-          </p>
+      {error && (
+        <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-600">
+          {error}
         </div>
-        
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Target Saving</p>
-          <p className="mt-3 text-2xl font-semibold text-gray-900">
-            {formatCurrency(targetSaving)}
-          </p>
-        </div>
-      </div>
+      )}
 
-      {/* Progress Bar */}
-      <div className="bg-white border border-gray-100 rounded-3xl shadow-sm p-6 mb-10">
-        <p className="text-xs uppercase tracking-[0.3em] text-gray-400 mb-4">Progress Bar</p>
-        <div className="w-full bg-gray-200 rounded-full h-3">
-          <div
-            className="h-3 rounded-full bg-gray-900 transition-all duration-300"
-            style={{ width: `${Math.min(savingsProgress, 100)}%` }}
-          ></div>
+      {loading ? (
+        <div className="flex justify-center items-center py-20">
+          <div className="text-gray-400">Loading goals...</div>
         </div>
-        <p className="text-sm text-gray-600 mt-2">
-          {savingsProgress.toFixed(1)}% of total target achieved
-        </p>
-      </div>
+      ) : (
+        <>
+          {/* Savings Overview */}
+          <div className="grid gap-4 sm:grid-cols-2 mb-10">
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Current Saving</p>
+              <p className="mt-3 text-2xl font-semibold text-gray-900">
+                {formatCurrency(currentSaving)}
+              </p>
+            </div>
+            
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Target Saving</p>
+              <p className="mt-3 text-2xl font-semibold text-gray-900">
+                {formatCurrency(targetSaving)}
+              </p>
+            </div>
+          </div>
 
-      {/* Current Goals */}
-      <div className="bg-white border border-gray-100 rounded-3xl shadow-sm p-6 sm:p-10">
-        <div className="mb-8">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Current Goals</p>
-        </div>
+          {/* Progress Bar */}
+          <div className="bg-white border border-gray-100 rounded-3xl shadow-sm p-6 mb-10">
+            <p className="text-xs uppercase tracking-[0.3em] text-gray-400 mb-4">Progress Bar</p>
+            <div className="w-full bg-gray-200 rounded-full h-3">
+              <div
+                className="h-3 rounded-full bg-gray-900 transition-all duration-300"
+                style={{ width: `${Math.min(savingsProgress, 100)}%` }}
+              ></div>
+            </div>
+            <p className="text-sm text-gray-600 mt-2">
+              {savingsProgress.toFixed(1)}% of total target achieved
+            </p>
+          </div>
 
-        {goals.length === 0 ? (
-          <p className="text-sm text-gray-500">No goals set yet.</p>
-        ) : (
+          {/* Current Goals */}
+          <div className="bg-white border border-gray-100 rounded-3xl shadow-sm p-6 sm:p-10">
+            <div className="mb-8">
+              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Current Goals</p>
+            </div>
+
+            {goals.length === 0 ? (
+              <p className="text-sm text-gray-500">No goals set yet.</p>
+            ) : (
           <ul className="divide-y divide-gray-100">
             {goals.map((goal) => {
               const progress = getProgressPercentage(goal.currentAmount, goal.targetAmount);
@@ -320,6 +350,8 @@ export default function Goals() {
           <FaPlus /> Add Goal
         </button>
       </div>
+        </>
+      )}
 
       <Modal
         isOpen={isModalOpen}
@@ -335,6 +367,12 @@ export default function Goals() {
           )}
 
           <form className="space-y-8" onSubmit={handleSubmit} noValidate>
+            {errors.submit && (
+              <div className="rounded-lg bg-red-50 border border-red-200 p-4">
+                <p className="text-sm text-red-600">{errors.submit}</p>
+              </div>
+            )}
+            
             <div>
               <label className={`${LABEL_CLASSES} dark:text-gray-500`}>Goal Name</label>
               <div className={`${BORDER_SECTION_CLASSES} dark:border-gray-700`}>

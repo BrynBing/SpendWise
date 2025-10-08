@@ -136,6 +136,16 @@ export const goalService = {
   createGoal: (goalData) => {
     return api.post("/api/goals", goalData);
   },
+
+  // Update an existing goal
+  updateGoal: (goalId, goalData) => {
+    return api.put(`/api/goals/${goalId}`, goalData);
+  },
+
+  // Delete a goal
+  deleteGoal: (goalId) => {
+    return api.delete(`/api/goals/${goalId}`);
+  },
 };
 
 export default api;
