@@ -73,21 +73,21 @@ export default function Header() {
   };
 
   return (
-    <nav className="bg-white py-4 px-6 shadow-sm fixed w-full top-0 z-50">
+    <nav className="bg-white dark:bg-gray-800 py-4 px-6 shadow-sm dark:shadow-gray-900/30 fixed w-full top-0 z-50 transition-colors duration-200">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         {/* Logo和网站名称 - 仅更新Logo样式匹配截图 */}
         <Link to="/" className="flex items-center space-x-2">
-          <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full bg-indigo-600 dark:bg-indigo-500 flex items-center justify-center">
             <span className="text-white font-bold">SW</span>
           </div>
-          <span className="text-xl font-bold text-gray-800">SpendWise</span>
+          <span className="text-xl font-bold text-gray-800 dark:text-gray-100">SpendWise</span>
         </Link>
 
         {/* 右侧导航项 */}
         <div className="flex items-center space-x-4">
           {loading ? (
             // 加载中显示骨架屏
-            <div className="w-24 h-10 bg-gray-200 rounded animate-pulse"></div>
+            <div className="w-24 h-10 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
           ) : user ? (
             // 用户已登录，显示用户信息和下拉菜单 (保持原样)
             <div className="relative dropdown">
@@ -97,45 +97,45 @@ export default function Header() {
                 aria-label="User menu"
               >
                 {/* 在中等尺寸以上的屏幕显示用户名 */}
-                <span className="hidden md:block text-gray-700 font-medium">
+                <span className="hidden md:block text-gray-700 dark:text-gray-300 font-medium">
                   {user.username}
                 </span>
                 {getUserAvatar()}
               </button>
               
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-52 bg-white rounded-md shadow-lg border border-gray-200 py-1 z-50">
+                <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
                   {/* 在移动端显示用户名 */}
-                  <div className="px-4 py-2 text-sm font-medium text-gray-600 border-b border-gray-100 md:hidden">
+                  <div className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700 md:hidden">
                     <span>Signed in as</span>
-                    <p className="font-semibold text-gray-800">{user.username}</p>
+                    <p className="font-semibold text-gray-800 dark:text-gray-200">{user.username}</p>
                   </div>
                   
                   <Link 
                     to="/dashboard" 
-                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                     onClick={() => setDropdownOpen(false)}
                   >
-                    <FaTachometerAlt className="text-gray-500" />
+                    <FaTachometerAlt className="text-gray-500 dark:text-gray-400" />
                     Dashboard
                   </Link>
                   
                   <Link 
                     to="/settings" 
-                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                     onClick={() => setDropdownOpen(false)}
                   >
-                    <FaUser className="text-gray-500" />
+                    <FaUser className="text-gray-500 dark:text-gray-400" />
                     Account Settings
                   </Link>
                   
-                  <hr className="my-1" />
+                  <hr className="my-1 dark:border-gray-700" />
                   
                   <button 
                     onClick={handleLogout}
-                    className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left"
+                    className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left"
                   >
-                    <FaSignOutAlt className="text-red-500" />
+                    <FaSignOutAlt className="text-red-500 dark:text-red-400" />
                     Sign Out
                   </button>
                 </div>
@@ -144,10 +144,10 @@ export default function Header() {
           ) : (
             // 用户未登录，显示登录和注册按钮 - 更新样式匹配截图
             <>
-              <Link to="/login" className="text-indigo-600 font-medium hover:text-indigo-800 transition">
+              <Link to="/login" className="text-indigo-600 dark:text-indigo-400 font-medium hover:text-indigo-800 dark:hover:text-indigo-300 transition">
                 Log In
               </Link>
-              <Link to="/signup" className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition">
+              <Link to="/signup" className="px-6 py-2 bg-indigo-600 dark:bg-indigo-500 text-white rounded-lg font-medium hover:bg-indigo-700 dark:hover:bg-indigo-600 transition">
                 Sign Up
               </Link>
             </>

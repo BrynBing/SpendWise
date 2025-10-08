@@ -93,63 +93,63 @@ export default function Settings() {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-10 flex flex-col gap-2">
-        <span className="text-sm uppercase tracking-[0.3em] text-gray-400">
+        <span className="text-sm uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
           Profile
         </span>
-        <h1 className="text-3xl font-semibold text-gray-900">Settings</h1>
-        <p className="text-gray-500">
+        <h1 className="text-3xl font-semibold text-gray-900 dark:text-gray-100">Settings</h1>
+        <p className="text-gray-500 dark:text-gray-400">
           Tune SpendWise to match your habits, accessibility needs, and account
           preferences.
         </p>
       </div>
 
       <div className="space-y-6">
-        <section className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
+        <section className="rounded-3xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
             Account
           </p>
-          <div className="mt-4 flex items-center justify-between rounded-2xl border border-gray-100 p-4">
+          <div className="mt-4 flex items-center justify-between rounded-2xl border border-gray-100 dark:border-gray-700 p-4">
             <div className="flex items-center gap-4">
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-2xl text-gray-600">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-2xl text-gray-600 dark:text-gray-300">
                 <FaUser />
               </span>
               <div>
-                <p className="text-base font-semibold text-gray-900">
+                <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
                   Profile & Security
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   Update your details, password, and security options.
                 </p>
               </div>
             </div>
             <Link
               to="/account"
-              className="text-gray-400 transition-colors hover:text-gray-600"
+              className="text-gray-400 dark:text-gray-500 transition-colors hover:text-gray-600 dark:hover:text-gray-300"
             >
               <FaChevronRight size={18} />
             </Link>
           </div>
         </section>
 
-        <section className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
+        <section className="rounded-3xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
             Preferences
           </p>
-          <ul className="mt-4 divide-y divide-gray-100">
+          <ul className="mt-4 divide-y divide-gray-100 dark:divide-gray-700">
             {preferenceToggles.map((toggle) => (
               <li
                 key={toggle.id}
                 className="flex items-center justify-between gap-4 py-4"
               >
                 <div className="flex items-center gap-4">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-lg text-gray-600">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-lg text-gray-600 dark:text-gray-300">
                     <toggle.icon />
                   </span>
                   <div>
-                    <p className="text-sm font-semibold text-gray-900">
+                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                       {toggle.label}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                       {toggle.description}
                     </p>
                   </div>
@@ -166,37 +166,37 @@ export default function Settings() {
           </ul>
         </section>
 
-        <section className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
+        <section className="rounded-3xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
             Tools
           </p>
           <Link
             to="/currency-conversion"
-            className="mt-4 flex items-center justify-between rounded-2xl border border-gray-100 p-4 transition-colors hover:bg-gray-50"
+            className="mt-4 flex items-center justify-between rounded-2xl border border-gray-100 dark:border-gray-700 p-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             <div className="flex items-center gap-4">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-lg text-gray-600">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-lg text-gray-600 dark:text-gray-300">
                 <FaDollarSign />
               </span>
               <div>
-                <p className="text-sm font-semibold text-gray-900">
+                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                   Currency Conversion
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   Calculate balances in the currencies you monitor.
                 </p>
               </div>
             </div>
-            <FaChevronRight className="text-gray-400" />
+            <FaChevronRight className="text-gray-400 dark:text-gray-500" />
           </Link>
         </section>
 
-        <section className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
+        <section className="rounded-3xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
             Session
           </p>
-          <div className="mt-4 rounded-2xl border border-gray-100 p-6 text-center">
-            <p className="text-sm text-gray-500">
+          <div className="mt-4 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 text-center">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Ready for a reset? You'll be signed out immediately and can log
               back in whenever you're ready.
             </p>

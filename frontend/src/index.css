@@ -1,6 +1,15 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
+@theme {
+  --color-* {
+    initial-value: oklch(0 0 0);
+    inherits: true;
+  }
+}
+
+@variant dark (&:where(.dark, .dark *));
+
 /* Small motion polish for the Home page */
 @keyframes float {
   0%,
@@ -90,6 +99,12 @@ body {
   color: var(--color-text-primary);
   transition: background-color var(--transition-duration) ease,
     color var(--transition-duration) ease;
+}
+
+#root {
+  min-height: 100vh;
+  background-color: var(--color-background);
+  transition: background-color var(--transition-duration) ease;
 }
 
 input,
@@ -240,4 +255,98 @@ a:hover {
 .dyslexia-friendly label,
 .dyslexia-friendly li {
   font-family: "Open Dyslexic", sans-serif !important;
+}
+
+/* Dark mode overrides for frequently used utility classes */
+.dark .bg-white {
+  background-color: var(--color-surface) !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: var(--color-background) !important;
+}
+
+.dark .bg-gray-100 {
+  background-color: var(--color-surface-muted) !important;
+}
+
+.dark .bg-gray-200 {
+  background-color: color-mix(
+    in srgb,
+    var(--color-border) 65%,
+    transparent
+  ) !important;
+}
+
+.dark .bg-blue-50 {
+  background-color: color-mix(
+    in srgb,
+    var(--color-accent) 12%,
+    var(--color-surface)
+  ) !important;
+}
+
+.dark .bg-blue-100 {
+  background-color: color-mix(
+    in srgb,
+    var(--color-accent) 18%,
+    var(--color-surface)
+  ) !important;
+}
+
+.dark .border-gray-100,
+.dark .border-gray-200,
+.dark .border-gray-300 {
+  border-color: var(--color-border) !important;
+}
+
+.dark .divide-gray-100 > :where(:not([hidden]) ~ :not([hidden])) {
+  border-color: var(--color-border) !important;
+}
+
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-gray-700 {
+  color: var(--color-text-primary) !important;
+}
+
+.dark .text-gray-600,
+.dark .text-gray-500 {
+  color: var(--color-text-secondary) !important;
+}
+
+.dark .text-gray-400,
+.dark .text-gray-300 {
+  color: var(--color-text-muted) !important;
+}
+
+.dark .hover\:bg-gray-50:hover,
+.dark .hover\:bg-gray-100:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--color-accent) 12%,
+    var(--color-surface)
+  ) !important;
+}
+
+.dark .hover\:bg-gray-200:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--color-accent) 18%,
+    var(--color-surface)
+  ) !important;
+}
+
+.dark .from-white {
+  --tw-gradient-from: var(--color-surface);
+  --tw-gradient-stops: var(--tw-gradient-from),
+    var(--tw-gradient-to, transparent);
+}
+
+.dark .to-blue-50 {
+  --tw-gradient-to: color-mix(
+    in srgb,
+    var(--color-accent) 10%,
+    var(--color-background)
+  );
 }
