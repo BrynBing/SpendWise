@@ -47,6 +47,9 @@ public class ExpenseRecord {
     @Column(name = "is_recurring")
     private Boolean isRecurring;
 
+    @Column(name = "recurrence_frequency", length = 20)
+    private String recurrenceFrequency;
+
     @Column(name = "transaction_type", length = 20)
     private String transactionType;
 

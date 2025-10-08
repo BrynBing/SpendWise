@@ -151,6 +151,7 @@ public class ExpenseRecordController {
 
         // Recurring
         dto.setIsRecurring(record.getIsRecurring());
+        dto.setRecurrenceFrequency(record.getRecurrenceFrequency());
         // dto.setRecurringScheduleId(record.getRecurringScheduleId());
 
         // Transaction Type
