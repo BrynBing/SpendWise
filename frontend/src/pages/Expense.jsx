@@ -1,5 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { FaChevronDown, FaEdit, FaTrash, FaExclamationTriangle, FaPlus } from "react-icons/fa";
+import {
+  FaChevronDown,
+  FaEdit,
+  FaTrash,
+  FaExclamationTriangle,
+  FaPlus,
+} from "react-icons/fa";
 import Modal from "../components/Modal";
 import { expenseService } from "../services/api";
 
@@ -15,14 +21,7 @@ const CATEGORY_OPTIONS = {
     "Shopping",
     "Other",
   ],
-  income: [
-    "Salary",
-    "Freelance",
-    "Investments",
-    "Gift",
-    "Refund",
-    "Other",
-  ],
+  income: ["Salary", "Freelance", "Investments", "Gift", "Refund", "Other"],
 };
 
 const CURRENCY_OPTIONS = ["USD", "AUD", "EUR", "GBP"];
@@ -61,7 +60,10 @@ export default function Expense() {
   const [errors, setErrors] = useState({});
   const [filter, setFilter] = useState("all");
   const [editingId, setEditingId] = useState(null);
-  const [confirmDelete, setConfirmDelete] = useState({ show: false, transaction: null });
+  const [confirmDelete, setConfirmDelete] = useState({
+    show: false,
+    transaction: null,
+  });
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -76,22 +78,22 @@ export default function Expense() {
         setLoading(true);
         setError(null);
         const response = await expenseService.getRecords();
-        
+
         // Transform backend data to frontend format
-        const formattedTransactions = response.data.map(record => ({
+        const formattedTransactions = response.data.map((record) => ({
           id: record.expenseId,
           amount: record.amount,
           currency: record.currency,
-          mode: record.transactionType || 'expense', // Use transactionType from backend
+          mode: record.transactionType || "expense", // Use transactionType from backend
           category: record.category.name,
-          description: record.description || '',
+          description: record.description || "",
           date: record.expenseDate,
         }));
-        
+
         setTransactions(formattedTransactions);
       } catch (err) {
-        console.error('Failed to fetch transactions:', err);
-        setError('Failed to load transactions. Please try again.');
+        console.error("Failed to fetch transactions:", err);
+        setError("Failed to load transactions. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -117,13 +119,13 @@ export default function Expense() {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (!event.target.closest('.relative')) {
+      if (!event.target.closest(".relative")) {
         setDropdownOpen(null);
       }
     };
 
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
   const totalsByCurrency = useMemo(
@@ -206,14 +208,17 @@ export default function Expense() {
       currency: form.currency,
       category: { categoryName: form.category },
       description: form.description.trim(),
-      expenseDate: new Date().toISOString().split('T')[0],
+      expenseDate: new Date().toISOString().split("T")[0],
       transactionType: form.mode, // "expense" or "income"
     };
 
     try {
       if (editingId) {
-        const response = await expenseService.updateRecord(editingId, recordData);
-        
+        const response = await expenseService.updateRecord(
+          editingId,
+          recordData
+        );
+
         setTransactions((prev) =>
           prev.map((transaction) =>
             transaction.id === editingId
@@ -223,7 +228,7 @@ export default function Expense() {
                   currency: response.data.currency,
                   mode: response.data.transactionType || form.mode,
                   category: response.data.category.name,
-                  description: response.data.description || '',
+                  description: response.data.description || "",
                   date: response.data.expenseDate,
                 }
               : transaction
@@ -231,17 +236,17 @@ export default function Expense() {
         );
       } else {
         const response = await expenseService.createRecord(recordData);
-        
+
         const newTransaction = {
           id: response.data.expenseId,
           amount: response.data.amount,
           currency: response.data.currency,
           mode: response.data.transactionType || form.mode,
           category: response.data.category.name,
-          description: response.data.description || '',
+          description: response.data.description || "",
           date: response.data.expenseDate,
         };
-        
+
         setTransactions((prev) => [newTransaction, ...prev]);
       }
 
@@ -254,9 +259,12 @@ export default function Expense() {
       setEditingId(null);
       setIsModalOpen(false);
     } catch (err) {
-      console.error('Failed to save transaction:', err);
-      console.error('Error response:', err.response?.data);
-      const errorMessage = err.response?.data?.message || err.message || 'Failed to save transaction. Please try again.';
+      console.error("Failed to save transaction:", err);
+      console.error("Error response:", err.response?.data);
+      const errorMessage =
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to save transaction. Please try again.";
       setErrors({ submit: errorMessage });
     }
   };
@@ -306,9 +314,11 @@ export default function Expense() {
 
     try {
       await expenseService.deleteRecord(confirmDelete.transaction.id);
-      
+
       setTransactions((prev) =>
-        prev.filter((transaction) => transaction.id !== confirmDelete.transaction.id)
+        prev.filter(
+          (transaction) => transaction.id !== confirmDelete.transaction.id
+        )
       );
 
       if (editingId === confirmDelete.transaction.id) {
@@ -317,7 +327,7 @@ export default function Expense() {
 
       closeDeleteConfirm();
     } catch (err) {
-      console.error('Failed to delete transaction:', err);
+      console.error("Failed to delete transaction:", err);
       // You could add error handling UI here if needed
     }
   };
@@ -325,7 +335,9 @@ export default function Expense() {
   return (
     <div className="max-w-6xl mx-auto">
       <div className="flex flex-col gap-2 mb-10">
-        <span className="text-sm uppercase tracking-[0.3em] text-gray-400">Overview</span>
+        <span className="text-sm uppercase tracking-[0.3em] text-gray-400">
+          Overview
+        </span>
         <h1 className="text-3xl font-semibold text-gray-900">Transactions</h1>
         <p className="text-gray-500">
           Log your spending and income to keep an eye on your cash flow.
@@ -345,20 +357,26 @@ export default function Expense() {
       ) : (
         <>
           <div className="grid gap-4 sm:grid-cols-3 mb-10">
-            <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Total Expense</p>
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
+                Total Expense
+              </p>
               <p className="mt-3 text-2xl font-semibold text-rose-500">
                 {formatCurrency(currencyTotals.expense, form.currency)}
               </p>
             </div>
-            <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Total Income</p>
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
+                Total Income
+              </p>
               <p className="mt-3 text-2xl font-semibold text-emerald-500">
                 {formatCurrency(currencyTotals.income, form.currency)}
               </p>
             </div>
-            <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Balance</p>
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
+                Balance
+              </p>
               <p
                 className={`mt-3 text-2xl font-semibold ${
                   netBalance >= 0 ? "text-emerald-600" : "text-rose-500"
@@ -370,95 +388,125 @@ export default function Expense() {
           </div>
 
           <div className="bg-white border border-gray-100 rounded-3xl shadow-sm p-6 sm:p-10">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-xl font-semibold text-gray-900">Recent Activity</h2>
-          <div className="flex gap-2">
-            {FILTER_OPTIONS.map(({ value, label }) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setFilter(value)}
-                className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                  filter === value
-                    ? "bg-gray-900 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {visibleTransactions.length === 0 ? (
-          <p className="text-sm text-gray-500">No transactions logged yet.</p>
-        ) : (
-          <ul className="divide-y divide-gray-100">
-            {visibleTransactions.map((transaction) => (
-              <li
-                key={transaction.id}
-                className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between relative"
-              >
-                <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
-                    {formatDate(transaction.date)}
-                  </p>
-                  <p className="text-base font-semibold text-gray-900">
-                    {transaction.category}
-                  </p>
-                  <p className="text-sm text-gray-500">{transaction.description}</p>
-                </div>
-                <div className="flex flex-col items-end gap-3 sm:flex-row sm:items-center sm:gap-6">
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
+                  Activity
+                </p>
+                <h2 className="mt-2 text-xl font-semibold text-gray-900">
+                  Recent Transactions
+                </h2>
+              </div>
+              <div className="flex gap-2">
+                {FILTER_OPTIONS.map(({ value, label }) => (
                   <button
-                    onClick={() => toggleDropdown(transaction.id)}
-                    className="flex items-center gap-2 cursor-pointer"
+                    key={value}
+                    type="button"
+                    onClick={() => setFilter(value)}
+                    className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                      filter === value
+                        ? "bg-gray-900 text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
                   >
-                    <span
-                      className={`text-base font-semibold ${
-                        transaction.mode === "expense"
-                          ? "text-rose-500"
-                          : "text-emerald-500"
-                      }`}
-                    >
-                      {transaction.mode === "expense" ? "-" : "+"}
-                      {formatCurrency(transaction.amount, transaction.currency)}
-                    </span>
-                    <FaChevronDown className="text-gray-400 text-sm" />
+                    {label}
                   </button>
-                  
-                  {dropdownOpen === transaction.id && (
-                    <div className="absolute right-0 top-full mt-2 z-10 bg-white border border-gray-200 rounded-2xl shadow-lg min-w-[120px]">
-                      <button
-                        type="button"
-                        onClick={() => handleEdit(transaction)}
-                        className="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-2xl"
-                      >
-                        <FaEdit className="text-gray-500" /> Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => openDeleteConfirm(transaction)}
-                        className="w-full flex items-center gap-2 px-4 py-3 text-sm text-rose-600 hover:bg-rose-50 last:rounded-b-2xl border-t border-gray-100"
-                      >
-                        <FaTrash className="text-rose-500" /> Delete
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+                ))}
+              </div>
+            </div>
 
-      <div className="mt-10 flex justify-center">
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-full bg-indigo-600 dark:bg-indigo-500 px-8 py-4 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-indigo-700 dark:hover:bg-indigo-600"
-        >
-          <FaPlus /> Add Transaction
-        </button>
-      </div>
+            {visibleTransactions.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-sm text-gray-500 mb-2">
+                  No transactions logged yet.
+                </p>
+                <p className="text-xs text-gray-400">
+                  Start by adding your first transaction above
+                </p>
+              </div>
+            ) : (
+              <ul className="divide-y divide-gray-100">
+                {visibleTransactions.map((transaction) => (
+                  <li
+                    key={transaction.id}
+                    className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between relative"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span
+                          className={`text-xs font-semibold uppercase tracking-[0.3em] px-2 py-1 rounded-full ${
+                            transaction.mode === "expense"
+                              ? "bg-rose-50 text-rose-600"
+                              : "bg-emerald-50 text-emerald-600"
+                          }`}
+                        >
+                          {transaction.mode}
+                        </span>
+                        <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
+                          {formatDate(transaction.date)}
+                        </p>
+                      </div>
+                      <p className="text-base font-semibold text-gray-900">
+                        {transaction.category}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {transaction.description}
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-end gap-3 sm:flex-row sm:items-center sm:gap-6">
+                      <button
+                        onClick={() => toggleDropdown(transaction.id)}
+                        className="flex items-center gap-2 cursor-pointer"
+                      >
+                        <span
+                          className={`text-base font-semibold ${
+                            transaction.mode === "expense"
+                              ? "text-rose-500"
+                              : "text-emerald-500"
+                          }`}
+                        >
+                          {transaction.mode === "expense" ? "-" : "+"}
+                          {formatCurrency(
+                            transaction.amount,
+                            transaction.currency
+                          )}
+                        </span>
+                        <FaChevronDown className="text-gray-400 text-sm" />
+                      </button>
+
+                      {dropdownOpen === transaction.id && (
+                        <div className="absolute right-0 top-full mt-2 z-10 bg-white border border-gray-200 rounded-2xl shadow-lg min-w-[120px]">
+                          <button
+                            type="button"
+                            onClick={() => handleEdit(transaction)}
+                            className="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-2xl"
+                          >
+                            <FaEdit className="text-gray-500" /> Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => openDeleteConfirm(transaction)}
+                            className="w-full flex items-center gap-2 px-4 py-3 text-sm text-rose-600 hover:bg-rose-50 last:rounded-b-2xl border-t border-gray-100"
+                          >
+                            <FaTrash className="text-rose-500" /> Delete
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div className="mt-10 flex justify-center">
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-full bg-indigo-600 dark:bg-indigo-500 px-8 py-4 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-indigo-700 dark:hover:bg-indigo-600"
+            >
+              <FaPlus /> Add Transaction
+            </button>
+          </div>
         </>
       )}
 
@@ -471,7 +519,12 @@ export default function Expense() {
         <div className="max-w-xl mx-auto">
           {editingId && (
             <p className="mb-6 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-500 text-center">
-              Editing existing entry
+              Editing existing transaction
+            </p>
+          )}
+          {!editingId && (
+            <p className="mb-6 text-xs text-gray-500 text-center">
+              Track your income and expenses to monitor your spending
             </p>
           )}
 
@@ -483,7 +536,9 @@ export default function Expense() {
               <div className="mt-3 border-b border-gray-200 dark:border-gray-700 pb-5">
                 <div className="flex items-end justify-between">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-semibold text-gray-900 dark:text-gray-100">$</span>
+                    <span className="text-4xl font-semibold text-gray-900 dark:text-gray-100">
+                      $
+                    </span>
                     <input
                       type="number"
                       inputMode="decimal"
@@ -573,7 +628,9 @@ export default function Expense() {
                 />
               </div>
               {errors.description && (
-                <p className="mt-2 text-xs text-red-500">{errors.description}</p>
+                <p className="mt-2 text-xs text-red-500">
+                  {errors.description}
+                </p>
               )}
             </div>
 
@@ -609,12 +666,17 @@ export default function Expense() {
           <div className="w-full max-w-md rounded-3xl border border-gray-100 bg-white p-6 shadow-xl">
             <div className="flex items-center gap-3 text-rose-500">
               <FaExclamationTriangle />
-              <p className="text-xs font-semibold uppercase tracking-[0.3em]">Delete Transaction</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.3em]">
+                Delete Transaction
+              </p>
             </div>
-            <h3 className="mt-4 text-xl font-semibold text-gray-900">Are you sure?</h3>
+            <h3 className="mt-4 text-xl font-semibold text-gray-900">
+              Are you sure?
+            </h3>
             <p className="mt-2 text-sm text-gray-500">
-              This will permanently remove "{confirmDelete.transaction?.description}" from
-              your history. You can’t undo this action.
+              This will permanently remove "
+              {confirmDelete.transaction?.description}" from your history. You
+              can’t undo this action.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
               <button
