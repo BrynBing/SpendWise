@@ -1,6 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaCheckCircle, FaExclamationCircle, FaInfoCircle, FaExclamationTriangle } from "react-icons/fa";
+import {
+  FaEnvelope,
+  FaLock,
+  FaEye,
+  FaEyeSlash,
+  FaCheckCircle,
+  FaExclamationCircle,
+  FaInfoCircle,
+  FaExclamationTriangle,
+} from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
@@ -8,7 +17,11 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [toast, setToast] = useState({ show: false, message: "", type: "info" });
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+    type: "info",
+  });
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
@@ -24,21 +37,31 @@ export default function Login() {
 
   const from = location.state?.from?.pathname || "/dashboard";
 
+  // Show success message from signup if present
+  useEffect(() => {
+    if (location.state?.message) {
+      showToast(location.state.message, "success");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state]);
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
-    
+
     try {
       await login(identifier, password);
-      
+
       showToast("Login successful!", "success");
-      
+
       setTimeout(() => {
         navigate(from, { replace: true });
       }, 1500);
     } catch (error) {
       console.error("Login error:", error);
-      const errorMessage = error.response?.data?.message || "Login failed. Please check your credentials.";
+      const errorMessage =
+        error.response?.data?.message ||
+        "Login failed. Please check your credentials.";
       showToast(errorMessage, "error");
       setLoading(false);
     }
@@ -48,7 +71,7 @@ export default function Login() {
     setToast({ show: true, message, type });
     setTimeout(() => {
       setToast((prev) => ({ ...prev, show: false }));
-      
+
       if (type === "success") {
         navigate(from, { replace: true });
       }
@@ -168,7 +191,7 @@ export default function Login() {
           </p>
         </div>
       </div>
-      
+
       {toast.show && (
         <div className="toast toast-top toast-end z-50">
           <div
@@ -176,10 +199,10 @@ export default function Login() {
               toast.type === "success"
                 ? "alert-success"
                 : toast.type === "error"
-                  ? "alert-error"
-                  : toast.type === "warning"
-                    ? "alert-warning"
-                    : "alert-info"
+                ? "alert-error"
+                : toast.type === "warning"
+                ? "alert-warning"
+                : "alert-info"
             }`}
           >
             <div className="flex items-center gap-2 text-sm">

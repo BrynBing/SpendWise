@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { authService } from "../services/api";
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -21,22 +23,44 @@ export default function Signup() {
     setShowConfirmPassword(!showConfirmPassword);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+
+    // Validation
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+
     setLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Signup attempt with:", {
-        firstName,
-        lastName,
-        email,
-        password,
+    try {
+      // Create username from first and last name
+      const username = `${firstName.toLowerCase()}${lastName.toLowerCase()}`;
+
+      // Call the registration API
+      await authService.register(username, email, password, null, null, null);
+
+      // Registration successful - navigate to login
+      navigate("/login", {
+        state: { message: "Registration successful! Please login." },
       });
+    } catch (err) {
+      console.error("Signup error:", err);
+      if (err.response?.data) {
+        setError(err.response.data);
+      } else {
+        setError("Registration failed. Please try again.");
+      }
+    } finally {
       setLoading(false);
-      // Navigate to set security questions as part of onboarding
-      navigate("/security-questions");
-    }, 1500);
+    }
   };
 
   return (
@@ -45,12 +69,17 @@ export default function Signup() {
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-800">Create Account</h1>
           <p className="mt-2 text-gray-600">
-            Create an account so you can start your financial journey
-            today.
+            Create an account so you can start your financial journey today.
           </p>
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {error && (
+            <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+              {error}
+            </div>
+          )}
+
           <div className="space-y-4">
             <div>
               <label htmlFor="firstName" className="sr-only">
