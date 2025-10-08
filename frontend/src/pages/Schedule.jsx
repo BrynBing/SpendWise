@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { FaChevronDown, FaEdit, FaTrash, FaExclamationTriangle, FaPlus } from "react-icons/fa";
 import Modal from "../components/Modal";
+import { expenseService } from "../services/api";
 
 const INITIAL_TRANSACTIONS = [
   {
@@ -108,15 +109,49 @@ const INPUT_BASE_CLASSES = "w-full bg-transparent py-3 text-base text-gray-900 p
 const BORDER_SECTION_CLASSES = "mt-3 border-b border-gray-200";
 
 export default function Schedule() {
-  const [transactions, setTransactions] = useState(INITIAL_TRANSACTIONS);
+  const [transactions, setTransactions] = useState([]);
   const [form, setForm] = useState(() => createEmptyFormState());
   const [errors, setErrors] = useState({});
   const [editingId, setEditingId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState({ show: false, transaction: null });
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const { mode } = form;
+
+  // Fetch transactions from backend on component mount
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await expenseService.getRecords();
+        
+        // Transform backend data to frontend format
+        const formattedTransactions = response.data.map(record => ({
+          id: record.expenseId,
+          description: record.description || '',
+          amount: record.amount,
+          currency: record.currency,
+          mode: record.transactionType || 'expense',
+          category: record.category.name,
+          date: record.expenseDate,
+          isRecurring: record.isRecurring || false,
+        }));
+        
+        setTransactions(formattedTransactions);
+      } catch (err) {
+        console.error('Failed to fetch transactions:', err);
+        setError('Failed to load transactions. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTransactions();
+  }, []);
 
   useEffect(() => {
     const availableCategories = CATEGORY_OPTIONS[mode] ?? [];
@@ -179,39 +214,72 @@ export default function Schedule() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateForm()) {
       return;
     }
 
-    const transactionData = {
-      description: form.description.trim(),
-      amount: Number(form.amount),
+    const numericAmount = parseFloat(form.amount);
+
+    const recordData = {
+      amount: Number(numericAmount.toFixed(2)),
       currency: form.currency,
-      mode: form.mode,
-      category: form.category,
-      date: new Date(form.date).toISOString(),
+      category: { categoryName: form.category },
+      description: form.description.trim(),
+      expenseDate: form.date,
+      transactionType: form.mode,
       isRecurring: form.isRecurring,
     };
 
-    if (editingId) {
-      setTransactions(prev => prev.map(transaction => 
-        transaction.id === editingId ? { ...transaction, ...transactionData } : transaction
-      ));
-      cancelEditing();
-    } else {
-      const newTransaction = {
-        ...transactionData,
-        id: Date.now(),
-      };
-      setTransactions(prev => [newTransaction, ...prev]);
-      setForm(createEmptyFormState());
-    }
+    try {
+      if (editingId) {
+        const response = await expenseService.updateRecord(editingId, recordData);
+        
+        setTransactions((prev) =>
+          prev.map((transaction) =>
+            transaction.id === editingId
+              ? {
+                  id: response.data.expenseId,
+                  description: response.data.description || '',
+                  amount: response.data.amount,
+                  currency: response.data.currency,
+                  mode: response.data.transactionType || form.mode,
+                  category: response.data.category.name,
+                  date: response.data.expenseDate,
+                  isRecurring: response.data.isRecurring || false,
+                }
+              : transaction
+          )
+        );
+      } else {
+        const response = await expenseService.createRecord(recordData);
+        
+        const newTransaction = {
+          id: response.data.expenseId,
+          description: response.data.description || '',
+          amount: response.data.amount,
+          currency: response.data.currency,
+          mode: response.data.transactionType || form.mode,
+          category: response.data.category.name,
+          date: response.data.expenseDate,
+          isRecurring: response.data.isRecurring || false,
+        };
+        
+        setTransactions((prev) => [newTransaction, ...prev]);
+      }
 
-    setErrors({});
-    setIsModalOpen(false);
+      setForm(createEmptyFormState());
+      setErrors({});
+      setEditingId(null);
+      setIsModalOpen(false);
+    } catch (err) {
+      console.error('Failed to save transaction:', err);
+      console.error('Error response:', err.response?.data);
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to save transaction. Please try again.';
+      setErrors({ submit: errorMessage });
+    }
   };
 
   const startEditing = (transaction) => {
@@ -253,9 +321,27 @@ export default function Schedule() {
     setDropdownOpen(null);
   };
 
-  const confirmDeleteTransaction = () => {
-    setTransactions(prev => prev.filter(transaction => transaction.id !== confirmDelete.transaction.id));
-    closeDeleteConfirm();
+  const confirmDeleteTransaction = async () => {
+    if (!confirmDelete.transaction) {
+      return;
+    }
+
+    try {
+      await expenseService.deleteRecord(confirmDelete.transaction.id);
+      
+      setTransactions((prev) =>
+        prev.filter((transaction) => transaction.id !== confirmDelete.transaction.id)
+      );
+
+      if (editingId === confirmDelete.transaction.id) {
+        cancelEditing();
+      }
+
+      closeDeleteConfirm();
+    } catch (err) {
+      console.error('Failed to delete transaction:', err);
+      setErrors({ submit: 'Failed to delete transaction. Please try again.' });
+    }
   };
 
   const handleFormChange = (field, value) => {
@@ -278,9 +364,19 @@ export default function Schedule() {
         </p>
       </div>
 
-      
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-sm text-red-600">{error}</p>
+        </div>
+      )}
 
-      {/* Balance Overview */}
+      {loading ? (
+        <div className="flex justify-center items-center py-12">
+          <p className="text-gray-500">Loading transactions...</p>
+        </div>
+      ) : (
+        <>
+          {/* Balance Overview */}
       <div className="bg-white border border-gray-100 rounded-3xl shadow-sm p-6 mb-10">
         <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Total Balance</p>
         <p className="mt-3 text-3xl font-semibold text-gray-900">
@@ -510,6 +606,12 @@ export default function Schedule() {
               </div>
             </div>
 
+            {errors.submit && (
+              <div className="rounded-lg bg-red-50 border border-red-200 p-4">
+                <p className="text-sm text-red-600">{errors.submit}</p>
+              </div>
+            )}
+
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               {editingId && (
                 <button
@@ -562,6 +664,8 @@ export default function Schedule() {
             </div>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );
