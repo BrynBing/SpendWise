@@ -19,6 +19,8 @@ public class ExpenseRecordDTO {
     private LocalDate expenseDate;
     private String description;
     private Boolean isRecurring;
+    private String recurrenceFrequency;
     private Integer recurringScheduleId;
     private String paymentMethod;
+    private String transactionType;
 }

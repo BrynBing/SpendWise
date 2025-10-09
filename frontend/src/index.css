@@ -1,47 +1,246 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
+@theme {
+  --color-* {
+    initial-value: oklch(0 0 0);
+    inherits: true;
+  }
+}
+
+@variant dark (&:where(.dark, .dark *));
+
 /* Small motion polish for the Home page */
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
 }
-.animate-float { animation: float 6s ease-in-out infinite; }
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.animate-fade-in { animation: fadeIn 500ms ease forwards; }
+.animate-fade-in {
+  animation: fadeIn 500ms ease forwards;
+}
 
 /* 删除Google Fonts导入，使用本地字体 */
 @font-face {
-  font-family: 'Open Dyslexic';
-  src: url('/OpenDyslexic-Regular.woff2') format('woff2'),
-       url('/OpenDyslexic-Regular.woff') format('woff');
+  font-family: "Open Dyslexic";
+  src: url("/OpenDyslexic-Regular.woff2") format("woff2"),
+    url("/OpenDyslexic-Regular.woff") format("woff");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Open Dyslexic';
-  src: url('/OpenDyslexic-Bold.woff2') format('woff2'),
-       url('/OpenDyslexic-Bold.woff') format('woff');
+  font-family: "Open Dyslexic";
+  src: url("/OpenDyslexic-Bold.woff2") format("woff2"),
+    url("/OpenDyslexic-Bold.woff") format("woff");
   font-weight: bold;
   font-style: normal;
   font-display: swap;
 }
 
+:root {
+  color-scheme: light;
+  --color-background: #f5f7fb;
+  --color-surface: #ffffff;
+  --color-surface-muted: #eef2ff;
+  --color-border: rgba(15, 23, 42, 0.08);
+  --color-border-strong: rgba(15, 23, 42, 0.16);
+  --color-text-primary: #111827;
+  --color-text-secondary: #475467;
+  --color-text-muted: #6b7280;
+  --color-accent: #6366f1;
+  --shadow-soft: 0 24px 45px -25px rgba(15, 23, 42, 0.3);
+  --shadow-border: 0 1px 3px rgba(15, 23, 42, 0.08);
+  --transition-duration: 240ms;
+  background-color: var(--color-background);
+}
+
+.dark {
+  color-scheme: dark;
+  --color-background: #0b1220;
+  --color-surface: #121a2e;
+  --color-surface-muted: #19253b;
+  --color-border: rgba(148, 163, 184, 0.22);
+  --color-border-strong: rgba(148, 163, 184, 0.35);
+  --color-text-primary: #e2e8f0;
+  --color-text-secondary: #cbd5f5;
+  --color-text-muted: #94a3b8;
+  --color-accent: #8b9dfc;
+  --shadow-soft: 0 28px 60px -35px rgba(15, 23, 42, 0.7);
+  --shadow-border: 0 1px 0 rgba(148, 163, 184, 0.25);
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  transition: background-color var(--transition-duration) ease,
+    color var(--transition-duration) ease;
+}
+
+#root {
+  min-height: 100vh;
+  background-color: var(--color-background);
+  transition: background-color var(--transition-duration) ease;
+}
+
+input,
+textarea,
+select {
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  transition: background-color var(--transition-duration) ease,
+    color var(--transition-duration) ease,
+    border-color var(--transition-duration) ease,
+    box-shadow var(--transition-duration) ease;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+a {
+  color: var(--color-accent);
+  transition: color var(--transition-duration) ease;
+}
+
+a:hover {
+  color: color-mix(in srgb, var(--color-accent) 85%, #0ea5e9);
+}
+
+.theme-surface {
+  background-color: var(--color-surface) !important;
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-border);
+  transition: background-color var(--transition-duration) ease,
+    border-color var(--transition-duration) ease,
+    box-shadow var(--transition-duration) ease,
+    color var(--transition-duration) ease;
+}
+
+.theme-surface-muted {
+  background-color: var(--color-surface-muted) !important;
+  color: var(--color-text-primary);
+  border: 1px solid transparent;
+  transition: background-color var(--transition-duration) ease,
+    color var(--transition-duration) ease;
+}
+
+.theme-border {
+  border-color: var(--color-border) !important;
+  transition: border-color var(--transition-duration) ease;
+}
+
+.theme-border-strong {
+  border-color: var(--color-border-strong) !important;
+  transition: border-color var(--transition-duration) ease;
+}
+
+.theme-text-primary {
+  color: var(--color-text-primary) !important;
+  transition: color var(--transition-duration) ease;
+}
+
+.theme-text-secondary {
+  color: var(--color-text-secondary) !important;
+  transition: color var(--transition-duration) ease;
+}
+
+.theme-text-muted {
+  color: var(--color-text-muted) !important;
+  transition: color var(--transition-duration) ease;
+}
+
+.theme-shadow {
+  box-shadow: var(--shadow-soft);
+  transition: box-shadow var(--transition-duration) ease;
+}
+
+.theme-background {
+  background-color: var(--color-background) !important;
+  transition: background-color var(--transition-duration) ease;
+}
+
+.theme-nav-item {
+  color: var(--color-text-muted);
+  transition: color var(--transition-duration) ease,
+    background-color var(--transition-duration) ease,
+    border-color var(--transition-duration) ease;
+  border-left: 3px solid transparent;
+}
+
+.theme-nav-item:hover {
+  color: var(--color-accent);
+  background-color: color-mix(
+    in srgb,
+    var(--color-accent) 12%,
+    var(--color-surface)
+  );
+  border-left-color: color-mix(
+    in srgb,
+    var(--color-accent) 60%,
+    transparent
+  );
+}
+
+.theme-nav-item-active {
+  color: var(--color-accent);
+  background-color: color-mix(
+    in srgb,
+    var(--color-accent) 18%,
+    var(--color-surface)
+  );
+  border-left: 3px solid var(--color-accent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.theme-hover-accent:hover {
+  color: var(--color-accent) !important;
+}
+
+.theme-hover-surface:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--color-accent) 12%,
+    var(--color-surface)
+  ) !important;
+}
+
 /* 添加无障碍字体 */
 .dyslexia-friendly {
-  font-family: 'Open Dyslexic', sans-serif !important;
+  font-family: "Open Dyslexic", sans-serif !important;
   line-height: 1.5;
   letter-spacing: 0.5px;
   word-spacing: 3px;
 }
 
-.dyslexia-friendly p, 
+.dyslexia-friendly p,
 .dyslexia-friendly h1,
 .dyslexia-friendly h2,
 .dyslexia-friendly h3,
@@ -55,5 +254,99 @@
 .dyslexia-friendly textarea,
 .dyslexia-friendly label,
 .dyslexia-friendly li {
-  font-family: 'Open Dyslexic', sans-serif !important;
+  font-family: "Open Dyslexic", sans-serif !important;
+}
+
+/* Dark mode overrides for frequently used utility classes */
+.dark .bg-white {
+  background-color: var(--color-surface) !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: var(--color-background) !important;
+}
+
+.dark .bg-gray-100 {
+  background-color: var(--color-surface-muted) !important;
+}
+
+.dark .bg-gray-200 {
+  background-color: color-mix(
+    in srgb,
+    var(--color-border) 65%,
+    transparent
+  ) !important;
+}
+
+.dark .bg-blue-50 {
+  background-color: color-mix(
+    in srgb,
+    var(--color-accent) 12%,
+    var(--color-surface)
+  ) !important;
+}
+
+.dark .bg-blue-100 {
+  background-color: color-mix(
+    in srgb,
+    var(--color-accent) 18%,
+    var(--color-surface)
+  ) !important;
+}
+
+.dark .border-gray-100,
+.dark .border-gray-200,
+.dark .border-gray-300 {
+  border-color: var(--color-border) !important;
+}
+
+.dark .divide-gray-100 > :where(:not([hidden]) ~ :not([hidden])) {
+  border-color: var(--color-border) !important;
+}
+
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-gray-700 {
+  color: var(--color-text-primary) !important;
+}
+
+.dark .text-gray-600,
+.dark .text-gray-500 {
+  color: var(--color-text-secondary) !important;
+}
+
+.dark .text-gray-400,
+.dark .text-gray-300 {
+  color: var(--color-text-muted) !important;
+}
+
+.dark .hover\:bg-gray-50:hover,
+.dark .hover\:bg-gray-100:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--color-accent) 12%,
+    var(--color-surface)
+  ) !important;
+}
+
+.dark .hover\:bg-gray-200:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--color-accent) 18%,
+    var(--color-surface)
+  ) !important;
+}
+
+.dark .from-white {
+  --tw-gradient-from: var(--color-surface);
+  --tw-gradient-stops: var(--tw-gradient-from),
+    var(--tw-gradient-to, transparent);
+}
+
+.dark .to-blue-50 {
+  --tw-gradient-to: color-mix(
+    in srgb,
+    var(--color-accent) 10%,
+    var(--color-background)
+  );
 }

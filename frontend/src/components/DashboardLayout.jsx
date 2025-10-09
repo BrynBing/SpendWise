@@ -4,9 +4,9 @@ import SideBar from "./SideBar";
 
 export default function DashboardLayout() {
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen theme-background theme-text-primary">
       <SideBar />
-      <div className="flex-1 p-8 overflow-auto">
+      <div className="flex-1 p-8 overflow-auto theme-background">
         <Outlet />
       </div>
     </div>

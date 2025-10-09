@@ -10,20 +10,26 @@ import java.time.LocalDate;
 @Data
 public class CreateSpendingGoalRequest {
 
-    @NotNull
-    private Integer categoryId;
+    @NotBlank(message = "Goal name is required")
+    private String goalName;
 
-    @NotNull
-    private GoalPeriod period; // WEEKLY/MONTHLY/YEARLY
-
-    @NotNull
-    @DecimalMin(value = "0.01", message = "Amount must be greater than 0")
+    @NotNull(message = "Target amount is required")
+    @DecimalMin(value = "0.01", message = "Target amount must be greater than 0")
     private BigDecimal targetAmount;
 
-    private boolean confirmDuplicate = false;
+    @DecimalMin(value = "0.00", message = "Current amount must be non-negative")
+    private BigDecimal currentAmount;
 
+    private String category;
+
+    @NotNull(message = "Deadline is required")
+    private LocalDate deadline;
+
+    // Legacy fields - keeping for backward compatibility
+    private Integer categoryId;
+    private GoalPeriod period;
+    private boolean confirmDuplicate = false;
     private LocalDate startDate;
     private LocalDate endDate;
-
     private boolean startNextPeriod;
 }
