@@ -10,11 +10,16 @@ import com.example.backend.repository.ExpenseRecordRepository;
 import com.example.backend.service.ExpenseRecordService;
 import com.example.backend.service.RecurringExpenseService;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +71,99 @@ public class ExpenseRecordController {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(dtoList);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<Page<ExpenseRecordDTO>> search(
+            HttpSession session,
+            @RequestParam(required = false) String from,        // YYYY-MM-DD（含当天）
+            @RequestParam(required = false) String to,          // YYYY-MM-DD（含当天）
+            @RequestParam(required = false) Integer categoryId,
+            @RequestParam(required = false) String q,           // 关键字：description/notes 模糊匹配
+            @RequestParam(required = false) Boolean recurring,  // 只看周期/非周期
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "expenseDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir
+    ) {
+        //  {
+        //    "content": [
+        //        {
+        //            "expenseId": 23,
+        //            "user": {
+        //                "id": 6,
+        //                "username": "bob"
+        //            },
+        //            "category": {
+        //                "id": 9,
+        //                "name": "Food"
+        //            },
+        //            "amount": 12.50,
+        //            "currency": "USD",
+        //            "expenseDate": "2025-10-13",
+        //            "description": "",
+        //            "isRecurring": false,
+        //            "recurringScheduleId": null,
+        //            "paymentMethod": null
+        //        },
+        //        {
+        //            "expenseId": 24,
+        //            "user": {
+        //                "id": 6,
+        //                "username": "bob"
+        //            },
+        //            "category": {
+        //                "id": 10,
+        //                "name": "Transport"
+        //            },
+        //            "amount": 3.20,
+        //            "currency": "USD",
+        //            "expenseDate": "2025-10-13",
+        //            "description": "",
+        //            "isRecurring": false,
+        //            "recurringScheduleId": null,
+        //            "paymentMethod": null
+        //        }
+        //    ],
+        //    "pageable": {
+        //        "pageNumber": 0,
+        //        "pageSize": 10,
+        //        "sort": {
+        //            "empty": false,
+        //            "sorted": true,
+        //            "unsorted": false
+        //        },
+        //        "offset": 0,
+        //        "paged": true,
+        //        "unpaged": false
+        //    },
+        //    "last": true,
+        //    "totalPages": 1,
+        //    "totalElements": 2,
+        //    "first": true,
+        //    "numberOfElements": 2,
+        //    "size": 10,
+        //    "number": 0,
+        //    "sort": {
+        //        "empty": false,
+        //        "sorted": true,
+        //        "unsorted": false
+        //    },
+        //    "empty": false
+        //}
+        Integer userId = ((UserDTO) session.getAttribute("USER")).getId();
+
+        LocalDate fromDate = (from == null || from.isBlank()) ? null : LocalDate.parse(from);
+        LocalDate toDate   = (to   == null || to.isBlank())   ? null : LocalDate.parse(to);
+
+        Sort.Direction dir = "asc".equalsIgnoreCase(sortDir) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(dir, sortBy));
+
+        Page<ExpenseRecord> entities = recordService.search(
+                userId, fromDate, toDate, categoryId, q, recurring, pageable);
+
+        Page<ExpenseRecordDTO> dtoPage = entities.map(this::toDTO);
+        return ResponseEntity.ok(dtoPage);
     }
 
     @PostMapping

@@ -3,18 +3,83 @@ package com.example.backend.repository;
 import com.example.backend.dto.ExpenseReportDTO;
 import com.example.backend.model.ExpenseRecord;
 import com.example.backend.model.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
-public interface ExpenseRecordRepository extends JpaRepository<ExpenseRecord, Integer> {
+public interface ExpenseRecordRepository extends JpaRepository<ExpenseRecord, Integer>{
 
     List<ExpenseRecord> findByUser(User user);
+
+    // 无关键字
+    @Query(value = """
+  SELECT e FROM ExpenseRecord e
+  WHERE e.user.user_id = :userId
+    AND e.expenseDate >= COALESCE(:fromDate, e.expenseDate)
+    AND e.expenseDate <= COALESCE(:toDate,   e.expenseDate)
+    AND e.category.categoryId = COALESCE(:categoryId, e.category.categoryId)
+    AND e.isRecurring         = COALESCE(:recurring,  e.isRecurring)
+  """,
+            countQuery = """
+  SELECT COUNT(e) FROM ExpenseRecord e
+  WHERE e.user.user_id = :userId
+    AND e.expenseDate >= COALESCE(:fromDate, e.expenseDate)
+    AND e.expenseDate <= COALESCE(:toDate,   e.expenseDate)
+    AND e.category.categoryId = COALESCE(:categoryId, e.category.categoryId)
+    AND e.isRecurring         = COALESCE(:recurring,  e.isRecurring)
+  """)
+    Page<ExpenseRecord> searchNoKeyword(
+            @Param("userId") Integer userId,
+            @Param("fromDate") LocalDate fromDate,
+            @Param("toDate") LocalDate toDate,
+            @Param("categoryId") Integer categoryId,
+            @Param("recurring") Boolean recurring,
+            Pageable pageable
+    );
+
+    // 有关键字（如果你保留关键字查询）
+    @Query(value = """
+  SELECT e FROM ExpenseRecord e
+  WHERE e.user.user_id = :userId
+    AND e.expenseDate >= COALESCE(:fromDate, e.expenseDate)
+    AND e.expenseDate <= COALESCE(:toDate,   e.expenseDate)
+    AND e.category.categoryId = COALESCE(:categoryId, e.category.categoryId)
+    AND e.isRecurring         = COALESCE(:recurring,  e.isRecurring)
+    AND (
+         LOWER(COALESCE(e.description, '')) LIKE LOWER(CONCAT('%', :q, '%'))
+      OR LOWER(COALESCE(e.notes, ''))       LIKE LOWER(CONCAT('%', :q, '%'))
+    )
+  """,
+            countQuery = """
+  SELECT COUNT(e) FROM ExpenseRecord e
+  WHERE e.user.user_id = :userId
+    AND e.expenseDate >= COALESCE(:fromDate, e.expenseDate)
+    AND e.expenseDate <= COALESCE(:toDate,   e.expenseDate)
+    AND e.category.categoryId = COALESCE(:categoryId, e.category.categoryId)
+    AND e.isRecurring         = COALESCE(:recurring,  e.isRecurring)
+    AND (
+         LOWER(COALESCE(e.description, '')) LIKE LOWER(CONCAT('%', :q, '%'))
+      OR LOWER(COALESCE(e.notes, ''))       LIKE LOWER(CONCAT('%', :q, '%'))
+    )
+  """)
+    Page<ExpenseRecord> searchWithKeyword(
+            @Param("userId") Integer userId,
+            @Param("fromDate") LocalDate fromDate,
+            @Param("toDate") LocalDate toDate,
+            @Param("categoryId") Integer categoryId,
+            @Param("q") String q,
+            @Param("recurring") Boolean recurring,
+            Pageable pageable
+    );
+
 
     /** 取消某个计划时，批量把历史账单的计划外键置空并把 isRecurring=false */
     @Modifying(clearAutomatically = true, flushAutomatically = true)
