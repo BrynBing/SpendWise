@@ -11,7 +11,10 @@ import java.time.LocalDateTime;
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor
 @Entity
-@Table(name = "spending_goals")
+@Table(name = "spending_goals",
+        uniqueConstraints = {
+                 @UniqueConstraint(columnNames = {"user_id", "category_id", "period", "active"})
+        })
 public class SpendingGoal {
 
     @Id
@@ -24,30 +27,18 @@ public class SpendingGoal {
             foreignKey = @ForeignKey(name = "fk_goal_user"))
     private User user;
 
-    @Column(name = "goal_name", nullable = false, length = 255)
-    private String goalName;
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false,
+            foreignKey = @ForeignKey(name = "fk_goal_category"))
+    private Category category;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "period", nullable = false, length = 16)
+    private GoalPeriod period;
 
     @Column(name = "target_amount", nullable = false, precision = 12, scale = 2)
     private BigDecimal targetAmount;
 
-    @Column(name = "current_amount", nullable = false, precision = 12, scale = 2)
-    private BigDecimal currentAmount = BigDecimal.ZERO;
-
-    @Column(name = "category", length = 100)
-    private String category;
-
-    @Column(name = "deadline")
-    private LocalDate deadline;
-
-    // Legacy fields - keeping for backward compatibility
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id",
-            foreignKey = @ForeignKey(name = "fk_goal_category"))
-    private Category categoryEntity;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "period", length = 16)
-    private GoalPeriod period;
 
     @Column(name = "start_date")
     private LocalDate startDate;

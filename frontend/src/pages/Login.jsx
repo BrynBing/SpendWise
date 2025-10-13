@@ -1,15 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import {
-  FaEnvelope,
-  FaLock,
-  FaEye,
-  FaEyeSlash,
-  FaCheckCircle,
-  FaExclamationCircle,
-  FaInfoCircle,
-  FaExclamationTriangle,
-} from "react-icons/fa";
+import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaCheckCircle, FaExclamationCircle, FaInfoCircle, FaExclamationTriangle } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
@@ -17,11 +8,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [toast, setToast] = useState({
-    show: false,
-    message: "",
-    type: "info",
-  });
+  const [toast, setToast] = useState({ show: false, message: "", type: "info" });
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
@@ -37,31 +24,21 @@ export default function Login() {
 
   const from = location.state?.from?.pathname || "/dashboard";
 
-  // Show success message from signup if present
-  useEffect(() => {
-    if (location.state?.message) {
-      showToast(location.state.message, "success");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.state]);
-
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
-
+    
     try {
       await login(identifier, password);
-
+      
       showToast("Login successful!", "success");
-
+      
       setTimeout(() => {
         navigate(from, { replace: true });
       }, 1500);
     } catch (error) {
       console.error("Login error:", error);
-      const errorMessage =
-        error.response?.data?.message ||
-        "Login failed. Please check your credentials.";
+      const errorMessage = error.response?.data?.message || "Login failed. Please check your credentials.";
       showToast(errorMessage, "error");
       setLoading(false);
     }
@@ -71,7 +48,7 @@ export default function Login() {
     setToast({ show: true, message, type });
     setTimeout(() => {
       setToast((prev) => ({ ...prev, show: false }));
-
+      
       if (type === "success") {
         navigate(from, { replace: true });
       }
@@ -83,79 +60,65 @@ export default function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 px-4 transition-colors duration-200">
-      <div className="w-full max-w-md p-8 sm:p-10 space-y-6 bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm animate-fade-in">
-        {/* Logo Section */}
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md animate-fade-in">
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-600 dark:bg-indigo-500 mb-4">
-            <span className="text-white font-bold text-2xl">SW</span>
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Welcome Back</h1>
-          <p className="mt-2 text-gray-500 dark:text-gray-400">
-            Sign in to continue your financial journey
+          <h1 className="text-3xl font-bold text-gray-800">Login Here</h1>
+          <p className="mt-2 text-gray-600">
+            Welcome back, you've been missed!
           </p>
         </div>
 
-        <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="identifier" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="identifier" className="sr-only">
                 Email or Username
               </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaEnvelope className="h-5 w-5 text-gray-400 dark:text-gray-500" />
-                </div>
-                <input
-                  id="identifier"
-                  name="identifier"
-                  type="text"
-                  required
-                  className="w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition-colors"
-                  placeholder="Enter your email or username"
-                  value={identifier}
-                  onChange={(e) => setIdentifier(e.target.value)}
-                />
-              </div>
+              <input
+                id="identifier"
+                name="identifier"
+                type="text"
+                required
+                className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Email or Username"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+              />
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <div className="relative">
+              <label htmlFor="password" className="sr-only">
                 Password
               </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaLock className="h-5 w-5 text-gray-400 dark:text-gray-500" />
-                </div>
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  required
-                  className="w-full pl-10 pr-10 py-3 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition-colors"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none transition-colors"
-                  onClick={togglePasswordVisibility}
-                >
-                  {showPassword ? (
-                    <FaEye className="h-5 w-5" />
-                  ) : (
-                    <FaEyeSlash className="h-5 w-5" />
-                  )}
-                </button>
-              </div>
+              <input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                required
+                className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
+                onClick={togglePasswordVisibility}
+              >
+                {showPassword ? (
+                  <FaEye className="h-5 w-5" />
+                ) : (
+                  <FaEyeSlash className="h-5 w-5" />
+                )}
+              </button>
             </div>
           </div>
 
           <div className="flex justify-end">
             <Link
               to="/forgot-password"
-              className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors"
+              className="text-sm text-blue-600 hover:text-blue-800"
             >
               Forgot your password?
             </Link>
@@ -163,7 +126,7 @@ export default function Login() {
 
           <button
             type="submit"
-            className="w-full px-4 py-3 text-white bg-indigo-600 dark:bg-indigo-500 rounded-full hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors cursor-pointer disabled:opacity-50 font-semibold text-sm uppercase tracking-wider"
+            className="w-full px-4 py-3 text-white bg-gray-800 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors cursor-pointer disabled:opacity-50"
             disabled={loading}
           >
             {loading ? (
@@ -196,16 +159,16 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="text-center pt-4 border-t border-gray-100 dark:border-gray-700">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+        <div className="text-center mt-4">
+          <p className="text-sm text-gray-600">
             Don't have an account?{" "}
-            <Link to="/signup" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-semibold transition-colors">
-              Sign up here
+            <Link to="/signup" className="text-blue-600 hover:text-blue-800">
+              Signup here
             </Link>
           </p>
         </div>
       </div>
-
+      
       {toast.show && (
         <div className="toast toast-top toast-end z-50">
           <div
@@ -213,10 +176,10 @@ export default function Login() {
               toast.type === "success"
                 ? "alert-success"
                 : toast.type === "error"
-                ? "alert-error"
-                : toast.type === "warning"
-                ? "alert-warning"
-                : "alert-info"
+                  ? "alert-error"
+                  : toast.type === "warning"
+                    ? "alert-warning"
+                    : "alert-info"
             }`}
           >
             <div className="flex items-center gap-2 text-sm">

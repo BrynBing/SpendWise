@@ -6,14 +6,15 @@ import {
   FaExclamationTriangle,
   FaInfoCircle,
   FaTimes,
+  FaUser,
 } from "react-icons/fa";
 import { userService } from "../services/api";
 
 const INPUT_CLASSES =
-  "mt-2 w-full rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-300 dark:placeholder:text-gray-600 focus:border-indigo-400 dark:focus:border-indigo-500 focus:outline-none transition-colors";
+  "mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-300 focus:border-gray-400 focus:outline-none";
 
 const LABEL_CLASSES =
-  "text-xs font-semibold uppercase tracking-[0.25em] text-gray-400 dark:text-gray-500";
+  "text-xs font-semibold uppercase tracking-[0.25em] text-gray-400";
 
 const TOAST_ICON = {
   success: FaCheckCircle,
@@ -243,20 +244,28 @@ export default function Account() {
 
   const ToastIcon = TOAST_ICON[toast.type] ?? FaInfoCircle;
 
+  // 格式化更新日期
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleString();
+  };
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-10 flex flex-col gap-2">
-        <span className="text-sm uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Profile</span>
-        <h1 className="text-3xl font-semibold text-gray-900 dark:text-gray-100">Account</h1>
-        <p className="text-gray-500 dark:text-gray-400">Manage how SpendWise recognizes you and keep your details up to date.</p>
+        <span className="text-sm uppercase tracking-[0.3em] text-gray-400">Profile</span>
+        <h1 className="text-3xl font-semibold text-gray-900">Account</h1>
+        <p className="text-gray-500">Manage how SpendWise recognizes you and keep your details up to date.</p>
       </div>
 
-      <section className="max-w-3xl mx-auto rounded-3xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 sm:p-8 shadow-sm">
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
+      <div className="grid gap-6 lg:grid-cols-3">
+        <section className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm lg:col-span-2">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
             <button
               type="button"
               onClick={handleImageClick}
-              className="relative h-24 w-24 overflow-hidden rounded-full border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 transition-transform hover:scale-[1.02]"
+              className="relative h-24 w-24 overflow-hidden rounded-full border border-gray-200 bg-gray-100 transition-transform hover:scale-[1.02]"
             >
               {profileImage ? (
                 <img
@@ -265,7 +274,7 @@ export default function Account() {
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <span className="flex h-full w-full items-center justify-center bg-indigo-600 dark:bg-indigo-500 text-3xl font-semibold text-white">
+                <span className="flex h-full w-full items-center justify-center bg-gray-900 text-3xl font-semibold text-white">
                   {initials()}
                 </span>
               )}
@@ -274,13 +283,13 @@ export default function Account() {
               </span>
             </button>
             <div className="flex-1">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-gray-500">
                 Use a clear, high-resolution photo so teammates recognize you easily.
               </p>
               <button
                 type="button"
                 onClick={handleImageClick}
-                className="mt-3 rounded-full border border-gray-200 dark:border-gray-700 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-gray-600 dark:text-gray-400 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="mt-3 rounded-full border border-gray-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-gray-600 transition-colors hover:bg-gray-100"
               >
                 Update Photo
               </button>
@@ -344,14 +353,14 @@ export default function Account() {
               <button
                 type="button"
                 onClick={handleChangePassword}
-                className="w-full rounded-full border border-gray-200 dark:border-gray-700 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-gray-700 dark:text-gray-300 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 sm:w-auto"
+                className="w-full rounded-full border border-gray-200 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-gray-700 transition-colors hover:bg-gray-100 sm:w-auto"
               >
                 Change Password
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-full bg-indigo-600 dark:bg-indigo-500 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-indigo-700 dark:hover:bg-indigo-600 sm:w-auto disabled:opacity-50"
+                className="w-full rounded-full bg-gray-900 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-gray-700 sm:w-auto disabled:opacity-50"
               >
                 {loading ? (
                   <span className="flex items-center justify-center">
@@ -367,18 +376,48 @@ export default function Account() {
           </form>
         </section>
 
+        <section className="flex flex-col justify-between rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Account Snapshot</p>
+            <h2 className="mt-2 text-xl font-semibold text-gray-900">Your Details</h2>
+            <p className="mt-4 text-sm text-gray-500">
+              Keep your contact information accurate; we use it for receipts, alerts, and secure verification steps.
+            </p>
+          </div>
+          <div className="mt-6 space-y-3 text-sm text-gray-600">
+            <p className="flex items-center gap-2">
+              <FaUser className="text-gray-400" />
+              <span>{user.username}</span>
+            </p>
+            <p className="flex items-center gap-2">
+              <span className="text-gray-400">@</span>
+              <span>{user.email}</span>
+            </p>
+            <p className="flex items-center gap-2">
+              <span className="text-gray-400">☎</span>
+              <span>{user.phoneNumber || "No number added"}</span>
+            </p>
+            {user.updatedAt && (
+              <p className="text-xs text-gray-400 mt-4">
+                Last updated: {formatDate(user.updatedAt)}
+              </p>
+            )}
+          </div>
+        </section>
+      </div>
+
       {passwordModal.show && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 dark:bg-black/40 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl border border-gray-100 bg-white p-6 shadow-xl">
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Security</p>
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Update Password</h2>
+                <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Security</p>
+                <h2 className="text-xl font-semibold text-gray-900">Update Password</h2>
               </div>
               <button
                 type="button"
                 onClick={closePasswordModal}
-                className="rounded-full p-2 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-300"
+                className="rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
                 aria-label="Close"
               >
                 <FaTimes />
@@ -433,7 +472,7 @@ export default function Account() {
 
               <button
                 type="submit"
-                className="w-full rounded-full bg-indigo-600 dark:bg-indigo-500 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-indigo-700 dark:hover:bg-indigo-600"
+                className="w-full rounded-full bg-gray-900 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-gray-700"
               >
                 Save Password
               </button>

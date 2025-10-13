@@ -39,27 +39,6 @@ public class SpendingGoalController {
         return ResponseEntity.ok(ApiMessage.success("Goal created successfully.", created));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiMessage<SpendingGoalResponse>> updateGoal(
-            @PathVariable Long id,
-            HttpSession session,
-            @Valid @RequestBody CreateSpendingGoalRequest req
-    ) {
-        User user = sessionUserResolver.getCurrentUser(session);
-        var updated = goalService.updateGoal(id, user, req);
-        return ResponseEntity.ok(ApiMessage.success("Goal updated successfully.", updated));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ApiMessage<Void>> deleteGoal(
-            @PathVariable Long id,
-            HttpSession session
-    ) {
-        User user = sessionUserResolver.getCurrentUser(session);
-        goalService.deleteGoal(id, user);
-        return ResponseEntity.ok(ApiMessage.success("Goal deleted successfully.", null));
-    }
-
     @Data
     static class ApiMessage<T> {
         private String message;

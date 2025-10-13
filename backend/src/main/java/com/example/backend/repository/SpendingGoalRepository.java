@@ -12,12 +12,11 @@ public interface SpendingGoalRepository extends JpaRepository<SpendingGoal, Long
 
     List<SpendingGoal> findByUserAndActiveTrueOrderByCreatedAtDesc(User user);
 
-    // Updated to use categoryEntity instead of category (since category is now a String)
-    Optional<SpendingGoal> findByUserAndCategoryEntity_CategoryIdAndPeriodAndActiveTrue(
+    Optional<SpendingGoal> findByUserAndCategory_CategoryIdAndPeriodAndActiveTrue(
             User user, Integer categoryId, GoalPeriod period
     );
 
-    boolean existsByUserAndCategoryEntity_CategoryIdAndPeriodAndActiveTrue(
+    boolean existsByUserAndCategory_CategoryIdAndPeriodAndActiveTrue(
             User user, Integer categoryId, GoalPeriod period
     );
 }

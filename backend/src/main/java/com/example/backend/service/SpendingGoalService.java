@@ -34,12 +34,6 @@ public class SpendingGoalService {
 
     @Transactional
     public SpendingGoalResponse createGoal(User user, CreateSpendingGoalRequest req) {
-        // New simplified structure
-        if (req.getGoalName() != null && req.getDeadline() != null) {
-            return createSimpleGoal(user, req);
-        }
-        
-        // Legacy structure for backward compatibility
         if (req.getTargetAmount() == null
                 || req.getTargetAmount().compareTo(minAmount) < 0) {
             throw new ValidationException("Amount must be at least " + minAmount);
@@ -48,11 +42,13 @@ public class SpendingGoalService {
         var category = categoryRepo.findById(req.getCategoryId())
                 .orElseThrow(() -> new EntityNotFoundException("Category not found"));
 
-        var existingOpt = goalRepo.findByUserAndCategoryEntity_CategoryIdAndPeriodAndActiveTrue(
+
+        var existingOpt = goalRepo.findByUserAndCategory_CategoryIdAndPeriodAndActiveTrue(
                 user, category.getCategoryId(), req.getPeriod()
         );
 
         if (existingOpt.isPresent() && !req.isConfirmDuplicate()) {
+
             throw new ValidationException(
                     "A goal for the same category and period already exists. " +
                             "Set confirmDuplicate=true to replace it."
@@ -73,7 +69,7 @@ public class SpendingGoalService {
 
         var goal = new SpendingGoal();
         goal.setUser(user);
-        goal.setCategoryEntity(category);
+        goal.setCategory(category);
         goal.setPeriod(req.getPeriod());
         goal.setTargetAmount(req.getTargetAmount());
         goal.setStartDate(start);
@@ -82,66 +78,6 @@ public class SpendingGoalService {
 
         var saved = goalRepo.save(goal);
         return toResp(saved);
-    }
-
-    @Transactional
-    public SpendingGoalResponse createSimpleGoal(User user, CreateSpendingGoalRequest req) {
-        if (req.getTargetAmount() == null || req.getTargetAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new ValidationException("Target amount must be greater than 0");
-        }
-
-        var goal = new SpendingGoal();
-        goal.setUser(user);
-        goal.setGoalName(req.getGoalName());
-        goal.setTargetAmount(req.getTargetAmount());
-        goal.setCurrentAmount(req.getCurrentAmount() != null ? req.getCurrentAmount() : BigDecimal.ZERO);
-        goal.setCategory(req.getCategory());
-        goal.setDeadline(req.getDeadline());
-        goal.setActive(true);
-
-        var saved = goalRepo.save(goal);
-        return toResp(saved);
-    }
-
-    @Transactional
-    public SpendingGoalResponse updateGoal(Long goalId, User user, CreateSpendingGoalRequest req) {
-        var goal = goalRepo.findById(goalId)
-                .orElseThrow(() -> new EntityNotFoundException("Goal not found"));
-
-        if (!goal.getUser().getUser_id().equals(user.getUser_id())) {
-            throw new ValidationException("Unauthorized: You can only update your own goals");
-        }
-
-        if (req.getGoalName() != null) {
-            goal.setGoalName(req.getGoalName());
-        }
-        if (req.getTargetAmount() != null) {
-            goal.setTargetAmount(req.getTargetAmount());
-        }
-        if (req.getCurrentAmount() != null) {
-            goal.setCurrentAmount(req.getCurrentAmount());
-        }
-        if (req.getCategory() != null) {
-            goal.setCategory(req.getCategory());
-        }
-        if (req.getDeadline() != null) {
-            goal.setDeadline(req.getDeadline());
-        }
-
-        var saved = goalRepo.save(goal);
-        return toResp(saved);
-    }
-
-    @Transactional
-    public void deleteGoal(Long goalId, User user) {
-        var goal = goalRepo.findById(goalId)
-                .orElseThrow(() -> new EntityNotFoundException("Goal not found"));
-
-        if (!goal.getUser().getUser_id().equals(user.getUser_id())) {
-            throw new ValidationException("Unauthorized: You can only delete your own goals");
-        }
-
-        goalRepo.delete(goal);
     }
 
     private LocalDate[] computeRange(LocalDate today, GoalPeriod period, boolean startNext) {
@@ -176,22 +112,11 @@ public class SpendingGoalService {
     private SpendingGoalResponse toResp(SpendingGoal g) {
         var resp = new SpendingGoalResponse();
         resp.setGoalId(g.getGoalId());
-        
-        // New fields
-        resp.setGoalName(g.getGoalName());
-        resp.setTargetAmount(g.getTargetAmount());
-        resp.setCurrentAmount(g.getCurrentAmount());
-        resp.setCategory(g.getCategory());
-        resp.setDeadline(g.getDeadline());
-        
-        // Legacy fields for backward compatibility
-        if (g.getCategoryEntity() != null) {
-            resp.setCategoryId(g.getCategoryEntity().getCategoryId());
-            resp.setCategoryName(g.getCategoryEntity().getCategoryName());
-        }
+        resp.setCategoryId(g.getCategory().getCategoryId());
+        resp.setCategoryName(g.getCategory().getCategoryName());
         resp.setPeriod(g.getPeriod());
+        resp.setTargetAmount(g.getTargetAmount());
         resp.setActive(g.isActive());
-        
         return resp;
     }
 }

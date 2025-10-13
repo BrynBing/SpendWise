@@ -11,10 +11,10 @@ const CURRENCY_OPTIONS = [
 ];
 
 const LABEL_CLASSES =
-  "text-xs font-semibold uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500";
+  "text-xs font-semibold uppercase tracking-[0.3em] text-gray-400";
 
 const SELECT_CLASSES =
-  "mt-2 w-full rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 text-sm text-gray-900 dark:text-gray-100 focus:border-indigo-400 dark:focus:border-indigo-500 focus:outline-none transition-colors";
+  "mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 focus:border-gray-400 focus:outline-none";
 
 const formatNumber = (value, currency) => {
   if (!value) {
@@ -118,15 +118,16 @@ export default function CurrencyConversion() {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-10 flex flex-col gap-2">
-        <span className="text-sm uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Tools</span>
-        <h1 className="text-3xl font-semibold text-gray-900 dark:text-gray-100">Currency Conversion</h1>
-        <p className="text-gray-500 dark:text-gray-400">
+        <span className="text-sm uppercase tracking-[0.3em] text-gray-400">Tools</span>
+        <h1 className="text-3xl font-semibold text-gray-900">Currency Conversion</h1>
+        <p className="text-gray-500">
           Quickly translate amounts between supported currencies using live market data.
         </p>
       </div>
 
-      <section className="max-w-3xl mx-auto rounded-3xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 sm:p-8 shadow-sm">
-        <form className="space-y-6" onSubmit={(event) => event.preventDefault()}>
+      <div className="grid gap-6 lg:grid-cols-3">
+        <section className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm lg:col-span-2">
+          <form className="space-y-6" onSubmit={(event) => event.preventDefault()}>
             <div className="grid gap-6 sm:grid-cols-2">
               <div>
                 <label className={LABEL_CLASSES} htmlFor="fromCurrency">
@@ -158,7 +159,7 @@ export default function CurrencyConversion() {
                     className={`${SELECT_CLASSES} pr-16`}
                     placeholder="Enter amount"
                   />
-                  <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-xs font-semibold uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
+                  <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-xs font-semibold uppercase tracking-[0.3em] text-gray-400">
                     {fromCurrency}
                   </span>
                 </div>
@@ -198,9 +199,9 @@ export default function CurrencyConversion() {
                           : ""
                     }
                     readOnly
-                    className={`${SELECT_CLASSES} bg-gray-50 dark:bg-gray-900 pr-16`}
+                    className={`${SELECT_CLASSES} bg-gray-50 pr-16`}
                   />
-                  <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-xs font-semibold uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
+                  <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-xs font-semibold uppercase tracking-[0.3em] text-gray-400">
                     {toCurrency}
                   </span>
                 </div>
@@ -211,31 +212,49 @@ export default function CurrencyConversion() {
               <button
                 type="button"
                 onClick={swapCurrencies}
-                className="inline-flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-700 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-gray-700 dark:text-gray-300 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-gray-700 transition-colors hover:bg-gray-100"
               >
                 <FaExchangeAlt /> Swap
               </button>
               <button
                 type="button"
                 onClick={convertCurrency}
-                className="inline-flex items-center gap-2 rounded-full bg-indigo-600 dark:bg-indigo-500 px-5 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-indigo-700 dark:hover:bg-indigo-600"
+                className="inline-flex items-center gap-2 rounded-full bg-gray-900 px-5 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-gray-700"
               >
                 Refresh Rate
               </button>
               {conversionSummary() && (
-                <span className="text-xs font-semibold uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
+                <span className="text-xs font-semibold uppercase tracking-[0.3em] text-gray-400">
                   {conversionSummary()}
                 </span>
               )}
             </div>
 
             {error && (
-              <div className="rounded-3xl border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950 p-4 text-sm text-rose-600 dark:text-rose-400">
+              <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-600">
                 {error}
               </div>
             )}
           </form>
         </section>
+
+        <section className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Heads Up</p>
+          <h2 className="mt-2 text-xl font-semibold text-gray-900">Live Market Data</h2>
+          <p className="mt-4 text-sm text-gray-500">
+            Rates update in real time using Unirate. Values may fluctuate slightly; always
+            refresh if you pause for a while.
+          </p>
+
+          <div className="mt-6 space-y-3 text-sm text-gray-600">
+            <p>
+              • We automatically convert as you type when a valid amount is present.
+            </p>
+            <p>• Rates include four decimal places for clarity in large transfers.</p>
+            <p>• Swap currencies at any time to compare the opposite direction.</p>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }
