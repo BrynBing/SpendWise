@@ -4,6 +4,7 @@ import com.example.backend.dto.ExpenseReportDTO;
 import com.example.backend.model.ExpenseRecord;
 import com.example.backend.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -14,6 +15,13 @@ import java.util.List;
 public interface ExpenseRecordRepository extends JpaRepository<ExpenseRecord, Integer> {
 
     List<ExpenseRecord> findByUser(User user);
+
+    /** 取消某个计划时，批量把历史账单的计划外键置空并把 isRecurring=false */
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update ExpenseRecord e " +
+            "set e.recurringSchedule = null, e.isRecurring = false " +
+            "where e.recurringSchedule.id = :scheduleId")
+    void detachSchedule(@Param("scheduleId") Integer scheduleId);
 
     // Weekly report for a specific year + week
     @Query("SELECT new com.example.backend.dto.ExpenseReportDTO(" +
