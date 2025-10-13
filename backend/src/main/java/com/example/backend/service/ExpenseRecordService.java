@@ -10,7 +10,9 @@ import com.example.backend.repository.UserRepository;
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Paragraph;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -77,6 +79,25 @@ public class ExpenseRecordService {
         }
 
         expenseRecordRepository.deleteById(recordId);
+    }
+
+    public Page<ExpenseRecord> search(
+            Integer userId,
+            LocalDate fromDate,
+            LocalDate toDate,
+            Integer categoryId,
+            String q,
+            Boolean recurring,
+            Pageable pageable
+    ) {
+        String qNorm = (q == null || q.isBlank()) ? null : q.trim();
+        if (qNorm == null) {
+            return expenseRecordRepository.searchNoKeyword(
+                    userId, fromDate, toDate, categoryId, recurring, pageable);
+        } else {
+            return expenseRecordRepository.searchWithKeyword(
+                    userId, fromDate, toDate, categoryId, qNorm, recurring, pageable);
+        }
     }
 
     // === Weekly Report ===
