@@ -47,15 +47,9 @@ public class ExpenseRecord {
     @Column(name = "is_recurring")
     private Boolean isRecurring;
 
-    @Column(name = "recurrence_frequency", length = 20)
-    private String recurrenceFrequency;
-
-    @Column(name = "transaction_type", length = 20)
-    private String transactionType;
-
-    // @ManyToOne
-    // @JoinColumn(name = "recurring_schedule_id")
-    // private RecurringSchedule recurringSchedule;
+//    @ManyToOne
+//    @JoinColumn(name = "recurring_schedule_id")
+//    private RecurringSchedule recurringSchedule;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

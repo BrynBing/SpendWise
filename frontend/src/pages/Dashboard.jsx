@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { FaPlus } from "react-icons/fa";
 import {
   LineChart,
@@ -91,7 +90,6 @@ const formatCurrency = (amount) =>
   }).format(amount);
 
 export default function Dashboard() {
-  const navigate = useNavigate();
   const [timeRange, setTimeRange] = useState("Year");
   const userName = "John"; // Placeholder until auth integration
 
@@ -337,10 +335,7 @@ export default function Dashboard() {
             </p>
           </div>
           <div className="mt-8">
-            <button 
-              onClick={() => navigate('/expense')}
-              className="w-full rounded-full bg-indigo-600 dark:bg-indigo-500 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-indigo-700 dark:hover:bg-indigo-600"
-            >
+            <button className="w-full rounded-full bg-gray-900 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-gray-700">
               <span className="inline-flex items-center justify-center gap-2">
                 <FaPlus /> Transaction
               </span>

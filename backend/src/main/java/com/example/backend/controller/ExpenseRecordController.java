@@ -25,6 +25,7 @@ public class ExpenseRecordController {
         this.recordService = recordService;
     }
 
+
     @GetMapping
     public ResponseEntity<List<ExpenseRecordDTO>> getRecords(HttpSession session) {
         // [
@@ -116,7 +117,7 @@ public class ExpenseRecordController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, String>> deleteRecord(@PathVariable Integer id, HttpSession session) {
+    public ResponseEntity<Map<String,String>> deleteRecord(@PathVariable Integer id, HttpSession session) {
         //{
         //    "message": "Record deleted successfully"
         //}
@@ -151,12 +152,7 @@ public class ExpenseRecordController {
 
         // Recurring
         dto.setIsRecurring(record.getIsRecurring());
-        dto.setRecurrenceFrequency(record.getRecurrenceFrequency());
-        // dto.setRecurringScheduleId(record.getRecurringScheduleId());
-
-        // Transaction Type
-        dto.setTransactionType(record.getTransactionType());
-
+//        dto.setRecurringScheduleId(record.getRecurringScheduleId());
         return dto;
     }
 

@@ -19,6 +19,7 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.pdf.PdfPTable;
 import java.io.ByteArrayOutputStream;
 
+
 @Service
 public class ExpenseRecordService {
 
@@ -26,8 +27,7 @@ public class ExpenseRecordService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
 
-    public ExpenseRecordService(ExpenseRecordRepository expenseRecordRepository, UserRepository userRepository,
-            CategoryRepository categoryRepository) {
+    public ExpenseRecordService(ExpenseRecordRepository expenseRecordRepository, UserRepository userRepository, CategoryRepository categoryRepository) {
         this.expenseRecordRepository = expenseRecordRepository;
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
@@ -40,21 +40,8 @@ public class ExpenseRecordService {
 
     public ExpenseRecord createRecord(Integer userId, ExpenseRecord recordData) {
         User user = userRepository.findById(userId).orElseThrow();
-
-        // Try to find category by ID first, then by name
-        Category category;
-        if (recordData.getCategory().getCategoryId() != null) {
-            category = categoryRepository.findById(recordData.getCategory().getCategoryId())
-                    .orElseThrow(() -> new RuntimeException("Category not found"));
-        } else if (recordData.getCategory().getCategoryName() != null) {
-            category = categoryRepository.findBycategoryName(recordData.getCategory().getCategoryName());
-            if (category == null) {
-                throw new RuntimeException("Category not found: " + recordData.getCategory().getCategoryName());
-            }
-        } else {
-            throw new RuntimeException("Category ID or name must be provided");
-        }
-
+        Category category = categoryRepository.findById(recordData.getCategory().getCategoryId())
+                .orElseThrow(() -> new RuntimeException("Category not found"));
         recordData.setUser(user);
         recordData.setCategory(category);
         return expenseRecordRepository.save(recordData);
@@ -69,39 +56,12 @@ public class ExpenseRecordService {
             throw new RuntimeException("Unauthorized");
         }
 
-        if (updatedData.getAmount() != null)
-            existing.setAmount(updatedData.getAmount());
-        if (updatedData.getCurrency() != null)
-            existing.setCurrency(updatedData.getCurrency());
-        if (updatedData.getDescription() != null)
-            existing.setDescription(updatedData.getDescription());
-        if (updatedData.getNotes() != null)
-            existing.setNotes(updatedData.getNotes());
-        if (updatedData.getPaymentMethod() != null)
-            existing.setPaymentMethod(updatedData.getPaymentMethod());
-        if (updatedData.getIsRecurring() != null)
-            existing.setIsRecurring(updatedData.getIsRecurring());
-        if (updatedData.getTransactionType() != null)
-            existing.setTransactionType(updatedData.getTransactionType());
-
-        // Handle category update
-        if (updatedData.getCategory() != null) {
-            Category category;
-            if (updatedData.getCategory().getCategoryId() != null) {
-                category = categoryRepository.findById(updatedData.getCategory().getCategoryId())
-                        .orElseThrow(() -> new RuntimeException("Category not found"));
-            } else if (updatedData.getCategory().getCategoryName() != null) {
-                category = categoryRepository.findBycategoryName(updatedData.getCategory().getCategoryName());
-                if (category == null) {
-                    throw new RuntimeException("Category not found: " + updatedData.getCategory().getCategoryName());
-                }
-            } else {
-                category = null;
-            }
-            if (category != null) {
-                existing.setCategory(category);
-            }
-        }
+        if (updatedData.getAmount() != null) existing.setAmount(updatedData.getAmount());
+        if (updatedData.getCurrency() != null) existing.setCurrency(updatedData.getCurrency());
+        if (updatedData.getDescription() != null) existing.setDescription(updatedData.getDescription());
+        if (updatedData.getNotes() != null) existing.setNotes(updatedData.getNotes());
+        if (updatedData.getPaymentMethod() != null) existing.setPaymentMethod(updatedData.getPaymentMethod());
+        if (updatedData.getIsRecurring() != null) existing.setIsRecurring(updatedData.getIsRecurring());
 
         existing.setUpdatedAt(LocalDateTime.now());
         return expenseRecordRepository.save(existing);
