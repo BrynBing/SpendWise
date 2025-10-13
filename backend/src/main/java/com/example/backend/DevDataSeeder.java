@@ -64,6 +64,7 @@ public class DevDataSeeder {
                 record1.setCurrency("USD");
                 record1.setExpenseDate(LocalDate.now());
                 record1.setDescription("Lunch at cafe");
+                record1.setIsRecurring(false);
                 expenseRecordRepository.save(record1);
 
                 ExpenseRecord record2 = new ExpenseRecord();
@@ -73,6 +74,7 @@ public class DevDataSeeder {
                 record2.setCurrency("USD");
                 record2.setExpenseDate(LocalDate.now());
                 record2.setDescription("Bus ticket");
+                record2.setIsRecurring(false);
                 expenseRecordRepository.save(record2);
 
                 System.out.println("Expense records for bob initialized");
