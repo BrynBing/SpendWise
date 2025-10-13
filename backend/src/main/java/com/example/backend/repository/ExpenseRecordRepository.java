@@ -45,7 +45,7 @@ public interface ExpenseRecordRepository extends JpaRepository<ExpenseRecord, In
             Pageable pageable
     );
 
-    // 有关键字（如果你保留关键字查询）
+    // 有关键字
     @Query(value = """
   SELECT e FROM ExpenseRecord e
   WHERE e.user.user_id = :userId
@@ -79,7 +79,6 @@ public interface ExpenseRecordRepository extends JpaRepository<ExpenseRecord, In
             @Param("recurring") Boolean recurring,
             Pageable pageable
     );
-
 
     /** 取消某个计划时，批量把历史账单的计划外键置空并把 isRecurring=false */
     @Modifying(clearAutomatically = true, flushAutomatically = true)
@@ -127,4 +126,22 @@ public interface ExpenseRecordRepository extends JpaRepository<ExpenseRecord, In
     List<ExpenseReportDTO> getYearlyReportFor(
             @Param("userId") Integer userId,
             @Param("year") Integer year);
+
+    interface CategorySpend {
+        Integer getCategoryId();
+        String  getCategoryName();
+        java.math.BigDecimal getAmount();
+    }
+
+    @Query("select c.categoryId as categoryId, c.categoryName as categoryName, sum(e.amount) as amount " +
+            "from ExpenseRecord e join e.category c " +
+            "where e.user.user_id = :userId " +
+            "and YEAR(e.expenseDate) = :year " +
+            "and MONTH(e.expenseDate) = :month " +
+            "group by c.categoryId, c.categoryName")
+    java.util.List<CategorySpend> findMonthlySpend(
+            @Param("userId") Integer userId,
+            @Param("year") Integer year,
+            @Param("month") Integer month);
+
 }
