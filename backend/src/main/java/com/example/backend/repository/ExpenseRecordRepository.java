@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import java.math.BigDecimal;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -144,4 +145,19 @@ public interface ExpenseRecordRepository extends JpaRepository<ExpenseRecord, In
             @Param("year") Integer year,
             @Param("month") Integer month);
 
+//     track spending goal
+    @Query("""
+        SELECT COALESCE(SUM(e.amount), 0)
+        FROM ExpenseRecord e
+        WHERE e.user = :user
+          AND e.expenseDate BETWEEN :start AND :end
+          AND (:categoryId IS NULL OR e.category.categoryId = :categoryId)
+    """)
+    BigDecimal sumByUserAndWindowAndCategoryId(
+            @Param("user") User user,
+            @Param("start") LocalDate start,
+            @Param("end") LocalDate end,
+            @Param("categoryId") Integer categoryId
+    );
+    
 }
