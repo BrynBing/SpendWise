@@ -1,6 +1,7 @@
 package com.example.backend.controller;
 
 import com.example.backend.dto.CreateSpendingGoalRequest;
+import com.example.backend.dto.SpendingGoalProgressDTO;
 import com.example.backend.dto.SpendingGoalResponse;
 import com.example.backend.model.User;
 import com.example.backend.security.SessionUserResolver;
@@ -11,6 +12,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+// import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import java.util.List;
 
@@ -48,4 +50,21 @@ public class SpendingGoalController {
             m.message = msg; m.data = data; return m;
         }
     }
+
+    // --------- track progress ---------
+    @GetMapping("/progress")
+    public List<SpendingGoalProgressDTO> listProgress(HttpSession session) {
+        User user = sessionUserResolver.getCurrentUser(session);
+        return goalService.listProgressForActiveGoals(user);
+    }
+
+    @GetMapping("/{goalId}/progress")
+    public SpendingGoalProgressDTO getProgress(
+            @PathVariable Long goalId,
+            HttpSession session
+    ) {
+        User user = sessionUserResolver.getCurrentUser(session);
+        return goalService.getProgressForGoal(goalId, user);
+    }
+
 }
