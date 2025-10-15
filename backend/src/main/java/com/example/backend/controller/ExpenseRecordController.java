@@ -5,11 +5,21 @@ import com.example.backend.dto.ExpenseRecordDTO;
 import com.example.backend.dto.ExpenseReportDTO;
 import com.example.backend.dto.UserDTO;
 import com.example.backend.model.ExpenseRecord;
+import com.example.backend.model.RecurringExpenseSchedule;
+import com.example.backend.repository.ExpenseRecordRepository;
 import com.example.backend.service.ExpenseRecordService;
+import com.example.backend.service.RecurringExpenseService;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,9 +30,13 @@ import java.util.stream.Collectors;
 public class ExpenseRecordController {
 
     private final ExpenseRecordService recordService;
+    private final RecurringExpenseService recurringExpenseService;
+    private final ExpenseRecordRepository expenseRecordRepository;
 
-    public ExpenseRecordController(ExpenseRecordService recordService) {
+    public ExpenseRecordController(ExpenseRecordService recordService, RecurringExpenseService recurringExpenseService,  ExpenseRecordRepository expenseRecordRepository) {
         this.recordService = recordService;
+        this.recurringExpenseService = recurringExpenseService;
+        this.expenseRecordRepository = expenseRecordRepository;
     }
 
 
@@ -59,8 +73,103 @@ public class ExpenseRecordController {
         return ResponseEntity.ok(dtoList);
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<Page<ExpenseRecordDTO>> search(
+            HttpSession session,
+            @RequestParam(required = false) String from,        // YYYY-MM-DD（含当天）
+            @RequestParam(required = false) String to,          // YYYY-MM-DD（含当天）
+            @RequestParam(required = false) Integer categoryId,
+            @RequestParam(required = false) String q,           // 关键字：description/notes 模糊匹配
+            @RequestParam(required = false) Boolean recurring,  // 只看周期/非周期
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "expenseDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir
+    ) {
+        //  {
+        //    "content": [
+        //        {
+        //            "expenseId": 23,
+        //            "user": {
+        //                "id": 6,
+        //                "username": "bob"
+        //            },
+        //            "category": {
+        //                "id": 9,
+        //                "name": "Food"
+        //            },
+        //            "amount": 12.50,
+        //            "currency": "USD",
+        //            "expenseDate": "2025-10-13",
+        //            "description": "",
+        //            "isRecurring": false,
+        //            "recurringScheduleId": null,
+        //            "paymentMethod": null
+        //        },
+        //        {
+        //            "expenseId": 24,
+        //            "user": {
+        //                "id": 6,
+        //                "username": "bob"
+        //            },
+        //            "category": {
+        //                "id": 10,
+        //                "name": "Transport"
+        //            },
+        //            "amount": 3.20,
+        //            "currency": "USD",
+        //            "expenseDate": "2025-10-13",
+        //            "description": "",
+        //            "isRecurring": false,
+        //            "recurringScheduleId": null,
+        //            "paymentMethod": null
+        //        }
+        //    ],
+        //    "pageable": {
+        //        "pageNumber": 0,
+        //        "pageSize": 10,
+        //        "sort": {
+        //            "empty": false,
+        //            "sorted": true,
+        //            "unsorted": false
+        //        },
+        //        "offset": 0,
+        //        "paged": true,
+        //        "unpaged": false
+        //    },
+        //    "last": true,
+        //    "totalPages": 1,
+        //    "totalElements": 2,
+        //    "first": true,
+        //    "numberOfElements": 2,
+        //    "size": 10,
+        //    "number": 0,
+        //    "sort": {
+        //        "empty": false,
+        //        "sorted": true,
+        //        "unsorted": false
+        //    },
+        //    "empty": false
+        //}
+        Integer userId = ((UserDTO) session.getAttribute("USER")).getId();
+
+        LocalDate fromDate = (from == null || from.isBlank()) ? null : LocalDate.parse(from);
+        LocalDate toDate   = (to   == null || to.isBlank())   ? null : LocalDate.parse(to);
+
+        Sort.Direction dir = "asc".equalsIgnoreCase(sortDir) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(dir, sortBy));
+
+        Page<ExpenseRecord> entities = recordService.search(
+                userId, fromDate, toDate, categoryId, q, recurring, pageable);
+
+        Page<ExpenseRecordDTO> dtoPage = entities.map(this::toDTO);
+        return ResponseEntity.ok(dtoPage);
+    }
+
     @PostMapping
-    public ResponseEntity<ExpenseRecordDTO> createRecord(@RequestBody ExpenseRecord recordData, HttpSession session) {
+    public ResponseEntity<ExpenseRecordDTO> createRecord(@RequestBody ExpenseRecord recordData,
+                                                         @RequestParam(required = false) String frequency,
+                                                         HttpSession session) {
         // {
         //    "expenseId": 8,
         //    "user": {
@@ -82,6 +191,11 @@ public class ExpenseRecordController {
         UserDTO user = (UserDTO) session.getAttribute("USER");
         Integer userId = user.getId();
         ExpenseRecord created = recordService.createRecord(userId, recordData);
+        if (recordData.getIsRecurring() && frequency != null && !frequency.isBlank()) {
+            RecurringExpenseSchedule.Frequency freq =
+                    RecurringExpenseSchedule.Frequency.valueOf(frequency.toUpperCase());
+            recurringExpenseService.onManualExpenseSaved(created, freq);
+        }
         ExpenseRecordDTO dto = toDTO(created);
         return ResponseEntity.ok(dto);
     }
@@ -90,6 +204,7 @@ public class ExpenseRecordController {
     public ResponseEntity<ExpenseRecordDTO> updateRecord(
             @PathVariable Integer id,
             @RequestBody ExpenseRecord updatedData,
+            @RequestParam(required = false) String frequency,
             HttpSession session) {
         // {
         //    "expenseId": 7,
@@ -111,18 +226,84 @@ public class ExpenseRecordController {
         //}
         UserDTO user = (UserDTO) session.getAttribute("USER");
         Integer userId = user.getId();
-        ExpenseRecord updated = recordService.updateRecord(userId, id, updatedData);
-        ExpenseRecordDTO dto = toDTO(updated);
-        return ResponseEntity.ok(dto);
+
+        ExpenseRecord before = expenseRecordRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Record not found"));
+
+        boolean oldRecurring = Boolean.TRUE.equals(before.getIsRecurring());
+        RecurringExpenseSchedule oldSchedule = before.getRecurringSchedule();
+
+        ExpenseRecord saved = recordService.updateRecord(userId, id, updatedData);
+
+        // 若前端没传 isRecurring，则不调整周期逻辑
+        Boolean newRecurring = updatedData.getIsRecurring();
+        if (newRecurring == null) {
+            return ResponseEntity.ok(toDTO(saved));
+        }
+
+        // false -> true：要求 frequency，调用建/绑/推进
+        if (!oldRecurring && newRecurring) {
+            if (frequency == null || frequency.isBlank()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "frequency required when isRecurring=true");
+            }
+            RecurringExpenseSchedule.Frequency newFreq =
+                    RecurringExpenseSchedule.Frequency.valueOf(frequency.toUpperCase());
+            recurringExpenseService.onManualExpenseSaved(saved, newFreq);
+            return ResponseEntity.ok(toDTO(saved));
+        }
+
+        // true -> false：取消整个计划，保留当前记录
+        if (oldRecurring && !newRecurring) {
+            if (oldSchedule != null) {
+                recurringExpenseService.cancelSchedule(oldSchedule.getId());
+            }
+            saved.setIsRecurring(false);
+            saved.setRecurringSchedule(null);
+            expenseRecordRepository.save(saved);
+            return ResponseEntity.ok(toDTO(saved));
+        }
+
+        // true -> true：可能变更频率
+        if (oldRecurring) {
+            if (frequency != null && !frequency.isBlank()) {
+                RecurringExpenseSchedule.Frequency newFreq =
+                        RecurringExpenseSchedule.Frequency.valueOf(frequency.toUpperCase());
+                RecurringExpenseSchedule.Frequency oldFreq =
+                        (oldSchedule != null ? oldSchedule.getFrequency() : null);
+
+                if (oldSchedule == null) {
+                    // 宽容处理：标记为 recurring 但没有 schedule，则补建
+                    recurringExpenseService.onManualExpenseSaved(saved, newFreq);
+                } else if (oldFreq != newFreq) {
+                    // 频率变更：取消旧计划并以当前记录为锚新建
+                    recurringExpenseService.cancelSchedule(oldSchedule.getId());
+                    recurringExpenseService.onManualExpenseSaved(saved, newFreq);
+                }
+            }
+            return ResponseEntity.ok(toDTO(saved));
+        }
+        return ResponseEntity.ok(toDTO(saved));
     }
 
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String,String>> deleteRecord(@PathVariable Integer id, HttpSession session) {
+    public ResponseEntity<Map<String,String>> deleteRecord(@PathVariable Integer id,
+                                                           @RequestParam(defaultValue = "false") boolean cancelRecurring,
+                                                           HttpSession session) {
         //{
         //    "message": "Record deleted successfully"
         //}
         UserDTO user = (UserDTO) session.getAttribute("USER");
         Integer userId = user.getId();
+        ExpenseRecord rec = expenseRecordRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Record not found"));
+        if (!rec.getUser().getUser_id().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not your record");
+        }
+
+        if (cancelRecurring && rec.getRecurringSchedule() != null) {
+            recurringExpenseService.cancelSchedule(rec.getRecurringSchedule().getId());
+        }
         recordService.deleteRecord(userId, id);
         Map<String, String> response = new HashMap<>();
         response.put("message", "Record deleted successfully");
@@ -152,7 +333,12 @@ public class ExpenseRecordController {
 
         // Recurring
         dto.setIsRecurring(record.getIsRecurring());
-//        dto.setRecurringScheduleId(record.getRecurringScheduleId());
+        if(record.getIsRecurring() == null) {
+            dto.setIsRecurring(false);
+        }
+        if(record.getIsRecurring() && record.getRecurringSchedule() != null){
+            dto.setRecurringScheduleId(record.getRecurringSchedule().getId());
+        }
         return dto;
     }
 

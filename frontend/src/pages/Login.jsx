@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaCheckCircle, FaExclamationCircle, FaInfoCircle, FaExclamationTriangle } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
@@ -24,6 +24,26 @@ export default function Login() {
 
   const from = location.state?.from?.pathname || "/dashboard";
 
+  const showToast = useCallback((message, type = "info") => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast((prev) => ({ ...prev, show: false }));
+      
+      if (type === "success") {
+        navigate(from, { replace: true });
+      }
+    }, 3000);
+  }, [navigate, from]);
+
+  // Show registration success message if coming from registration
+  useEffect(() => {
+    if (location.state?.message) {
+      showToast(location.state.message, "success");
+      // Clear the message from location state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state, showToast]);
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
@@ -44,27 +64,16 @@ export default function Login() {
     }
   };
 
-  const showToast = (message, type = "info") => {
-    setToast({ show: true, message, type });
-    setTimeout(() => {
-      setToast((prev) => ({ ...prev, show: false }));
-      
-      if (type === "success") {
-        navigate(from, { replace: true });
-      }
-    }, 3000);
-  };
-
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md animate-fade-in">
+    <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+      <div className="w-full max-w-md p-8 space-y-8 bg-white dark:bg-gray-800 rounded-lg shadow-md animate-fade-in transition-colors duration-200">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-800">Login Here</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white transition-colors duration-200">Login Here</h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-300 transition-colors duration-200">
             Welcome back, you've been missed!
           </p>
         </div>
@@ -80,7 +89,7 @@ export default function Login() {
                 name="identifier"
                 type="text"
                 required
-                className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors duration-200"
                 placeholder="Email or Username"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
@@ -96,14 +105,14 @@ export default function Login() {
                 name="password"
                 type={showPassword ? "text" : "password"}
                 required
-                className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors duration-200"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
               <button
                 type="button"
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none transition-colors duration-200"
                 onClick={togglePasswordVisibility}
               >
                 {showPassword ? (
@@ -118,7 +127,7 @@ export default function Login() {
           <div className="flex justify-end">
             <Link
               to="/forgot-password"
-              className="text-sm text-blue-600 hover:text-blue-800"
+              className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-200"
             >
               Forgot your password?
             </Link>
@@ -126,7 +135,7 @@ export default function Login() {
 
           <button
             type="submit"
-            className="w-full px-4 py-3 text-white bg-gray-800 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors cursor-pointer disabled:opacity-50"
+            className="w-full px-4 py-3 text-white bg-gray-800 dark:bg-gray-700 rounded-md hover:bg-gray-700 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400 focus:ring-offset-2 transition-colors cursor-pointer disabled:opacity-50"
             disabled={loading}
           >
             {loading ? (
@@ -160,9 +169,9 @@ export default function Login() {
         </form>
 
         <div className="text-center mt-4">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-300 transition-colors duration-200">
             Don't have an account?{" "}
-            <Link to="/signup" className="text-blue-600 hover:text-blue-800">
+            <Link to="/signup" className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-200">
               Signup here
             </Link>
           </p>

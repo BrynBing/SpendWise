@@ -47,9 +47,9 @@ public class ExpenseRecord {
     @Column(name = "is_recurring")
     private Boolean isRecurring;
 
-//    @ManyToOne
-//    @JoinColumn(name = "recurring_schedule_id")
-//    private RecurringSchedule recurringSchedule;
+    @ManyToOne
+    @JoinColumn(name = "recurring_schedule_id")
+    private RecurringExpenseSchedule recurringSchedule;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

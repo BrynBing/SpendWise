@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
+/* Tailwind v4 dark mode variant */
+@variant dark (.dark &);
+
 /* Small motion polish for the Home page */
 @keyframes float {
   0%, 100% { transform: translateY(0); }
@@ -57,3 +60,6 @@
 .dyslexia-friendly li {
   font-family: 'Open Dyslexic', sans-serif !important;
 }
+
+/* Dark mode support - removed @apply as it's deprecated in Tailwind v4 */
+/* Body background is now handled by DashboardLayout component */

@@ -31,7 +31,7 @@ const INITIAL_GOALS = [
     name: "Emergency fund",
     targetAmount: 2000,
     currentAmount: 1200,
-    category: "Savings",
+    category: "General",
     deadline: "2025-06-01",
   },
   {
@@ -44,10 +44,10 @@ const INITIAL_GOALS = [
   },
   {
     id: 6,
-    name: "Monthly savings",
+    name: "Monthly budget",
     targetAmount: 2000,
     currentAmount: 1234.60,
-    category: "Savings",
+    category: "General",
     deadline: "2024-09-30",
   },
 ];
@@ -62,7 +62,7 @@ const createEmptyFormState = () => ({
   name: "",
   targetAmount: "",
   currentAmount: "",
-  category: "Savings",
+  category: "General",
   deadline: "",
 });
 
@@ -79,10 +79,10 @@ export default function Goals() {
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const formRef = useRef(null);
 
-  // Calculate current and target savings
-  const currentSaving = goals.reduce((sum, goal) => sum + goal.currentAmount, 0);
-  const targetSaving = goals.reduce((sum, goal) => sum + goal.targetAmount, 0);
-  const savingsProgress = targetSaving > 0 ? (currentSaving / targetSaving) * 100 : 0;
+  // Calculate current and target spending
+  const currentSpending = goals.reduce((sum, goal) => sum + goal.currentAmount, 0);
+  const targetSpending = goals.reduce((sum, goal) => sum + goal.targetAmount, 0);
+  const spendingProgress = targetSpending > 0 ? (currentSpending / targetSpending) * 100 : 0;
 
   const validateForm = () => {
     const newErrors = {};
@@ -199,51 +199,51 @@ export default function Goals() {
         <span className="text-sm uppercase tracking-[0.3em] text-gray-400">Overview</span>
         <h1 className="text-3xl font-semibold text-gray-900">Spending Goals</h1>
         <p className="text-gray-500">
-          Set and track your savings goals to achieve your financial targets.
+          Set and track your spending goals to achieve your financial targets.
         </p>
       </div>
 
-      {/* Savings Overview */}
+      {/* Spending Overview */}
       <div className="grid gap-4 sm:grid-cols-2 mb-10">
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Current Saving</p>
-          <p className="mt-3 text-2xl font-semibold text-gray-900">
-            {formatCurrency(currentSaving)}
+        <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm transition-colors duration-200">
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 transition-colors duration-200">Current Spending</p>
+          <p className="mt-3 text-2xl font-semibold text-gray-900 dark:text-white transition-colors duration-200">
+            {formatCurrency(currentSpending)}
           </p>
         </div>
         
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Target Saving</p>
-          <p className="mt-3 text-2xl font-semibold text-gray-900">
-            {formatCurrency(targetSaving)}
+        <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm transition-colors duration-200">
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 transition-colors duration-200">Target Budget</p>
+          <p className="mt-3 text-2xl font-semibold text-gray-900 dark:text-white transition-colors duration-200">
+            {formatCurrency(targetSpending)}
           </p>
         </div>
       </div>
 
       {/* Progress Bar */}
-      <div className="bg-white border border-gray-100 rounded-3xl shadow-sm p-6 mb-10">
-        <p className="text-xs uppercase tracking-[0.3em] text-gray-400 mb-4">Progress Bar</p>
-        <div className="w-full bg-gray-200 rounded-full h-3">
+      <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-3xl shadow-sm p-6 mb-10 transition-colors duration-200">
+        <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 mb-4 transition-colors duration-200">Progress Bar</p>
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 transition-colors duration-200">
           <div
-            className="h-3 rounded-full bg-gray-900 transition-all duration-300"
-            style={{ width: `${Math.min(savingsProgress, 100)}%` }}
+            className="h-3 rounded-full bg-gray-900 dark:bg-indigo-500 transition-all duration-300"
+            style={{ width: `${Math.min(spendingProgress, 100)}%` }}
           ></div>
         </div>
-        <p className="text-sm text-gray-600 mt-2">
-          {savingsProgress.toFixed(1)}% of total target achieved
+        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 transition-colors duration-200">
+          {spendingProgress.toFixed(1)}% of total target achieved
         </p>
       </div>
 
       {/* Current Goals */}
-      <div className="bg-white border border-gray-100 rounded-3xl shadow-sm p-6 sm:p-10">
+      <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-3xl shadow-sm p-6 sm:p-10 transition-colors duration-200">
         <div className="mb-8">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Current Goals</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 transition-colors duration-200">Current Goals</p>
         </div>
 
         {goals.length === 0 ? (
-          <p className="text-sm text-gray-500">No goals set yet.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 transition-colors duration-200">No goals set yet.</p>
         ) : (
-          <ul className="divide-y divide-gray-100">
+          <ul className="divide-y divide-gray-100 dark:divide-gray-700 transition-colors duration-200">
             {goals.map((goal) => {
               const progress = getProgressPercentage(goal.currentAmount, goal.targetAmount);
               return (
@@ -253,20 +253,20 @@ export default function Goals() {
                 >
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-2">
-                      <p className="text-base font-semibold text-gray-900">{goal.name}</p>
-                      <span className="text-sm font-semibold uppercase tracking-[0.3em] text-gray-400">
+                      <p className="text-base font-semibold text-gray-900 dark:text-white transition-colors duration-200">{goal.name}</p>
+                      <span className="text-sm font-semibold uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 transition-colors duration-200">
                         {formatCurrency(goal.targetAmount)}
                       </span>
                     </div>
 
-                    <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2 transition-colors duration-200">
                       <div
-                        className="h-2 rounded-full bg-gray-900 transition-all duration-300"
+                        className="h-2 rounded-full bg-gray-900 dark:bg-indigo-500 transition-all duration-300"
                         style={{ width: `${progress}%` }}
                       ></div>
                     </div>
 
-                    <div className="flex justify-between text-sm text-gray-500">
+                    <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400 transition-colors duration-200">
                       <span>{formatCurrency(goal.currentAmount)} saved</span>
                       <span>{progress.toFixed(0)}% complete</span>
                     </div>
@@ -277,27 +277,27 @@ export default function Goals() {
                       onClick={() => toggleDropdown(goal.id)}
                       className="flex items-center gap-2 cursor-pointer"
                     >
-                      <span className="text-xs uppercase tracking-[0.3em] text-gray-400">
+                      <span className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 transition-colors duration-200">
                         {goal.category} • {new Date(goal.deadline).toLocaleDateString()}
                       </span>
-                      <FaChevronDown className="text-gray-400 text-sm" />
+                      <FaChevronDown className="text-gray-400 dark:text-gray-500 text-sm transition-colors duration-200" />
                     </button>
                     
                     {dropdownOpen === goal.id && (
-                      <div className="absolute right-0 top-full mt-2 z-10 bg-white border border-gray-200 rounded-2xl shadow-lg min-w-[120px]">
+                      <div className="absolute right-0 top-full mt-2 z-10 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg min-w-[120px] transition-colors duration-200">
                         <button
                           type="button"
                           onClick={() => handleEdit(goal)}
-                          className="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-2xl"
+                          className="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 first:rounded-t-2xl transition-colors duration-200"
                         >
-                          <FaEdit className="text-gray-500" /> Edit
+                          <FaEdit className="text-gray-500 dark:text-gray-400 transition-colors duration-200" /> Edit
                         </button>
                         <button
                           type="button"
                           onClick={() => openDeleteConfirm(goal)}
-                          className="w-full flex items-center gap-2 px-4 py-3 text-sm text-rose-600 hover:bg-rose-50 last:rounded-b-2xl border-t border-gray-100"
+                          className="w-full flex items-center gap-2 px-4 py-3 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 last:rounded-b-2xl border-t border-gray-100 dark:border-gray-700 transition-colors duration-200"
                         >
-                          <FaTrash className="text-rose-500" /> Delete
+                          <FaTrash className="text-rose-500 dark:text-rose-400 transition-colors duration-200" /> Delete
                         </button>
                       </div>
                     )}
@@ -311,9 +311,9 @@ export default function Goals() {
 
       <div
         ref={formRef}
-        className="bg-white border border-gray-100 rounded-3xl shadow-sm px-6 sm:px-10 py-10 mt-10"
+        className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-3xl shadow-sm px-6 sm:px-10 py-10 mt-10 transition-colors duration-200"
       >
-        <div className="flex items-center justify-between text-gray-400 text-sm uppercase tracking-[0.3em]">
+        <div className="flex items-center justify-between text-gray-400 dark:text-gray-500 text-sm uppercase tracking-[0.3em] transition-colors duration-200">
           <span>{editingId ? "Update Goal" : "Add Goal"}</span>
         </div>
 
@@ -389,7 +389,7 @@ export default function Goals() {
                     onChange={(e) => handleFormChange("category", e.target.value)}
                     className={`${INPUT_BASE_CLASSES} appearance-none pr-10`}
                   >
-                    <option value="Savings">Savings</option>
+                    <option value="General">General</option>
                     <option value="Electronics">Electronics</option>
                     <option value="Health">Health</option>
                     <option value="Education">Education</option>

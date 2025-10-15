@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
   FaUser,
@@ -13,15 +13,21 @@ import {
   FaInfoCircle,
 } from "react-icons/fa";
 import { useFont } from "../context/FontContext";
+import { useDarkMode } from "../context/DarkModeContext";
 import { authService } from "../services/api";
 
 export default function Settings() {
   const [notifications, setNotifications] = useState(true);
   const { dyslexiaFont, setDyslexiaFont } = useFont();
-  const [darkTheme, setDarkTheme] = useState(false);
+  const { darkMode, toggleDarkMode } = useDarkMode();
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState({ show: false, message: "", type: "info" });
   const navigate = useNavigate();
+
+  // Debug: Log dark mode state
+  useEffect(() => {
+    console.log('⚙️ Settings: Dark mode is', darkMode);
+  }, [darkMode]);
 
   const TOAST_ICON = {
     success: FaCheckCircle,
@@ -54,8 +60,8 @@ export default function Settings() {
       label: "Dark Theme",
       description: "Reduce glare and make SpendWise easier on the eyes.",
       icon: FaMoon,
-      value: darkTheme,
-      onToggle: () => setDarkTheme((prev) => !prev),
+      value: darkMode,
+      onToggle: toggleDarkMode,
     },
   ];
 
@@ -87,44 +93,44 @@ export default function Settings() {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-10 flex flex-col gap-2">
-        <span className="text-sm uppercase tracking-[0.3em] text-gray-400">Profile</span>
-        <h1 className="text-3xl font-semibold text-gray-900">Settings</h1>
-        <p className="text-gray-500">
+        <span className="text-sm uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Profile</span>
+        <h1 className="text-3xl font-semibold text-gray-900 dark:text-white">Settings</h1>
+        <p className="text-gray-500 dark:text-gray-400">
           Tune SpendWise to match your habits, accessibility needs, and account preferences.
         </p>
       </div>
 
       <div className="space-y-6">
-        <section className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Account</p>
-          <div className="mt-4 flex items-center justify-between rounded-2xl border border-gray-100 p-4">
+        <section className="rounded-3xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm transition-colors duration-200">
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Account</p>
+          <div className="mt-4 flex items-center justify-between rounded-2xl border border-gray-100 dark:border-gray-700 p-4">
             <div className="flex items-center gap-4">
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-2xl text-gray-600">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-2xl text-gray-600 dark:text-gray-300">
                 <FaUser />
               </span>
               <div>
-                <p className="text-base font-semibold text-gray-900">Profile & Security</p>
-                <p className="text-sm text-gray-500">Update your details, password, and security options.</p>
+                <p className="text-base font-semibold text-gray-900 dark:text-white">Profile & Security</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Update your details, password, and security options.</p>
               </div>
             </div>
-            <Link to="/account" className="text-gray-400 transition-colors hover:text-gray-600">
+            <Link to="/account" className="text-gray-400 dark:text-gray-500 transition-colors hover:text-gray-600 dark:hover:text-gray-300">
               <FaChevronRight size={18} />
             </Link>
           </div>
         </section>
 
-        <section className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Preferences</p>
-          <ul className="mt-4 divide-y divide-gray-100">
+        <section className="rounded-3xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm transition-colors duration-200">
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Preferences</p>
+          <ul className="mt-4 divide-y divide-gray-100 dark:divide-gray-700">
             {preferenceToggles.map((toggle) => (
               <li key={toggle.id} className="flex items-center justify-between gap-4 py-4">
                 <div className="flex items-center gap-4">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-lg text-gray-600">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-lg text-gray-600 dark:text-gray-300">
                     <toggle.icon />
                   </span>
                   <div>
-                    <p className="text-sm font-semibold text-gray-900">{toggle.label}</p>
-                    <p className="text-xs text-gray-500">{toggle.description}</p>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white">{toggle.label}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{toggle.description}</p>
                   </div>
                 </div>
                 <input
@@ -139,34 +145,34 @@ export default function Settings() {
           </ul>
         </section>
 
-        <section className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Tools</p>
+        <section className="rounded-3xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm transition-colors duration-200">
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Tools</p>
           <Link
             to="/currency-conversion"
-            className="mt-4 flex items-center justify-between rounded-2xl border border-gray-100 p-4 transition-colors hover:bg-gray-50"
+            className="mt-4 flex items-center justify-between rounded-2xl border border-gray-100 dark:border-gray-700 p-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             <div className="flex items-center gap-4">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-lg text-gray-600">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-lg text-gray-600 dark:text-gray-300">
                 <FaDollarSign />
               </span>
               <div>
-                <p className="text-sm font-semibold text-gray-900">Currency Conversion</p>
-                <p className="text-xs text-gray-500">Calculate balances in the currencies you monitor.</p>
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">Currency Conversion</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Calculate balances in the currencies you monitor.</p>
               </div>
             </div>
-            <FaChevronRight className="text-gray-400" />
+            <FaChevronRight className="text-gray-400 dark:text-gray-500" />
           </Link>
         </section>
 
-        <section className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Session</p>
-          <div className="mt-4 rounded-2xl border border-gray-100 p-6 text-center">
-            <p className="text-sm text-gray-500">
+        <section className="rounded-3xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm transition-colors duration-200">
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Session</p>
+          <div className="mt-4 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 text-center">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Ready for a reset? You'll be signed out immediately and can log back in whenever you're ready.
             </p>
             <button
               type="button"
-              className="mt-6 w-full rounded-full bg-rose-500 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-rose-600 disabled:opacity-70"
+              className="mt-6 w-full rounded-full bg-rose-500 dark:bg-rose-600 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-rose-600 dark:hover:bg-rose-700 disabled:opacity-70"
               onClick={handleLogout}
               disabled={loading}
             >
