@@ -42,7 +42,7 @@ public class AiAdviceService {
                     "month", ym.toString(),
                     "language", languageTag,
                     "noData", true,
-                    "message", "本月交易不足，暂无法生成建议。"
+                    "message", "Insufficient transactions this month to generate suggestions."
             );
         }
 
@@ -74,10 +74,10 @@ public class AiAdviceService {
             llmJson = gemini.generateAdviceJson(monthStr, CURRENCY, total, totals, languageTag);
         } catch (Exception ex) {
             llmJson = """
-                {"summary":"系统繁忙，已用规则生成简要建议。",
+                {"summary":"System is busy. Generated brief suggestions using rules.",
                  "bullets":[
-                   {"title":"为高占比类别限额","detail":"从每周固定额度开始"},
-                   {"title":"固定复盘日","detail":"每周回看非必要开销"}
+                   {"title":"Set limits for high-spending categories","detail":"Start with a fixed weekly budget"},
+                   {"title":"Schedule regular reviews","detail":"Review non-essential spending weekly"}
                  ]}""";
         }
 
