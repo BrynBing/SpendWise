@@ -31,7 +31,7 @@ const INITIAL_GOALS = [
     name: "Emergency fund",
     targetAmount: 2000,
     currentAmount: 1200,
-    category: "Savings",
+    category: "General",
     deadline: "2025-06-01",
   },
   {
@@ -44,10 +44,10 @@ const INITIAL_GOALS = [
   },
   {
     id: 6,
-    name: "Monthly savings",
+    name: "Monthly budget",
     targetAmount: 2000,
     currentAmount: 1234.60,
-    category: "Savings",
+    category: "General",
     deadline: "2024-09-30",
   },
 ];
@@ -62,7 +62,7 @@ const createEmptyFormState = () => ({
   name: "",
   targetAmount: "",
   currentAmount: "",
-  category: "Savings",
+  category: "General",
   deadline: "",
 });
 
@@ -79,10 +79,10 @@ export default function Goals() {
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const formRef = useRef(null);
 
-  // Calculate current and target savings
-  const currentSaving = goals.reduce((sum, goal) => sum + goal.currentAmount, 0);
-  const targetSaving = goals.reduce((sum, goal) => sum + goal.targetAmount, 0);
-  const savingsProgress = targetSaving > 0 ? (currentSaving / targetSaving) * 100 : 0;
+  // Calculate current and target spending
+  const currentSpending = goals.reduce((sum, goal) => sum + goal.currentAmount, 0);
+  const targetSpending = goals.reduce((sum, goal) => sum + goal.targetAmount, 0);
+  const spendingProgress = targetSpending > 0 ? (currentSpending / targetSpending) * 100 : 0;
 
   const validateForm = () => {
     const newErrors = {};
@@ -199,23 +199,23 @@ export default function Goals() {
         <span className="text-sm uppercase tracking-[0.3em] text-gray-400">Overview</span>
         <h1 className="text-3xl font-semibold text-gray-900">Spending Goals</h1>
         <p className="text-gray-500">
-          Set and track your savings goals to achieve your financial targets.
+          Set and track your spending goals to achieve your financial targets.
         </p>
       </div>
 
-      {/* Savings Overview */}
+      {/* Spending Overview */}
       <div className="grid gap-4 sm:grid-cols-2 mb-10">
         <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm transition-colors duration-200">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 transition-colors duration-200">Current Saving</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 transition-colors duration-200">Current Spending</p>
           <p className="mt-3 text-2xl font-semibold text-gray-900 dark:text-white transition-colors duration-200">
-            {formatCurrency(currentSaving)}
+            {formatCurrency(currentSpending)}
           </p>
         </div>
         
         <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm transition-colors duration-200">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 transition-colors duration-200">Target Saving</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 transition-colors duration-200">Target Budget</p>
           <p className="mt-3 text-2xl font-semibold text-gray-900 dark:text-white transition-colors duration-200">
-            {formatCurrency(targetSaving)}
+            {formatCurrency(targetSpending)}
           </p>
         </div>
       </div>
@@ -226,11 +226,11 @@ export default function Goals() {
         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 transition-colors duration-200">
           <div
             className="h-3 rounded-full bg-gray-900 dark:bg-indigo-500 transition-all duration-300"
-            style={{ width: `${Math.min(savingsProgress, 100)}%` }}
+            style={{ width: `${Math.min(spendingProgress, 100)}%` }}
           ></div>
         </div>
         <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 transition-colors duration-200">
-          {savingsProgress.toFixed(1)}% of total target achieved
+          {spendingProgress.toFixed(1)}% of total target achieved
         </p>
       </div>
 
@@ -389,7 +389,7 @@ export default function Goals() {
                     onChange={(e) => handleFormChange("category", e.target.value)}
                     className={`${INPUT_BASE_CLASSES} appearance-none pr-10`}
                   >
-                    <option value="Savings">Savings</option>
+                    <option value="General">General</option>
                     <option value="Electronics">Electronics</option>
                     <option value="Health">Health</option>
                     <option value="Education">Education</option>

@@ -14,7 +14,7 @@ import {
 const balanceData = {
   total: 12345.6,
   percentChange: 0.8,
-  monthlySavings: 123.5,
+  monthlyBudget: 123.5,
 };
 
 // Chart data for different time ranges
@@ -65,9 +65,7 @@ const chartData = {
 const recentTransactionsData = [
   { id: 1, name: "Grocery", amount: -200, type: "Expense" },
   { id: 2, name: "Uber", amount: -50, type: "Expense" },
-  { id: 3, name: "Pay Check", amount: 500, type: "Income" },
   { id: 4, name: "Grocery", amount: -200, type: "Expense" },
-  { id: 5, name: "Bank Transfer", amount: 300, type: "Income" },
   { id: 6, name: "Money Transfer", amount: -80, type: "Expense" },
 ];
 
@@ -77,7 +75,7 @@ const goalsData = [
   { id: 3, name: "Laptop", amount: 2000, progress: 40 },
   { id: 4, name: "Emergency fund", amount: 2000, progress: 85 },
   { id: 5, name: "University Tuition", amount: 3000, progress: 30 },
-  { id: 6, name: "Monthly savings", amount: 2000, progress: 50 },
+  { id: 6, name: "Monthly budget", amount: 2000, progress: 50 },
 ];
 
 const timeRanges = ["Day", "Week", "Month", "Year"];
@@ -96,18 +94,12 @@ export default function Dashboard() {
   const transactionTotals = useMemo(() => {
     return recentTransactionsData.reduce(
       (acc, transaction) => {
-        if (transaction.amount >= 0) {
-          acc.income += transaction.amount;
-        } else {
-          acc.expense += Math.abs(transaction.amount);
-        }
+        acc.expense += Math.abs(transaction.amount);
         return acc;
       },
-      { income: 0, expense: 0 }
+      { expense: 0 }
     );
   }, []);
-
-  const netCashFlow = transactionTotals.income - transactionTotals.expense;
 
   const averageGoalProgress = useMemo(() => {
     if (goalsData.length === 0) {
@@ -154,10 +146,10 @@ export default function Dashboard() {
         </div>
 
         <div className="rounded-3xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm transition-colors duration-200">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Monthly Save</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Monthly Budget</p>
           <div className="mt-4 flex items-end justify-between">
             <p className="text-3xl font-semibold text-gray-900 dark:text-white">
-              {formatCurrency(balanceData.monthlySavings)}
+              {formatCurrency(balanceData.monthlyBudget)}
             </p>
             <span className="text-xs font-medium uppercase tracking-[0.3em] text-emerald-500">
               On Track
@@ -166,17 +158,13 @@ export default function Dashboard() {
         </div>
 
         <div className="rounded-3xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm transition-colors duration-200">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Cash Flow</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Total Expense</p>
           <div className="mt-4 flex items-end justify-between">
-            <p
-              className={`text-3xl font-semibold ${
-                netCashFlow >= 0 ? "text-emerald-600" : "text-rose-500"
-              }`}
-            >
-              {formatCurrency(Math.abs(netCashFlow))}
+            <p className="text-3xl font-semibold text-rose-500">
+              {formatCurrency(transactionTotals.expense)}
             </p>
             <span className="text-xs font-medium uppercase tracking-[0.3em] text-gray-500 dark:text-gray-400">
-              {netCashFlow >= 0 ? "Positive" : "Negative"}
+              This Period
             </span>
           </div>
         </div>
@@ -187,7 +175,7 @@ export default function Dashboard() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Cash Flow</p>
-              <h2 className="mt-2 text-xl font-semibold text-gray-900 dark:text-white">Savings vs Spending</h2>
+              <h2 className="mt-2 text-xl font-semibold text-gray-900 dark:text-white">Budget vs Spending</h2>
             </div>
             <div className="flex gap-2">
               {timeRanges.map((range) => (
@@ -330,7 +318,7 @@ export default function Dashboard() {
             <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Quick Action</p>
             <h2 className="mt-2 text-xl font-semibold text-gray-900 dark:text-white">Add Transaction</h2>
             <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-              Jump straight into logging a new income or expense without leaving your
+              Jump straight into logging a new expense without leaving your
               overview.
             </p>
           </div>

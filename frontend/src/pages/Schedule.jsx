@@ -135,7 +135,7 @@ export default function Schedule() {
   const totalsByCurrency = useMemo(
     () =>
       transactions.reduce((acc, t) => {
-        if (!acc[t.currency]) acc[t.currency] = { income: 0, expense: 0 };
+        if (!acc[t.currency]) acc[t.currency] = { expense: 0 };
         acc[t.currency].expense += t.amount;
         return acc;
       }, {}),
@@ -143,7 +143,6 @@ export default function Schedule() {
   );
 
   const currencyTotals = totalsByCurrency[form.currency] ?? {
-    income: 0,
     expense: 0,
   };
   const totalExpense = currencyTotals.expense;

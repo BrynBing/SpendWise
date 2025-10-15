@@ -161,7 +161,7 @@ export default function Reports() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 transition-colors duration-200">Overview</p>
-              <h2 className="mt-2 text-xl font-semibold text-gray-900 dark:text-white transition-colors duration-200">Savings vs Spending</h2>
+              <h2 className="mt-2 text-xl font-semibold text-gray-900 dark:text-white transition-colors duration-200">Budget vs Spending</h2>
               <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 transition-colors duration-200">
                 Comparing performance across your selected timeframe.
               </p>

@@ -185,7 +185,9 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mt-2 transition-colors duration-200">Optimize</h3>
               <p className="mt-2 text-gray-600 dark:text-gray-300 transition-colors duration-200">
-                Receive AI-powered recommendations tailored to your financial habits. Get personalized advice to improve your financial health and achieve your long-term savings goals.
+                <p className="text-base leading-relaxed text-gray-600 dark:text-gray-400">
+                Receive AI-powered recommendations tailored to your financial habits. Get personalized advice to improve your financial health and achieve your long-term spending goals.
+              </p>
               </p>
             </motion.div>
           </div>

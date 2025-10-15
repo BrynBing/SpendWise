@@ -12,13 +12,6 @@ const CATEGORY_OPTIONS = {
     "Shopping",       // ID: 4
     "Utilities",      // ID: 5
   ],
-  // income: [
-  //   "Salary",       // ID: 10
-  //   "Freelance",    // ID: 11
-  //   "Investments",  // ID: 12
-  //   "Gift",         // ID: 13
-  //   "Refund",       // ID: 14
-  // ],
 };
 
 // Backend categories with their database IDs (from PostgreSQL query)
@@ -40,7 +33,6 @@ const CURRENCY_OPTIONS = ["USD", "AUD", "EUR", "GBP"];
 const FILTER_OPTIONS = [
   { value: "all", label: "All" },
   { value: "expense", label: "Expenses" },
-  // { value: "income", label: "Income" }, // COMMENTED OUT - INCOME DISABLED
 ];
 
 const formatCurrency = (value, currency) =>
@@ -148,11 +140,10 @@ export default function Expense() {
           
           return {
             id: record.expenseId,
-            amount: Math.abs(backendAmount), // Always display positive
+            amount: Math.abs(backendAmount),
             currency: record.currency,
-            mode: 'expense', // Always expense for now
-            // mode: isIncome ? 'income' : 'expense', // COMMENTED OUT - INCOME DISABLED
-            category: categoryName, // Use backend category name directly
+            mode: 'expense',
+            category: categoryName,
             description: record.description || '',
             date: record.expenseDate ? new Date(record.expenseDate).toISOString() : new Date().toISOString(),
             isRecurring: record.isRecurring || false,
@@ -212,15 +203,11 @@ export default function Expense() {
       transactions.reduce((acc, item) => {
         const currencyKey = item.currency || "USD";
         if (!acc[currencyKey]) {
-          acc[currencyKey] = { income: 0, expense: 0 };
+          acc[currencyKey] = { expense: 0 };
         }
 
         const numericAmount = Number(item.amount) || 0;
-        if (item.mode === "income") {
-          acc[currencyKey].income += numericAmount;
-        } else {
-          acc[currencyKey].expense += numericAmount;
-        }
+        acc[currencyKey].expense += numericAmount;
 
         return acc;
       }, {}),
@@ -228,10 +215,8 @@ export default function Expense() {
   );
 
   const currencyTotals = totalsByCurrency[form.currency] ?? {
-    income: 0,
     expense: 0,
   };
-  const netBalance = currencyTotals.income - currencyTotals.expense;
 
   const visibleTransactions = useMemo(() => {
     if (filter === "all") {
@@ -335,16 +320,14 @@ export default function Expense() {
         );
       } else {
         // Create new transaction via API
-        // Backend expects: { category: { categoryId: number }, amount, currency, expenseDate, description, isRecurring }
-        // Income is stored as negative amount, expense as positive
         const recordData = {
           category: {
-            categoryId: Number(categoryId) // Ensure it's a number
+            categoryId: Number(categoryId)
           },
-          amount: Number(backendAmount), // Ensure it's a number
+          amount: Number(backendAmount),
           currency: baseTransaction.currency,
-          description: baseTransaction.description || "", // Ensure it's a string
-          expenseDate: new Date().toISOString().split('T')[0], // YYYY-MM-DD format
+          description: baseTransaction.description || "",
+          expenseDate: new Date().toISOString().split('T')[0],
           isRecurring: form.isRecurring || false,
           paymentMethod: "Credit Card",
           notes: "",
@@ -464,7 +447,7 @@ export default function Expense() {
           </button>
         </div>
         <p className="text-gray-500 dark:text-gray-400">
-          Log your spending and income to keep an eye on your cash flow.
+          Log your spending to keep an eye on your cash flow.
         </p>
       </div>
 
@@ -481,27 +464,11 @@ export default function Expense() {
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-3 mb-10">
+      <div className="grid gap-4 sm:grid-cols-1 mb-10">
         <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 shadow-sm transition-colors duration-200">
           <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Total Expense</p>
           <p className="mt-3 text-2xl font-semibold text-rose-500">
             {formatCurrency(currencyTotals.expense, form.currency)}
-          </p>
-        </div>
-        <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 shadow-sm transition-colors duration-200">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Total Income</p>
-          <p className="mt-3 text-2xl font-semibold text-emerald-500">
-            {formatCurrency(currencyTotals.income, form.currency)}
-          </p>
-        </div>
-        <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 shadow-sm transition-colors duration-200">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Balance</p>
-          <p
-            className={`mt-3 text-2xl font-semibold ${
-              netBalance >= 0 ? "text-emerald-600" : "text-rose-500"
-            }`}
-          >
-            {formatCurrency(netBalance, form.currency)}
           </p>
         </div>
       </div>
@@ -655,25 +622,6 @@ export default function Expense() {
                     )}
                   </div>
                 </div>
-
-                {/* MODE SELECTOR - COMMENTED OUT (INCOME DISABLED) */}
-                {/* <div>
-                  <label className="text-sm uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
-                    Select mode
-                  </label>
-                  <div className="relative mt-3 border-b border-gray-200 dark:border-gray-600">
-                    <select
-                      value={form.mode}
-                      onChange={handleChange("mode")}
-                      className="w-full appearance-none bg-transparent py-3 text-lg font-medium text-gray-900 dark:text-white focus:outline-none"
-                      aria-label="Select mode"
-                    >
-                      <option value="expense">Expense</option>
-                      <option value="income">Income</option>
-                    </select>
-                    <FaChevronDown className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
-                  </div>
-                </div> */}
 
                 <div>
                   <label className="text-sm uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
