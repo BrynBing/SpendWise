@@ -1,292 +1,270 @@
-import React, { cloneElement, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  FaDownload,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  Rectangle,
+} from "recharts";
+import {
   FaShoppingCart,
   FaTshirt,
   FaSubway,
   FaCoffee,
-  FaBook,
-  FaSuitcase,
+  FaUtensils,
+  FaGamepad,
+  FaLightbulb,
 } from "react-icons/fa";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-} from "recharts";
+import { expenseRecordService } from "../services/api";
 
-const timeRanges = ["Day", "Week", "Month", "Year"];
-
-// Placeholder data for the chart
-const chartData = {
-  Day: [
-    { name: "12am", save: 500, spend: 600 },
-    { name: "4am", save: 800, spend: 700 },
-    { name: "8am", save: 1200, spend: 1000 },
-    { name: "12pm", save: 1500, spend: 1200 },
-    { name: "4pm", save: 1800, spend: 1500 },
-    { name: "8pm", save: 2100, spend: 2000 },
-    { name: "11pm", save: 2400, spend: 2200 },
-  ],
-  Week: [
-    { name: "Mon", save: 1000, spend: 800 },
-    { name: "Tue", save: 1500, spend: 1300 },
-    { name: "Wed", save: 2000, spend: 1600 },
-    { name: "Thu", save: 2200, spend: 2000 },
-    { name: "Fri", save: 2700, spend: 2400 },
-    { name: "Sat", save: 3200, spend: 2800 },
-    { name: "Sun", save: 3500, spend: 3200 },
-  ],
-  Month: [
-    { name: "1", save: 1000, spend: 800 },
-    { name: "5", save: 1400, spend: 1200 },
-    { name: "10", save: 2000, spend: 1700 },
-    { name: "15", save: 2600, spend: 2200 },
-    { name: "20", save: 3000, spend: 2600 },
-    { name: "25", save: 3400, spend: 3100 },
-    { name: "30", save: 3800, spend: 3500 },
-  ],
-  Year: [
-    { name: "JAN", save: 1200, spend: 1500 },
-    { name: "FEB", save: 1000, spend: 1300 },
-    { name: "MAR", save: 800, spend: 1100 },
-    { name: "APR", save: 1500, spend: 2000 },
-    { name: "MAY", save: 3200, spend: 2000 },
-    { name: "JUN", save: 2700, spend: 1500 },
-    { name: "JUL", save: 3500, spend: 2900 },
-    { name: "AUG", save: 4200, spend: 3800 },
-    { name: "SEP", save: 3800, spend: 3000 },
-    { name: "OCT", save: 4500, spend: 3500 },
-    { name: "NOV", save: 4800, spend: 4200 },
-    { name: "DEC", save: 5000, spend: 4800 },
-  ],
+// 类别图标映射
+const categoryIcons = {
+  Food: <FaUtensils />,
+  Shopping: <FaShoppingCart />,
+  Transport: <FaSubway />,
+  Entertainment: <FaGamepad />,
+  Utilities: <FaLightbulb />,
+  // 添加更多类别和对应的图标
 };
 
-// Top categories data
-const topCategoriesData = [
-  {
-    id: 1,
-    name: "Clothes",
-    icon: <FaTshirt />,
-    amount: 400,
-    change: 4,
-    isIncrease: false,
-  },
-  {
-    id: 2,
-    name: "Grocery Shopping",
-    icon: <FaShoppingCart />,
-    amount: 300,
-    change: 3,
-    isIncrease: true,
-  },
-  {
-    id: 3,
-    name: "Public Transport",
-    icon: <FaSubway />,
-    amount: 200,
-    change: 2,
-    isIncrease: false,
-  },
-  {
-    id: 4,
-    name: "Coffee",
-    icon: <FaCoffee />,
-    amount: 100,
-    change: 1,
-    isIncrease: true,
-  },
-  {
-    id: 5,
-    name: "Books",
-    icon: <FaBook />,
-    amount: 200,
-    change: 2,
-    isIncrease: false,
-  },
-  {
-    id: 6,
-    name: "Travel",
-    icon: <FaSuitcase />,
-    amount: 100,
-    change: 1,
-    isIncrease: true,
-  },
-];
+// 类别颜色映射
+const categoryColors = {
+  Food: "#FF6384",
+  Shopping: "#36A2EB",
+  Transport: "#FFCE56",
+  Entertainment: "#4BC0C0",
+  Utilities: "#9966FF",
+  // 添加更多类别和对应的颜色
+};
 
 const formatCurrency = (amount) =>
   new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-    maximumFractionDigits: 0,
+    maximumFractionDigits: 2,
   }).format(amount);
 
-const changeBadgeClass = (isIncrease) =>
-  `inline-flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] ${
-    isIncrease ? "bg-rose-50 text-rose-500" : "bg-emerald-50 text-emerald-600"
-  }`;
-
-const CustomTooltip = ({ active, payload, label }) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs shadow-md">
-        <p className="font-medium text-gray-900">{label}</p>
-        <p className="text-emerald-500">Save: {formatCurrency(payload[0].value)}</p>
-        <p className="text-rose-500">Spend: {formatCurrency(payload[1].value)}</p>
-      </div>
-    );
-  }
-  return null;
-};
-
 export default function Reports() {
-  const [timeRange, setTimeRange] = useState("Year");
-  const currentMonth = "August";
+  const [reportData, setReportData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
+  // 获取当前年份和周数
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  
+  // 计算当前周数 (1-52)
+  const getWeekNumber = (date) => {
+    const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+    const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
+    return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+  };
+  
+  const currentWeek = getWeekNumber(currentDate);
+  
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+  const [selectedWeek, setSelectedWeek] = useState(currentWeek);
+
+  // 生成年份选项 (当前年份往前5年)
+  const yearOptions = [];
+  for (let i = 0; i < 5; i++) {
+    yearOptions.push(currentYear - i);
+  }
+
+  // 生成周数选项 (1-52)
+  const weekOptions = [];
+  for (let i = 1; i <= 52; i++) {
+    weekOptions.push(i);
+  }
+
+  // 获取周报表数据
+  const fetchWeeklyReport = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      // 将 recordService 改为 expenseRecordService
+      const response = await expenseRecordService.getWeeklyReport(selectedYear, selectedWeek);
+      
+      // 过滤掉totalAmount为0的类别
+      const filteredData = response.data.filter(item => item.totalAmount > 0);
+      setReportData(filteredData);
+    } catch (err) {
+      console.error("Error fetching weekly report:", err);
+      setError("Failed to load report data. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchWeeklyReport();
+  }, [selectedYear, selectedWeek]);
+
+  // 为图表转换数据格式
+  const chartData = reportData.map(item => ({
+    name: item.categoryName,
+    amount: item.totalAmount,
+    fill: categoryColors[item.categoryName] || "#8884d8", // 使用类别颜色或默认颜色
+  }));
+
+  // 获取所有可能的类别，即使当前周没有支出
+  const allCategories = ["Food", "Shopping", "Transport", "Entertainment", "Utilities"];
+  
+  // 创建用于卡片显示的数据，包括所有类别（没有支出的显示为0）
+  const categoryCards = allCategories.map(category => {
+    const found = reportData.find(item => item.categoryName === category);
+    return {
+      name: category,
+      amount: found ? found.totalAmount : 0,
+      icon: categoryIcons[category] || <FaShoppingCart />,
+    };
+  });
+
+  const CustomTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-lg">
+          <p className="font-semibold text-gray-900">{payload[0].payload.name}</p>
+          <p className="text-indigo-600">{formatCurrency(payload[0].value)}</p>
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <div className="mb-10 flex flex-col gap-2">
+    <div className="max-w-6xl mx-auto p-4">
+      <div className="mb-8 flex flex-col gap-2">
         <span className="text-sm uppercase tracking-[0.3em] text-gray-400">Insights</span>
-        <h1 className="text-3xl font-semibold text-gray-900">Reports</h1>
+        <h1 className="text-3xl font-semibold text-gray-900">Weekly Reports</h1>
         <p className="text-gray-500">
-          Understand how your money moves over time and where it tends to go.
+          Understand your spending patterns for the selected week.
         </p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <section className="rounded-3xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm lg:col-span-2 transition-colors duration-200">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 transition-colors duration-200">Overview</p>
-              <h2 className="mt-2 text-xl font-semibold text-gray-900 dark:text-white transition-colors duration-200">Budget vs Spending</h2>
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 transition-colors duration-200">
-                Comparing performance across your selected timeframe.
-              </p>
-            </div>
-            <div className="flex flex-col items-end gap-3 sm:flex-row sm:items-center">
-              <div className="flex gap-2">
-                {timeRanges.map((range) => (
-                  <button
-                    key={range}
-                    type="button"
-                    onClick={() => setTimeRange(range)}
-                    className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] transition-colors ${
-                      timeRange === range
-                        ? "bg-gray-900 dark:bg-indigo-600 text-white"
-                        : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                    }`}
-                  >
-                    {range}
-                  </button>
-                ))}
-              </div>
-              <button
-                type="button"
-                className="flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-700 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-gray-600 dark:text-gray-300 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
-              >
-                <FaDownload /> Export
-              </button>
+      {/* 选择器部分 */}
+      <div className="mb-6 flex flex-wrap items-center gap-4">
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium text-gray-700">Year:</label>
+          <select
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+            className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          >
+            {yearOptions.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium text-gray-700">Week:</label>
+          <select
+            value={selectedWeek}
+            onChange={(e) => setSelectedWeek(parseInt(e.target.value))}
+            className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          >
+            {weekOptions.map((week) => (
+              <option key={week} value={week}>
+                {week}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <button
+          onClick={fetchWeeklyReport}
+          className="ml-auto rounded-full bg-indigo-600 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white hover:bg-indigo-700"
+        >
+          Refresh Report
+        </button>
+      </div>
+
+      {/* 加载和错误状态 */}
+      {loading && (
+        <div className="flex h-60 items-center justify-center">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent"></div>
+        </div>
+      )}
+
+      {error && (
+        <div className="my-8 rounded-lg bg-red-50 p-4 text-red-600">
+          <p>{error}</p>
+        </div>
+      )}
+
+      {/* 图表部分 */}
+      {!loading && !error && (
+        <>
+          <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <h2 className="mb-4 text-xl font-semibold text-gray-900">Weekly Spending by Category</h2>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={chartData}
+                  margin={{
+                    top: 20,
+                    right: 30,
+                    left: 20,
+                    bottom: 20,
+                  }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                  <YAxis
+                    tickFormatter={(value) => `$${value}`}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend />
+                  <Bar
+                    dataKey="amount"
+                    name="Amount"
+                    fill="#8884d8"
+                    activeBar={<Rectangle fill="#6366F1" stroke="#4F46E5" />}
+                    radius={[4, 4, 0, 0]}
+                    barSize={40}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
 
-          <div className="mt-8 h-80 rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-2 transition-colors duration-200">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={chartData[timeRange]}
-                margin={{ top: 10, right: 10, left: 0, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
-                <XAxis
-                  dataKey="name"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 10 }}
-                />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 10 }}
-                  domain={["dataMin - 100", "dataMax + 100"]}
-                  tickFormatter={(value) => `$${value}`}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Line
-                  type="monotone"
-                  dataKey="save"
-                  stroke="#10B981"
-                  strokeWidth={2}
-                  dot={false}
-                  activeDot={{ r: 5 }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="spend"
-                  stroke="#EF4444"
-                  strokeWidth={2}
-                  dot={false}
-                  activeDot={{ r: 5 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-4 text-xs">
-            <div className="flex items-center gap-2 text-gray-500">
-              <span className="inline-block h-[2px] w-6 bg-emerald-500" />
-              <span className="tracking-[0.3em]">Save</span>
-            </div>
-            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 transition-colors duration-200">
-              <span className="inline-block h-[2px] w-6 bg-rose-500 dark:bg-rose-400" />
-              <span className="tracking-[0.3em]">Spend</span>
-            </div>
-            <span className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 transition-colors duration-200">
-              {currentMonth} Snapshot
-            </span>
-          </div>
-        </section>
-
-        <section className="rounded-3xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm transition-colors duration-200">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 transition-colors duration-200">Categories</p>
-          <h2 className="mt-2 text-xl font-semibold text-gray-900 dark:text-white transition-colors duration-200">Top Spending</h2>
-          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 transition-colors duration-200">
-            Your highest spending areas this {currentMonth.toLowerCase()}.
-          </p>
-
-          <ul className="mt-6 grid gap-4 sm:grid-cols-2">
-            {topCategoriesData.map((category) => (
-              <li
-                key={category.id}
-                className="rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 flex flex-col h-full min-h-[120px] transition-colors duration-200"
-              >
-                <div className="flex items-start gap-3 mb-3">
-                  <span className="flex h-10 w-10 min-h-[2.5rem] min-w-[2.5rem] items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-lg text-gray-600 dark:text-gray-300 flex-shrink-0 mt-1 transition-colors duration-200">
-                    {cloneElement(category.icon, { className: "w-4 h-4" })}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white leading-tight transition-colors duration-200">
-                      {category.name}
-                    </p>
-                    <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 mt-1 transition-colors duration-200">
-                      Spent
-                    </p>
+          {/* 类别卡片 */}
+          <div>
+            <h2 className="mb-4 text-xl font-semibold text-gray-900">Spending Details</h2>
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+              {categoryCards.map((category) => (
+                <div
+                  key={category.name}
+                  className="flex flex-col rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
+                >
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                      {category.icon}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900">{category.name}</p>
+                      <p className="text-xs uppercase tracking-widest text-gray-500">
+                        SPENT
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <div className="mt-auto pt-2 flex items-center justify-between">
-                  <p className="text-lg font-semibold text-gray-900 dark:text-white transition-colors duration-200">
+                  <p className="mt-auto text-xl font-bold text-gray-900">
                     {formatCurrency(category.amount)}
                   </p>
-                  <span className={changeBadgeClass(category.isIncrease)}>
-                    {category.isIncrease ? "↑" : "↓"} {category.change}%
-                  </span>
                 </div>
-              </li>
-            ))}
-          </ul>
-        </section>
-      </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
