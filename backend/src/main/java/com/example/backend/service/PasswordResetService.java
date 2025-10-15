@@ -8,6 +8,9 @@ import com.example.backend.repository.UserSecurityAnswerRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import jakarta.persistence.EntityNotFoundException;
+import java.security.InvalidParameterException;
+
 @Service
 public class PasswordResetService {
 
@@ -46,6 +49,27 @@ public class PasswordResetService {
         user.setPassword_hash(passwordEncoder.encode(dto.getNewPassword()));
         userRepository.save(user);
         return true;
+    }
+
+    public boolean changePassword(Integer userId, String currentPassword, String newPassword) {
+        try {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new EntityNotFoundException("User not found"));
+            
+          
+            if (!passwordEncoder.matches(currentPassword, user.getPassword_hash())) {
+                return false; 
+            }
+            
+            
+            user.setPassword_hash(passwordEncoder.encode(newPassword));
+            userRepository.save(user);
+            
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }
 

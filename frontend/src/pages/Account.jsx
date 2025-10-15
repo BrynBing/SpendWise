@@ -8,7 +8,7 @@ import {
   FaTimes,
   FaUser,
 } from "react-icons/fa";
-import { userService } from "../services/api";
+import { passwordResetService, userService } from "../services/api";
 
 const INPUT_CLASSES =
   "mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-300 focus:border-gray-400 focus:outline-none";
@@ -216,11 +216,50 @@ export default function Account() {
     setPasswordModal((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handlePasswordSubmit = (event) => {
+  const handlePasswordSubmit = async (event) => {
     event.preventDefault();
-    // 密码更新功能暂不实现
-    closePasswordModal();
-    showToast("Password change functionality is not available yet", "info");
+    
+
+    if (!passwordModal.currentPassword) {
+      showToast("Current password is required", "error");
+      return;
+    }
+    
+    if (!passwordModal.newPassword) {
+      showToast("New password is required", "error");
+      return;
+    }
+    
+    if (passwordModal.newPassword !== passwordModal.confirmPassword) {
+      showToast("New passwords do not match", "error");
+      return;
+    }
+    
+
+    if (passwordModal.newPassword.length < 8) {
+      showToast("New password must be at least 8 characters long", "error");
+      return;
+    }
+    
+    try {
+      setLoading(true);
+
+      await passwordResetService.changePassword(
+        passwordModal.currentPassword,
+        passwordModal.newPassword
+      );
+
+      closePasswordModal();
+
+      showToast("Password updated successfully", "success");
+    } catch (error) {
+
+      const errorMessage = error.response?.data || "Failed to update password";
+      showToast(errorMessage, "error");
+      console.error("Error updating password:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const closePasswordModal = () => {
@@ -472,9 +511,18 @@ export default function Account() {
 
               <button
                 type="submit"
-                className="w-full rounded-full bg-gray-900 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-gray-700"
+                disabled={loading}
+                className="w-full rounded-full bg-gray-900 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-gray-700 disabled:opacity-50"
               >
-                Save Password
+                {loading ? (
+                  <span className="flex items-center justify-center">
+                    <svg className="w-5 h-5 mr-2 animate-spin" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Updating...
+                  </span>
+                ) : "Save Password"}
               </button>
             </form>
           </div>

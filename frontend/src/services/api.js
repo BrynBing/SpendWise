@@ -68,6 +68,14 @@ export const passwordResetService = {
       newPassword,
     });
   },
+  
+  // change password for logged in users
+  changePassword: (currentPassword, newPassword) => {
+    return api.post("/api/reset-password/change", {
+      currentPassword,
+      newPassword
+    });
+  }
 };
 
 // expense record apis
