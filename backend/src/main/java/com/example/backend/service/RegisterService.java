@@ -5,11 +5,11 @@ import com.example.backend.model.User;
 import com.example.backend.model.SecurityQuestion;
 import com.example.backend.model.UserSecurityAnswer;
 import com.example.backend.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import com.example.backend.repository.QuestionRepository;
 import com.example.backend.repository.UserSecurityAnswerRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
@@ -20,16 +20,23 @@ public class RegisterService {
     private final PasswordEncoder passwordEncoder;
     private final QuestionRepository questionRepository;
     private final UserSecurityAnswerRepository userSecurityAnswerRepository;
+    private final AchievementService achievementService; //
 
     @Autowired
-    public RegisterService(UserRepository userRepository, PasswordEncoder passwordEncoder, QuestionRepository questionRepository, UserSecurityAnswerRepository userSecurityAnswerRepository) {
+    public RegisterService(UserRepository userRepository,
+                           PasswordEncoder passwordEncoder,
+                           QuestionRepository questionRepository,
+                           UserSecurityAnswerRepository userSecurityAnswerRepository,
+                           AchievementService achievementService) { //
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.questionRepository = questionRepository;
         this.userSecurityAnswerRepository = userSecurityAnswerRepository;
+        this.achievementService = achievementService;
     }
 
     public User register(RegisterDTO dto) {
+
         if (userRepository.findByUsername(dto.getUsername()) != null) {
             throw new RuntimeException("Username already exists");
         }
@@ -49,10 +56,9 @@ public class RegisterService {
 
         User savedUser = userRepository.save(user);
 
-        // set security question and answer if provided
         if (dto.getQuestionId() != null && dto.getAnswer() != null) {
             SecurityQuestion question = questionRepository.findById(dto.getQuestionId())
-                .orElseThrow(() -> new RuntimeException("Invalid security question"));
+                    .orElseThrow(() -> new RuntimeException("Invalid security question"));
 
             UserSecurityAnswer answer = new UserSecurityAnswer();
             answer.setUser(savedUser);
@@ -61,7 +67,12 @@ public class RegisterService {
             userSecurityAnswerRepository.save(answer);
         }
 
+        try {
+            achievementService.earnIfNotEarned(savedUser.getUser_id(), "ACCOUNT_CREATED");
+        } catch (Exception e) {
+            System.err.println("Failed to grant ACCOUNT_CREATED achievement: " + e.getMessage());
+        }
+
         return savedUser;
     }
-
 }
