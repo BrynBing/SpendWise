@@ -4,6 +4,7 @@ import com.example.backend.model.User;
 import com.example.backend.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.example.backend.service.AchievementService;
 
 import java.time.LocalDateTime;
 
@@ -12,10 +13,12 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AchievementService achievementService;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, AchievementService achievementService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.achievementService = achievementService;
     }
 
     /**
