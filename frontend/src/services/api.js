@@ -72,30 +72,35 @@ export const passwordResetService = {
 
 // expense record apis
 export const expenseRecordService = {
-  getAllRecords: () => {
-    return api.get("/api/records");
+  getAllRecords: async () => {
+    const response = await api.get("/api/records");
+    return response.data;
   },
 
-  searchRecords: (params) => {
+  searchRecords: async (params) => {
     // includes filtering, pagination, and sorting
-    return api.get("/api/records/search", { params });
+    const response = await api.get("/api/records/search", { params });
+    return response.data;
   },
 
-  createRecord: (recordData, frequency = null) => {
+  createRecord: async (recordData, frequency = null) => {
     // includes one-time and recurring records
     const params = frequency ? { frequency } : {};
-    return api.post("/api/records", recordData, { params });
+    const response = await api.post("/api/records", recordData, { params });
+    return response.data;
   },
 
-  updateRecord: (id, recordData, frequency = null) => {
+  updateRecord: async (id, recordData, frequency = null) => {
     const params = frequency ? { frequency } : {};
-    return api.put(`/api/records/${id}`, recordData, { params });
+    const response = await api.put(`/api/records/${id}`, recordData, { params });
+    return response.data;
   },
 
-  deleteRecord: (id, cancelRecurring = false) => {
-    return api.delete(`/api/records/${id}`, {
+  deleteRecord: async (id, cancelRecurring = false) => {
+    const response = await api.delete(`/api/records/${id}`, {
       params: { cancelRecurring },
     });
+    return response.data;
   },
 
   getWeeklyReport: (year, week) => {

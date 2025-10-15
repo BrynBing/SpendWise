@@ -63,6 +63,7 @@ const createEmptyFormState = () => ({
   mode: "expense",
   category: CATEGORY_OPTIONS.expense[0],
   description: "",
+  isRecurring: false,
 });
 
 export default function Expense() {
@@ -119,7 +120,7 @@ export default function Expense() {
         
         // Build category ID map from actual backend data
         const backendCategoryMap = {};
-        response.data.forEach((record) => {
+        response.forEach((record) => {
           if (record.category) {
             backendCategoryMap[record.category.name] = record.category.id;
           }
@@ -134,11 +135,11 @@ export default function Expense() {
         // Store the category map for creating new records
         setCategoryMap(backendCategoryMap);
         console.log("Backend category IDs:", backendCategoryMap);
-        console.log("Total records fetched:", response.data.length);
+        console.log("Total records fetched:", response.length);
         
         // Transform backend data to frontend format
         // Backend stores all as positive amounts for expenses only
-        const transformedData = response.data.map((record) => {
+        const transformedData = response.map((record) => {
           const categoryName = record.category?.name || "Food";
           const backendAmount = parseFloat(record.amount);
           
@@ -154,6 +155,7 @@ export default function Expense() {
             category: categoryName, // Use backend category name directly
             description: record.description || '',
             date: record.expenseDate ? new Date(record.expenseDate).toISOString() : new Date().toISOString(),
+            isRecurring: record.isRecurring || false,
           };
         });
         
@@ -333,7 +335,7 @@ export default function Expense() {
         );
       } else {
         // Create new transaction via API
-        // Backend expects: { category: { categoryId: number }, amount, currency, expenseDate, description }
+        // Backend expects: { category: { categoryId: number }, amount, currency, expenseDate, description, isRecurring }
         // Income is stored as negative amount, expense as positive
         const recordData = {
           category: {
@@ -343,16 +345,19 @@ export default function Expense() {
           currency: baseTransaction.currency,
           description: baseTransaction.description || "", // Ensure it's a string
           expenseDate: new Date().toISOString().split('T')[0], // YYYY-MM-DD format
+          isRecurring: form.isRecurring || false,
+          paymentMethod: "Credit Card",
+          notes: "",
         };
 
         console.log("Creating expense record with data:", JSON.stringify(recordData, null, 2));
         const response = await expenseRecordService.createRecord(recordData);
-        console.log("Created expense record response:", response.data);
+        console.log("Created expense record response:", response);
         
         // Add to local state
         setTransactions((prev) => [
           {
-            id: response.data.expenseId || Date.now(),
+            id: response.expenseId || Date.now(),
             date: new Date().toISOString(),
             ...baseTransaction,
           },
@@ -382,6 +387,7 @@ export default function Expense() {
       mode: transaction.mode,
       category: transaction.category,
       description: transaction.description,
+      isRecurring: transaction.isRecurring || false,
     });
     setErrors({});
     setEditingId(transaction.id);
@@ -533,6 +539,9 @@ export default function Expense() {
                 <div>
                   <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
                     {formatDate(transaction.date)}
+                    {transaction.isRecurring && (
+                      <span className="ml-2 text-emerald-600">• Recurring</span>
+                    )}
                   </p>
                   <p className="text-base font-semibold text-gray-900">
                     {transaction.category}
@@ -706,6 +715,19 @@ export default function Expense() {
                   {errors.description && (
                     <p className="mt-2 text-xs text-red-500">{errors.description}</p>
                   )}
+                </div>
+
+                {/* Recurring Checkbox */}
+                <div className="flex items-center">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={form.isRecurring}
+                      onChange={(e) => setForm(prev => ({ ...prev, isRecurring: e.target.checked }))}
+                      className="h-4 w-4 rounded border-gray-300 text-gray-600 focus:ring-gray-500"
+                    />
+                    <span className="text-sm font-semibold text-gray-900">Recurring Transaction</span>
+                  </label>
                 </div>
 
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-end pt-4">
