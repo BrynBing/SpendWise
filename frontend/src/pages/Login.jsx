@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaCheckCircle, FaExclamationCircle, FaInfoCircle, FaExclamationTriangle } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
@@ -24,6 +24,26 @@ export default function Login() {
 
   const from = location.state?.from?.pathname || "/dashboard";
 
+  const showToast = useCallback((message, type = "info") => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast((prev) => ({ ...prev, show: false }));
+      
+      if (type === "success") {
+        navigate(from, { replace: true });
+      }
+    }, 3000);
+  }, [navigate, from]);
+
+  // Show registration success message if coming from registration
+  useEffect(() => {
+    if (location.state?.message) {
+      showToast(location.state.message, "success");
+      // Clear the message from location state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state, showToast]);
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
@@ -42,17 +62,6 @@ export default function Login() {
       showToast(errorMessage, "error");
       setLoading(false);
     }
-  };
-
-  const showToast = (message, type = "info") => {
-    setToast({ show: true, message, type });
-    setTimeout(() => {
-      setToast((prev) => ({ ...prev, show: false }));
-      
-      if (type === "success") {
-        navigate(from, { replace: true });
-      }
-    }, 3000);
   };
 
   const togglePasswordVisibility = () => {

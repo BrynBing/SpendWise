@@ -4,14 +4,15 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 export default function Signup() {
   const navigate = useNavigate();
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -23,20 +24,34 @@ export default function Signup() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setError("");
+
+    // Validate password match
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    // Validate password strength (at least 6 characters)
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return;
+    }
+
     setLoading(true);
 
-    // Simulate API call
+    // Pass user data to security questions page
     setTimeout(() => {
-      console.log("Signup attempt with:", {
-        firstName,
-        lastName,
-        email,
-        password,
+      navigate("/security-questions", {
+        state: {
+          username,
+          email,
+          password,
+          phoneNumber,
+        },
       });
       setLoading(false);
-      // Navigate to set security questions as part of onboarding
-      navigate("/security-questions");
-    }, 1500);
+    }, 500);
   };
 
   return (
@@ -51,36 +66,26 @@ export default function Signup() {
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {error && (
+            <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-md">
+              {error}
+            </div>
+          )}
+
           <div className="space-y-4">
             <div>
-              <label htmlFor="firstName" className="sr-only">
-                First Name
+              <label htmlFor="username" className="sr-only">
+                Username
               </label>
               <input
-                id="firstName"
-                name="firstName"
+                id="username"
+                name="username"
                 type="text"
                 required
                 className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="First Name"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="lastName" className="sr-only">
-                Last Name
-              </label>
-              <input
-                id="lastName"
-                name="lastName"
-                type="text"
-                required
-                className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Last Name"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
               />
             </div>
 
@@ -97,6 +102,21 @@ export default function Signup() {
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="phoneNumber" className="sr-only">
+                Phone Number
+              </label>
+              <input
+                id="phoneNumber"
+                name="phoneNumber"
+                type="tel"
+                className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Phone Number (Optional)"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
               />
             </div>
 
