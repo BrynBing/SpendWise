@@ -205,45 +205,45 @@ export default function Goals() {
 
       {/* Savings Overview */}
       <div className="grid gap-4 sm:grid-cols-2 mb-10">
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Current Saving</p>
-          <p className="mt-3 text-2xl font-semibold text-gray-900">
+        <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm transition-colors duration-200">
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 transition-colors duration-200">Current Saving</p>
+          <p className="mt-3 text-2xl font-semibold text-gray-900 dark:text-white transition-colors duration-200">
             {formatCurrency(currentSaving)}
           </p>
         </div>
         
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Target Saving</p>
-          <p className="mt-3 text-2xl font-semibold text-gray-900">
+        <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm transition-colors duration-200">
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 transition-colors duration-200">Target Saving</p>
+          <p className="mt-3 text-2xl font-semibold text-gray-900 dark:text-white transition-colors duration-200">
             {formatCurrency(targetSaving)}
           </p>
         </div>
       </div>
 
       {/* Progress Bar */}
-      <div className="bg-white border border-gray-100 rounded-3xl shadow-sm p-6 mb-10">
-        <p className="text-xs uppercase tracking-[0.3em] text-gray-400 mb-4">Progress Bar</p>
-        <div className="w-full bg-gray-200 rounded-full h-3">
+      <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-3xl shadow-sm p-6 mb-10 transition-colors duration-200">
+        <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 mb-4 transition-colors duration-200">Progress Bar</p>
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 transition-colors duration-200">
           <div
-            className="h-3 rounded-full bg-gray-900 transition-all duration-300"
+            className="h-3 rounded-full bg-gray-900 dark:bg-indigo-500 transition-all duration-300"
             style={{ width: `${Math.min(savingsProgress, 100)}%` }}
           ></div>
         </div>
-        <p className="text-sm text-gray-600 mt-2">
+        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 transition-colors duration-200">
           {savingsProgress.toFixed(1)}% of total target achieved
         </p>
       </div>
 
       {/* Current Goals */}
-      <div className="bg-white border border-gray-100 rounded-3xl shadow-sm p-6 sm:p-10">
+      <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-3xl shadow-sm p-6 sm:p-10 transition-colors duration-200">
         <div className="mb-8">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Current Goals</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 transition-colors duration-200">Current Goals</p>
         </div>
 
         {goals.length === 0 ? (
-          <p className="text-sm text-gray-500">No goals set yet.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 transition-colors duration-200">No goals set yet.</p>
         ) : (
-          <ul className="divide-y divide-gray-100">
+          <ul className="divide-y divide-gray-100 dark:divide-gray-700 transition-colors duration-200">
             {goals.map((goal) => {
               const progress = getProgressPercentage(goal.currentAmount, goal.targetAmount);
               return (
@@ -253,20 +253,20 @@ export default function Goals() {
                 >
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-2">
-                      <p className="text-base font-semibold text-gray-900">{goal.name}</p>
-                      <span className="text-sm font-semibold uppercase tracking-[0.3em] text-gray-400">
+                      <p className="text-base font-semibold text-gray-900 dark:text-white transition-colors duration-200">{goal.name}</p>
+                      <span className="text-sm font-semibold uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 transition-colors duration-200">
                         {formatCurrency(goal.targetAmount)}
                       </span>
                     </div>
 
-                    <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2 transition-colors duration-200">
                       <div
-                        className="h-2 rounded-full bg-gray-900 transition-all duration-300"
+                        className="h-2 rounded-full bg-gray-900 dark:bg-indigo-500 transition-all duration-300"
                         style={{ width: `${progress}%` }}
                       ></div>
                     </div>
 
-                    <div className="flex justify-between text-sm text-gray-500">
+                    <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400 transition-colors duration-200">
                       <span>{formatCurrency(goal.currentAmount)} saved</span>
                       <span>{progress.toFixed(0)}% complete</span>
                     </div>
@@ -277,27 +277,27 @@ export default function Goals() {
                       onClick={() => toggleDropdown(goal.id)}
                       className="flex items-center gap-2 cursor-pointer"
                     >
-                      <span className="text-xs uppercase tracking-[0.3em] text-gray-400">
+                      <span className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 transition-colors duration-200">
                         {goal.category} • {new Date(goal.deadline).toLocaleDateString()}
                       </span>
-                      <FaChevronDown className="text-gray-400 text-sm" />
+                      <FaChevronDown className="text-gray-400 dark:text-gray-500 text-sm transition-colors duration-200" />
                     </button>
                     
                     {dropdownOpen === goal.id && (
-                      <div className="absolute right-0 top-full mt-2 z-10 bg-white border border-gray-200 rounded-2xl shadow-lg min-w-[120px]">
+                      <div className="absolute right-0 top-full mt-2 z-10 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg min-w-[120px] transition-colors duration-200">
                         <button
                           type="button"
                           onClick={() => handleEdit(goal)}
-                          className="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-2xl"
+                          className="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 first:rounded-t-2xl transition-colors duration-200"
                         >
-                          <FaEdit className="text-gray-500" /> Edit
+                          <FaEdit className="text-gray-500 dark:text-gray-400 transition-colors duration-200" /> Edit
                         </button>
                         <button
                           type="button"
                           onClick={() => openDeleteConfirm(goal)}
-                          className="w-full flex items-center gap-2 px-4 py-3 text-sm text-rose-600 hover:bg-rose-50 last:rounded-b-2xl border-t border-gray-100"
+                          className="w-full flex items-center gap-2 px-4 py-3 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 last:rounded-b-2xl border-t border-gray-100 dark:border-gray-700 transition-colors duration-200"
                         >
-                          <FaTrash className="text-rose-500" /> Delete
+                          <FaTrash className="text-rose-500 dark:text-rose-400 transition-colors duration-200" /> Delete
                         </button>
                       </div>
                     )}
@@ -311,9 +311,9 @@ export default function Goals() {
 
       <div
         ref={formRef}
-        className="bg-white border border-gray-100 rounded-3xl shadow-sm px-6 sm:px-10 py-10 mt-10"
+        className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-3xl shadow-sm px-6 sm:px-10 py-10 mt-10 transition-colors duration-200"
       >
-        <div className="flex items-center justify-between text-gray-400 text-sm uppercase tracking-[0.3em]">
+        <div className="flex items-center justify-between text-gray-400 dark:text-gray-500 text-sm uppercase tracking-[0.3em] transition-colors duration-200">
           <span>{editingId ? "Update Goal" : "Add Goal"}</span>
         </div>
 

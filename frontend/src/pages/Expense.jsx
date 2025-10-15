@@ -448,9 +448,9 @@ export default function Expense() {
   return (
     <div className="max-w-6xl mx-auto">
       <div className="flex flex-col gap-2 mb-10">
-        <span className="text-sm uppercase tracking-[0.3em] text-gray-400">Overview</span>
+        <span className="text-sm uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Overview</span>
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-semibold text-gray-900">Transactions</h1>
+          <h1 className="text-3xl font-semibold text-gray-900 dark:text-white">Transactions</h1>
           <button
             onClick={() => {
               setForm(createEmptyFormState());
@@ -458,44 +458,44 @@ export default function Expense() {
               setErrors({});
               setModalOpen(true);
             }}
-            className="flex items-center gap-2 rounded-full bg-gray-900 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-gray-700"
+            className="flex items-center gap-2 rounded-full bg-gray-900 dark:bg-gray-700 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-gray-700 dark:hover:bg-gray-600"
           >
             <FaPlus /> Add Transaction
           </button>
         </div>
-        <p className="text-gray-500">
+        <p className="text-gray-500 dark:text-gray-400">
           Log your spending and income to keep an eye on your cash flow.
         </p>
       </div>
 
       {loading && (
         <div className="text-center py-10">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-800 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading transactions...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-800 dark:border-gray-300 mx-auto"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading transactions...</p>
         </div>
       )}
 
       {fetchError && (
-        <div className="mb-6 p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-lg">
+        <div className="mb-6 p-4 bg-yellow-100 dark:bg-yellow-900 border border-yellow-400 dark:border-yellow-600 text-yellow-700 dark:text-yellow-200 rounded-lg">
           {fetchError}
         </div>
       )}
 
       <div className="grid gap-4 sm:grid-cols-3 mb-10">
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Total Expense</p>
+        <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 shadow-sm transition-colors duration-200">
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Total Expense</p>
           <p className="mt-3 text-2xl font-semibold text-rose-500">
             {formatCurrency(currencyTotals.expense, form.currency)}
           </p>
         </div>
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Total Income</p>
+        <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 shadow-sm transition-colors duration-200">
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Total Income</p>
           <p className="mt-3 text-2xl font-semibold text-emerald-500">
             {formatCurrency(currencyTotals.income, form.currency)}
           </p>
         </div>
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Balance</p>
+        <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 shadow-sm transition-colors duration-200">
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Balance</p>
           <p
             className={`mt-3 text-2xl font-semibold ${
               netBalance >= 0 ? "text-emerald-600" : "text-rose-500"
@@ -506,9 +506,9 @@ export default function Expense() {
         </div>
       </div>
 
-      <div className="bg-white border border-gray-100 rounded-3xl shadow-sm p-6 sm:p-10">
+      <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-3xl shadow-sm p-6 sm:p-10 transition-colors duration-200">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-xl font-semibold text-gray-900">Recent Activity</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Recent Activity</h2>
           <div className="flex gap-2">
             {FILTER_OPTIONS.map(({ value, label }) => (
               <button
@@ -517,8 +517,8 @@ export default function Expense() {
                 onClick={() => setFilter(value)}
                 className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                   filter === value
-                    ? "bg-gray-900 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    ? "bg-gray-900 dark:bg-gray-600 text-white"
+                    : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                 }`}
               >
                 {label}
@@ -528,25 +528,25 @@ export default function Expense() {
         </div>
 
         {visibleTransactions.length === 0 ? (
-          <p className="text-sm text-gray-500">No transactions logged yet.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">No transactions logged yet.</p>
         ) : (
-          <ul className="divide-y divide-gray-100">
+          <ul className="divide-y divide-gray-100 dark:divide-gray-700">
             {visibleTransactions.map((transaction) => (
               <li
                 key={transaction.id}
                 className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between relative"
               >
                 <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
+                  <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
                     {formatDate(transaction.date)}
                     {transaction.isRecurring && (
                       <span className="ml-2 text-emerald-600">• Recurring</span>
                     )}
                   </p>
-                  <p className="text-base font-semibold text-gray-900">
+                  <p className="text-base font-semibold text-gray-900 dark:text-white">
                     {transaction.category}
                   </p>
-                  <p className="text-sm text-gray-500">{transaction.description}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{transaction.description}</p>
                 </div>
                 <div className="flex flex-col items-end gap-3 sm:flex-row sm:items-center sm:gap-6">
                   <button
@@ -563,22 +563,22 @@ export default function Expense() {
                       {transaction.mode === "expense" ? "-" : "+"}
                       {formatCurrency(transaction.amount, transaction.currency)}
                     </span>
-                    <FaChevronDown className="text-gray-400 text-sm" />
+                    <FaChevronDown className="text-gray-400 dark:text-gray-500 text-sm" />
                   </button>
                   
                   {dropdownOpen === transaction.id && (
-                    <div className="absolute right-0 top-full mt-2 z-10 bg-white border border-gray-200 rounded-2xl shadow-lg min-w-[120px]">
+                    <div className="absolute right-0 top-full mt-2 z-10 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-2xl shadow-lg min-w-[120px]">
                       <button
                         type="button"
                         onClick={() => handleEdit(transaction)}
-                        className="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-2xl"
+                        className="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 first:rounded-t-2xl"
                       >
-                        <FaEdit className="text-gray-500" /> Edit
+                        <FaEdit className="text-gray-500 dark:text-gray-400" /> Edit
                       </button>
                       <button
                         type="button"
                         onClick={() => openDeleteConfirm(transaction)}
-                        className="w-full flex items-center gap-2 px-4 py-3 text-sm text-rose-600 hover:bg-rose-50 last:rounded-b-2xl border-t border-gray-100"
+                        className="w-full flex items-center gap-2 px-4 py-3 text-sm text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 last:rounded-b-2xl border-t border-gray-100 dark:border-gray-700"
                       >
                         <FaTrash className="text-rose-500" /> Delete
                       </button>
@@ -594,14 +594,14 @@ export default function Expense() {
       {/* Add/Edit Transaction Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="w-full max-w-2xl bg-white rounded-3xl shadow-xl max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-100 px-6 sm:px-10 py-6 rounded-t-3xl flex items-center justify-between">
-              <h2 className="text-2xl font-semibold text-gray-900">
+          <div className="w-full max-w-2xl bg-white dark:bg-gray-800 rounded-3xl shadow-xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 px-6 sm:px-10 py-6 rounded-t-3xl flex items-center justify-between">
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
                 {editingId ? "Update Transaction" : "Add Transaction"}
               </h2>
               <button
                 onClick={cancelEditing}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
               >
                 <FaTimes className="text-2xl" />
               </button>
@@ -610,19 +610,19 @@ export default function Expense() {
             <div className="px-6 sm:px-10 py-8">
               <form className="space-y-8" onSubmit={handleSubmit} noValidate>
                 {errors.submit && (
-                  <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-md">
+                  <div className="p-3 bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 rounded-md">
                     {errors.submit}
                   </div>
                 )}
 
                 <div>
-                  <label className="text-sm uppercase tracking-[0.3em] text-gray-400">
+                  <label className="text-sm uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
                     Amount
                   </label>
-                  <div className="mt-3 border-b border-gray-200 pb-5">
+                  <div className="mt-3 border-b border-gray-200 dark:border-gray-600 pb-5">
                     <div className="flex items-end justify-between">
                       <div className="flex items-baseline gap-2">
-                        <span className="text-4xl font-semibold text-gray-900">$</span>
+                        <span className="text-4xl font-semibold text-gray-900 dark:text-white">$</span>
                         <input
                           type="number"
                           inputMode="decimal"
@@ -631,14 +631,14 @@ export default function Expense() {
                           placeholder="0.00"
                           value={form.amount}
                           onChange={handleChange("amount")}
-                          className="w-40 bg-transparent text-4xl font-semibold text-gray-900 placeholder:text-gray-300 focus:outline-none"
+                          className="w-40 bg-transparent text-4xl font-semibold text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-gray-600 focus:outline-none"
                         />
                       </div>
                       <div className="relative">
                         <select
                           value={form.currency}
                           onChange={handleChange("currency")}
-                          className="appearance-none bg-transparent text-sm font-medium tracking-[0.3em] uppercase text-gray-500 pr-6 focus:outline-none"
+                          className="appearance-none bg-transparent text-sm font-medium tracking-[0.3em] uppercase text-gray-500 dark:text-gray-400 pr-6 focus:outline-none"
                           aria-label="Select currency"
                         >
                           {CURRENCY_OPTIONS.map((currency) => (
@@ -647,7 +647,7 @@ export default function Expense() {
                             </option>
                           ))}
                         </select>
-                        <FaChevronDown className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-xs text-gray-400" />
+                        <FaChevronDown className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-xs text-gray-400 dark:text-gray-500" />
                       </div>
                     </div>
                     {errors.amount && (
@@ -658,32 +658,32 @@ export default function Expense() {
 
                 {/* MODE SELECTOR - COMMENTED OUT (INCOME DISABLED) */}
                 {/* <div>
-                  <label className="text-sm uppercase tracking-[0.3em] text-gray-400">
+                  <label className="text-sm uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
                     Select mode
                   </label>
-                  <div className="relative mt-3 border-b border-gray-200">
+                  <div className="relative mt-3 border-b border-gray-200 dark:border-gray-600">
                     <select
                       value={form.mode}
                       onChange={handleChange("mode")}
-                      className="w-full appearance-none bg-transparent py-3 text-lg font-medium text-gray-900 focus:outline-none"
+                      className="w-full appearance-none bg-transparent py-3 text-lg font-medium text-gray-900 dark:text-white focus:outline-none"
                       aria-label="Select mode"
                     >
                       <option value="expense">Expense</option>
                       <option value="income">Income</option>
                     </select>
-                    <FaChevronDown className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <FaChevronDown className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
                   </div>
                 </div> */}
 
                 <div>
-                  <label className="text-sm uppercase tracking-[0.3em] text-gray-400">
+                  <label className="text-sm uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
                     Category
                   </label>
-                  <div className="relative mt-3 border-b border-gray-200">
+                  <div className="relative mt-3 border-b border-gray-200 dark:border-gray-600">
                     <select
                       value={form.category}
                       onChange={handleChange("category")}
-                      className="w-full appearance-none bg-transparent py-3 text-lg font-medium text-gray-900 focus:outline-none"
+                      className="w-full appearance-none bg-transparent py-3 text-lg font-medium text-gray-900 dark:text-white focus:outline-none"
                       aria-label="Select category"
                     >
                       {CATEGORY_OPTIONS[form.mode].map((category) => (
@@ -692,7 +692,7 @@ export default function Expense() {
                         </option>
                       ))}
                     </select>
-                    <FaChevronDown className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <FaChevronDown className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
                   </div>
                   {errors.category && (
                     <p className="mt-2 text-xs text-red-500">{errors.category}</p>
@@ -700,16 +700,16 @@ export default function Expense() {
                 </div>
 
                 <div>
-                  <label className="text-sm uppercase tracking-[0.3em] text-gray-400">
+                  <label className="text-sm uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
                     Descriptions
                   </label>
-                  <div className="mt-3 border-b border-gray-200">
+                  <div className="mt-3 border-b border-gray-200 dark:border-gray-600">
                     <textarea
                       rows={2}
                       value={form.description}
                       onChange={handleChange("description")}
                       placeholder="Enter description"
-                      className="w-full resize-none bg-transparent py-3 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none"
+                      className="w-full resize-none bg-transparent py-3 text-base text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none"
                     />
                   </div>
                   {errors.description && (
@@ -724,9 +724,9 @@ export default function Expense() {
                       type="checkbox"
                       checked={form.isRecurring}
                       onChange={(e) => setForm(prev => ({ ...prev, isRecurring: e.target.checked }))}
-                      className="h-4 w-4 rounded border-gray-300 text-gray-600 focus:ring-gray-500"
+                      className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-gray-600 focus:ring-gray-500"
                     />
-                    <span className="text-sm font-semibold text-gray-900">Recurring Transaction</span>
+                    <span className="text-sm font-semibold text-gray-900 dark:text-white">Recurring Transaction</span>
                   </label>
                 </div>
 
@@ -734,13 +734,13 @@ export default function Expense() {
                   <button
                     type="button"
                     onClick={cancelEditing}
-                    className="w-full rounded-full border border-gray-200 px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-gray-600 transition-colors hover:bg-gray-100 sm:w-auto sm:min-w-[140px]"
+                    className="w-full rounded-full border border-gray-200 dark:border-gray-600 px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-gray-600 dark:text-gray-300 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 sm:w-auto sm:min-w-[140px]"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="w-full rounded-full bg-gray-900 px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-gray-700 sm:w-auto sm:min-w-[140px]"
+                    className="w-full rounded-full bg-gray-900 dark:bg-gray-700 px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-gray-700 dark:hover:bg-gray-600 sm:w-auto sm:min-w-[140px]"
                   >
                     {editingId ? "Save Changes" : "Save"}
                   </button>
@@ -754,7 +754,7 @@ export default function Expense() {
       {/* Delete Confirmation Modal */}
       {confirmDelete.show && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl border border-gray-100 bg-white p-6 shadow-xl">
+          <div className="w-full max-w-md rounded-3xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-xl">
             <div className="flex items-center gap-3 text-rose-500">
               <FaExclamationTriangle />
               <p className="text-xs font-semibold uppercase tracking-[0.3em]">Delete Transaction</p>

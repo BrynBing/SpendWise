@@ -10,9 +10,9 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { expenseRecordService } from "../services/api";
 
-const LABEL_CLASSES = "block text-xs font-semibold uppercase tracking-[0.3em] text-gray-400";
-const BORDER_SECTION_CLASSES = "relative mt-3 overflow-hidden rounded-2xl border border-gray-200 bg-white focus-within:border-gray-400";
-const INPUT_BASE_CLASSES = "block w-full rounded-2xl border-none bg-transparent px-4 py-3 text-base text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-0";
+const LABEL_CLASSES = "block text-xs font-semibold uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500";
+const BORDER_SECTION_CLASSES = "relative mt-3 overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 focus-within:border-gray-400 dark:focus-within:border-gray-500";
+const INPUT_BASE_CLASSES = "block w-full rounded-2xl border-none bg-transparent px-4 py-3 text-base text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-0";
 
 const CATEGORY_OPTIONS = [
   "Food",
@@ -317,11 +317,11 @@ export default function Schedule() {
     return (
       <div className="max-w-6xl mx-auto">
         <div className="mb-10 flex flex-col gap-2">
-          <span className="text-sm uppercase tracking-[0.3em] text-gray-400">Overview</span>
-          <h1 className="text-3xl font-semibold text-gray-900">Schedule Logging</h1>
+          <span className="text-sm uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Overview</span>
+          <h1 className="text-3xl font-semibold text-gray-900 dark:text-white">Schedule Logging</h1>
         </div>
-        <div className="bg-white border border-gray-100 rounded-3xl shadow-sm p-6">
-          <p className="text-gray-500">Loading recurring transactions...</p>
+        <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-3xl shadow-sm p-6">
+          <p className="text-gray-500 dark:text-gray-400">Loading recurring transactions...</p>
         </div>
       </div>
     );
@@ -330,56 +330,56 @@ export default function Schedule() {
   return (
     <div className="max-w-6xl mx-auto">
       <div className="flex flex-col gap-2 mb-10">
-        <span className="text-sm uppercase tracking-[0.3em] text-gray-400">Overview</span>
+        <span className="text-sm uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Overview</span>
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-semibold text-gray-900">Schedule Logging</h1>
+          <h1 className="text-3xl font-semibold text-gray-900 dark:text-white">Schedule Logging</h1>
           <button
             onClick={openModal}
-            className="flex items-center gap-2 rounded-full bg-gray-900 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-gray-700"
+            className="flex items-center gap-2 rounded-full bg-gray-900 dark:bg-gray-700 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-gray-700 dark:hover:bg-gray-600"
           >
             <FaPlus /> Add Recurring
           </button>
         </div>
-        <p className="text-gray-500">
+        <p className="text-gray-500 dark:text-gray-400">
           Track and manage your recurring transactions and scheduled payments.
         </p>
       </div>
 
       {/* Balance Overview */}
-      <div className="bg-white border border-gray-100 rounded-3xl shadow-sm p-6 mb-10">
-        <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Total Recurring Expenses</p>
-        <p className="mt-3 text-3xl font-semibold text-gray-900">
+      <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-3xl shadow-sm p-6 mb-10 transition-colors duration-200">
+        <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Total Recurring Expenses</p>
+        <p className="mt-3 text-3xl font-semibold text-gray-900 dark:text-white">
           {formatCurrency(totalExpense)}
         </p>
-        <p className="mt-2 text-sm text-gray-500">
+        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
           {transactions.length} recurring {transactions.length === 1 ? 'transaction' : 'transactions'}
         </p>
       </div>
 
       {/* Recent Transactions */}
-      <div className="bg-white border border-gray-100 rounded-3xl shadow-sm p-6 sm:p-10">
+      <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-3xl shadow-sm p-6 sm:p-10 transition-colors duration-200">
         <div className="mb-8">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Recurring Transactions</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Recurring Transactions</p>
         </div>
 
         {sortedTransactions.length === 0 ? (
-          <p className="text-sm text-gray-500">No recurring transactions logged yet.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">No recurring transactions logged yet.</p>
         ) : (
-          <ul className="divide-y divide-gray-100">
+          <ul className="divide-y divide-gray-100 dark:divide-gray-700">
             {sortedTransactions.map((transaction) => (
               <li
                 key={transaction.id}
                 className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between relative"
               >
                 <div className="flex-1">
-                  <p className="text-base font-semibold text-gray-900">{transaction.description}</p>
-                  <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
+                  <p className="text-base font-semibold text-gray-900 dark:text-white">{transaction.description}</p>
+                  <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
                     {formatDate(transaction.date)} • {transaction.category}
                     {transaction.frequency && (
-                      <span className="ml-2 text-emerald-600">• {transaction.frequency}</span>
+                      <span className="ml-2 text-emerald-600 dark:text-emerald-400">• {transaction.frequency}</span>
                     )}
                     {transaction.isRecurring && (
-                      <span className="ml-2 text-emerald-600">• Recurring</span>
+                      <span className="ml-2 text-emerald-600 dark:text-emerald-400">• Recurring</span>
                     )}
                   </p>
                 </div>
@@ -389,25 +389,25 @@ export default function Schedule() {
                     onClick={() => toggleDropdown(transaction.id)}
                     className="flex items-center gap-2 cursor-pointer"
                   >
-                    <span className="text-base font-semibold text-rose-500">
+                    <span className="text-base font-semibold text-rose-500 dark:text-rose-400">
                       -{formatCurrency(transaction.amount, transaction.currency)}
                     </span>
-                    <FaChevronDown className="text-gray-400 text-sm" />
+                    <FaChevronDown className="text-gray-400 dark:text-gray-500 text-sm" />
                   </button>
                   
                   {dropdownOpen === transaction.id && (
-                    <div className="absolute right-0 top-full mt-2 z-10 bg-white border border-gray-200 rounded-2xl shadow-lg min-w-[120px]">
+                    <div className="absolute right-0 top-full mt-2 z-10 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-2xl shadow-lg min-w-[120px]">
                       <button
                         type="button"
                         onClick={() => handleEdit(transaction)}
-                        className="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-2xl"
+                        className="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 first:rounded-t-2xl"
                       >
-                        <FaEdit className="text-gray-500" /> Edit
+                        <FaEdit className="text-gray-500 dark:text-gray-400" /> Edit
                       </button>
                       <button
                         type="button"
                         onClick={() => openDeleteConfirm(transaction)}
-                        className="w-full flex items-center gap-2 px-4 py-3 text-sm text-rose-600 hover:bg-rose-50 last:rounded-b-2xl border-t border-gray-100"
+                        className="w-full flex items-center gap-2 px-4 py-3 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 last:rounded-b-2xl border-t border-gray-100 dark:border-gray-600"
                       >
                         <FaTrash className="text-rose-500" /> Delete
                       </button>
@@ -422,15 +422,15 @@ export default function Schedule() {
 
       {/* Add/Edit Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl border border-gray-100 bg-white p-6 sm:p-10 shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 sm:p-10 shadow-xl transition-colors duration-200">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-semibold text-gray-900">
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
                 {editingId ? "Update Recurring Transaction" : "Add Recurring Transaction"}
               </h2>
               <button
                 onClick={cancelEditing}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
               >
                 <FaTimes size={24} />
               </button>
