@@ -1,8 +1,8 @@
 # Personal Finance and Budget Tracker
 
-Nowadays, it can be very time-consuming and confusing to keep track of one's personal finances and budget goals, as people often have multiple accounts (bank accounts, cash, etc.) scattered across various platforms. Without a unified view, it becomes complicated to visualize spending habits, set realistic financial targets, and seek timely advice to stay on top of saving goals.
+Nowadays, it can be very time-consuming and confusing to keep track of one's personal finances and budget goals, as people often have multiple accounts (bank accounts, cash, etc.) scattered across various platforms. Without a unified view, it becomes complicated to visualize spending habits, set realistic financial targets, and seek timely advice to stay on top of spending goals.
 
-To address these challenges, our project offers an intuitive platform that brings all the financial information together such as monitoring user's budget in real time and receive AI-powered recommendations tailored to their financial habits. Users can easily monitor their income and expenses, set and track savings goals, and receive personalized recommendations to improve their financial health while being able to seek for spending advice. Our key features include a secure login system, a central dashboard with a monthly overview, a detailed history of transactions, visual spending analysis through charts, and a personalised AI recommendation chat. We believe real time analytics into managing personal finances can be simpler and more transparent in order to achieve users' long term financial objectives. Moreover, users will also be able to customize and set their spending goals along with alerts that reminds users to be cautious with their spending/saving habits. Our high level goal is to make personal finance management accessible and proactive providing users the motivation they need to build a healthier financial habit and achieve their long term goals.
+To address these challenges, our project offers an intuitive platform that brings all the financial information together such as monitoring user's budget in real time and receive AI-powered recommendations tailored to their financial habits. Users can easily monitor their expenses, set and track spending goals, and receive personalized recommendations to improve their financial health while being able to seek for spending advice. Our key features include a secure login system, a central dashboard with a monthly overview, a detailed history of transactions, visual spending analysis through charts, and a personalised AI recommendation chat. We believe real time analytics into managing personal finances can be simpler and more transparent in order to achieve users' long term financial objectives. Moreover, users will also be able to customize and set their spending goals along with alerts that reminds users to be cautious with their spending habits. Our high level goal is to make personal finance management accessible and proactive providing users the motivation they need to build a healthier financial habit and achieve their long term goals.
 
 ---
 
@@ -13,7 +13,7 @@ To address these challenges, our project offers an intuitive platform that bring
 3. [History](#3-history)
 4. [Expense Tracking](#4-expense-tracking)
 5. [AI Recommendation Chat](#5-ai-recommendation-chat)
-6. [Saving Goals](#6-saving-goals)
+6. [Spending Goals](#6-spending-goals)
 7. [Analytics of Current Data](#7-analytics-of-current-data)
 8. [Settings](#8-settings)
 9. [Tech Stack](#tech-stack)
@@ -36,7 +36,7 @@ To address these challenges, our project offers an intuitive platform that bring
 
 - **Monthly Overview**
   - Easily add new transactions
-  - Track progress towards savings goals
+  - Track progress towards spending goals
 
 ---
 
@@ -62,9 +62,9 @@ To address these challenges, our project offers an intuitive platform that bring
 
 ---
 
-## 6. Saving Goals
+## 6. Spending Goals
 
-- Set targeted savings goals
+- Set targeted spending budgets
 - Monitor progress for each goal
 
 ---
@@ -72,7 +72,7 @@ To address these challenges, our project offers an intuitive platform that bring
 ## 7. Analytics of Current Data
 
 - Detailed breakdown and analysis for each goal
-- Insights into spending and saving patterns
+- Insights into spending patterns
 
 ---
 
@@ -98,11 +98,11 @@ To address these challenges, our project offers an intuitive platform that bring
 - AI-integrated recommendations (Gemini API / prompt engineering)
 - Pop-up notifications for overspending
 - Secure user authentication and password hashing for privacy
-- Visual analysis (pie/bar charts) for spending and savings
+- Visual analysis (pie/bar charts) for spending
 - Filtering options for transaction history
-- Customisable saving goals and progress tracking
+- Customisable spending goals and progress tracking
 - Responsive UI/UX for various devices (phones, tablets, laptops)
-- Option to import past spending/savings data
+- Option to import past spending data
 
 ---
 

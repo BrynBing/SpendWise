@@ -19,21 +19,23 @@ import Account from "./pages/Account";
 import CurrencyConversion from "./pages/CurrencyConversion";
 import { FontProvider } from "./context/FontContext";
 import { AuthProvider } from "./context/AuthContext";
+import { DarkModeProvider } from "./context/DarkModeContext";
 import ProtectedRoute from "./components/ProtectedRoute"; 
 
 function App() {
   return (
     <>
       <BrowserRouter>
-        <FontProvider>
-          <AuthProvider>
-            <Header />
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/security-questions" element={<SecurityQuestions />} />
+        <DarkModeProvider>
+          <FontProvider>
+            <AuthProvider>
+              <Header />
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/security-questions" element={<SecurityQuestions />} />
               
               {/* 使用ProtectedRoute保护需要登录的路由 */}
               <Route element={<ProtectedRoute />}>
@@ -57,7 +59,8 @@ function App() {
             <Footer />
           </AuthProvider>
         </FontProvider>
-      </BrowserRouter>
+      </DarkModeProvider>
+    </BrowserRouter>
     </>
   );
 }

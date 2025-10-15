@@ -52,7 +52,7 @@ public class AiAdviceController {
 //}
         Integer userId = ((UserDTO) session.getAttribute("USER")).getId();
         YearMonth ym = (month == null || month.isBlank()) ? YearMonth.now() : YearMonth.parse(month);
-        String languageTag = Locale.SIMPLIFIED_CHINESE.toLanguageTag();
+        String languageTag = Locale.US.toLanguageTag();
         return service.generate(userId, ym, languageTag);
     }
 }

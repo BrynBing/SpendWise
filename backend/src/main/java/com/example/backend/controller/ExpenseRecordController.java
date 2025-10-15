@@ -336,7 +336,7 @@ public class ExpenseRecordController {
         if(record.getIsRecurring() == null) {
             dto.setIsRecurring(false);
         }
-        if(record.getIsRecurring()){
+        if(record.getIsRecurring() && record.getRecurringSchedule() != null){
             dto.setRecurringScheduleId(record.getRecurringSchedule().getId());
         }
         return dto;

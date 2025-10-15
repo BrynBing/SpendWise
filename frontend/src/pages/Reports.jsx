@@ -157,12 +157,12 @@ export default function Reports() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <section className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm lg:col-span-2">
+        <section className="rounded-3xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm lg:col-span-2 transition-colors duration-200">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Overview</p>
-              <h2 className="mt-2 text-xl font-semibold text-gray-900">Savings vs Spending</h2>
-              <p className="mt-2 text-sm text-gray-500">
+              <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 transition-colors duration-200">Overview</p>
+              <h2 className="mt-2 text-xl font-semibold text-gray-900 dark:text-white transition-colors duration-200">Budget vs Spending</h2>
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 transition-colors duration-200">
                 Comparing performance across your selected timeframe.
               </p>
             </div>
@@ -175,8 +175,8 @@ export default function Reports() {
                     onClick={() => setTimeRange(range)}
                     className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] transition-colors ${
                       timeRange === range
-                        ? "bg-gray-900 text-white"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        ? "bg-gray-900 dark:bg-indigo-600 text-white"
+                        : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                     }`}
                   >
                     {range}
@@ -185,14 +185,14 @@ export default function Reports() {
               </div>
               <button
                 type="button"
-                className="flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-gray-600 transition-colors hover:bg-gray-100"
+                className="flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-700 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-gray-600 dark:text-gray-300 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <FaDownload /> Export
               </button>
             </div>
           </div>
 
-          <div className="mt-8 h-80 rounded-2xl border border-gray-100 bg-gray-50 p-2">
+          <div className="mt-8 h-80 rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-2 transition-colors duration-200">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={chartData[timeRange]}
@@ -238,20 +238,20 @@ export default function Reports() {
               <span className="inline-block h-[2px] w-6 bg-emerald-500" />
               <span className="tracking-[0.3em]">Save</span>
             </div>
-            <div className="flex items-center gap-2 text-gray-500">
-              <span className="inline-block h-[2px] w-6 bg-rose-500" />
+            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 transition-colors duration-200">
+              <span className="inline-block h-[2px] w-6 bg-rose-500 dark:bg-rose-400" />
               <span className="tracking-[0.3em]">Spend</span>
             </div>
-            <span className="text-xs uppercase tracking-[0.3em] text-gray-400">
+            <span className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 transition-colors duration-200">
               {currentMonth} Snapshot
             </span>
           </div>
         </section>
 
-        <section className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Categories</p>
-          <h2 className="mt-2 text-xl font-semibold text-gray-900">Top Spending</h2>
-          <p className="mt-2 text-sm text-gray-500">
+        <section className="rounded-3xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm transition-colors duration-200">
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 transition-colors duration-200">Categories</p>
+          <h2 className="mt-2 text-xl font-semibold text-gray-900 dark:text-white transition-colors duration-200">Top Spending</h2>
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 transition-colors duration-200">
             Your highest spending areas this {currentMonth.toLowerCase()}.
           </p>
 
@@ -259,23 +259,23 @@ export default function Reports() {
             {topCategoriesData.map((category) => (
               <li
                 key={category.id}
-                className="rounded-2xl border border-gray-100 p-4 flex flex-col h-full min-h-[120px]"
+                className="rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 flex flex-col h-full min-h-[120px] transition-colors duration-200"
               >
                 <div className="flex items-start gap-3 mb-3">
-                  <span className="flex h-10 w-10 min-h-[2.5rem] min-w-[2.5rem] items-center justify-center rounded-full bg-gray-100 text-lg text-gray-600 flex-shrink-0 mt-1">
+                  <span className="flex h-10 w-10 min-h-[2.5rem] min-w-[2.5rem] items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-lg text-gray-600 dark:text-gray-300 flex-shrink-0 mt-1 transition-colors duration-200">
                     {cloneElement(category.icon, { className: "w-4 h-4" })}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 leading-tight">
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white leading-tight transition-colors duration-200">
                       {category.name}
                     </p>
-                    <p className="text-xs uppercase tracking-[0.3em] text-gray-400 mt-1">
+                    <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 mt-1 transition-colors duration-200">
                       Spent
                     </p>
                   </div>
                 </div>
                 <div className="mt-auto pt-2 flex items-center justify-between">
-                  <p className="text-lg font-semibold text-gray-900">
+                  <p className="text-lg font-semibold text-gray-900 dark:text-white transition-colors duration-200">
                     {formatCurrency(category.amount)}
                   </p>
                   <span className={changeBadgeClass(category.isIncrease)}>
