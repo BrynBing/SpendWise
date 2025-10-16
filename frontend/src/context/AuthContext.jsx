@@ -8,17 +8,29 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // 验证用户是否已登录
+  // Check if user is already logged in
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await userService.getCurrentUser();
-        setUser(response.data);
-        setIsAuthenticated(true);
-      // eslint-disable-next-line no-unused-vars
+        // First check for any stored token/session indicator
+        const hasSession = localStorage.getItem('hasSession') === 'true';
+        
+        // Only make the API call if there's a potential session
+        if (hasSession) {
+          const response = await userService.getCurrentUser();
+          setUser(response.data);
+          setIsAuthenticated(true);
+        } else {
+          // If no session indicator, assume not logged in without making API call
+          setUser(null);
+          setIsAuthenticated(false);
+        }
       } catch (error) {
+        // Handle error - user is not authenticated
         setUser(null);
         setIsAuthenticated(false);
+        // Remove session indicator if API call fails
+        localStorage.removeItem('hasSession');
       } finally {
         setLoading(false);
       }
@@ -27,27 +39,30 @@ export function AuthProvider({ children }) {
     checkAuth();
   }, []);
 
-  // 登录方法
+  // Login method
   const login = async (identifier, password) => {
     try {
-      // 1. 发送登录请求
+      // 1. Send login request
       const loginResponse = await authService.login(identifier, password);
       
-      // 2. 登录成功后，立即获取用户信息
-      // 有些API在登录响应中返回用户信息，有些则需要额外请求
+      // 2. After successful login, get user information
+      // Some APIs return user info in the login response, some need an extra request
       let userData;
       
       if (loginResponse.data && loginResponse.data.user) {
         userData = loginResponse.data.user;
       } else {
-        // 如果登录响应中没有用户数据，则单独获取
+        // If no user data in login response, fetch it separately
         const userResponse = await userService.getCurrentUser();
         userData = userResponse.data;
       }
       
-      // 3. 更新状态
+      // 3. Update state
       setUser(userData);
       setIsAuthenticated(true);
+      
+      // Set session indicator
+      localStorage.setItem('hasSession', 'true');
       
       console.log("Login successful, user data:", userData);
       
@@ -58,25 +73,34 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // 登出方法
+  // Logout method
   const logout = async () => {
     try {
       const response = await authService.logout();
       
-      // 确保状态被清除
+      // Make sure state is cleared
       setUser(null);
       setIsAuthenticated(false);
+      
+      // Remove session indicator
+      localStorage.removeItem('hasSession');
       
       console.log("Logout successful");
       
       return response;
     } catch (error) {
       console.error("Logout failed in AuthContext:", error);
+      
+      // Even if the API call fails, clear the local state
+      setUser(null);
+      setIsAuthenticated(false);
+      localStorage.removeItem('hasSession');
+      
       throw error;
     }
   };
 
-  // 提供一个刷新用户信息的方法
+  // Method to refresh user information
   const refreshUser = async () => {
     try {
       const response = await userService.getCurrentUser();
