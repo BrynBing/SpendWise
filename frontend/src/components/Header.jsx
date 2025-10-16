@@ -75,7 +75,7 @@ export default function Header() {
   return (
     <nav className="bg-white dark:bg-gray-900 py-4 px-6 shadow-sm dark:shadow-gray-800 fixed w-full top-0 z-50 transition-colors duration-200">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
-        {/* Logo和网站名称 - 仅更新Logo样式匹配截图 */}
+     
         <Link to="/" className="flex items-center space-x-2">
           <div className="w-10 h-10 rounded-full bg-indigo-600 dark:bg-indigo-500 flex items-center justify-center">
             <span className="text-white font-bold">SW</span>
@@ -83,20 +83,20 @@ export default function Header() {
           <span className="text-xl font-bold text-gray-800 dark:text-white">SpendWise</span>
         </Link>
 
-        {/* 右侧导航项 */}
+   
         <div className="flex items-center space-x-4">
           {loading ? (
-            // 加载中显示骨架屏
+         
             <div className="w-24 h-10 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
           ) : user ? (
-            // 用户已登录，显示用户信息和下拉菜单 (保持原样)
+        
             <div className="relative dropdown">
               <button 
                 onClick={toggleDropdown}
                 className="flex items-center space-x-3 focus:outline-none"
                 aria-label="User menu"
               >
-                {/* 在中等尺寸以上的屏幕显示用户名 */}
+             
                 <span className="hidden md:block text-gray-700 dark:text-gray-300 font-medium">
                   {user.username}
                 </span>
@@ -105,7 +105,7 @@ export default function Header() {
               
               {dropdownOpen && (
                 <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
-                  {/* 在移动端显示用户名 */}
+           
                   <div className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700 md:hidden">
                     <span>Signed in as</span>
                     <p className="font-semibold text-gray-800 dark:text-gray-200">{user.username}</p>
@@ -142,7 +142,7 @@ export default function Header() {
               )}
             </div>
           ) : (
-            // 用户未登录，显示登录和注册按钮 - 更新样式匹配截图
+        
             <>
               <Link to="/login" className="text-indigo-600 dark:text-indigo-400 font-medium hover:text-indigo-800 dark:hover:text-indigo-300 transition">
                 Log In
