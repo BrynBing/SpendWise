@@ -1,12 +1,13 @@
 package com.example.backend.controller;
 
-import com.example.backend.dto.CategoryDTO;
-import com.example.backend.dto.ExpenseRecordDTO;
-import com.example.backend.dto.ExpenseReportDTO;
-import com.example.backend.dto.UserDTO;
+import com.example.backend.dto.*;
 import com.example.backend.model.ExpenseRecord;
+import com.example.backend.model.FeatureSnapshot;
 import com.example.backend.model.RecurringExpenseSchedule;
+import com.example.backend.model.User;
 import com.example.backend.repository.ExpenseRecordRepository;
+import com.example.backend.repository.FeatureSnapshotRepository;
+import com.example.backend.repository.UserRepository;
 import com.example.backend.service.ExpenseRecordService;
 import com.example.backend.service.RecurringExpenseService;
 import jakarta.servlet.http.HttpSession;
@@ -32,11 +33,37 @@ public class ExpenseRecordController {
     private final ExpenseRecordService recordService;
     private final RecurringExpenseService recurringExpenseService;
     private final ExpenseRecordRepository expenseRecordRepository;
+    private final FeatureSnapshotRepository  featureSnapshotRepository;
+    private final UserRepository userRepository;
 
-    public ExpenseRecordController(ExpenseRecordService recordService, RecurringExpenseService recurringExpenseService,  ExpenseRecordRepository expenseRecordRepository) {
+    public ExpenseRecordController(ExpenseRecordService recordService, RecurringExpenseService recurringExpenseService,
+                                   ExpenseRecordRepository expenseRecordRepository, UserRepository userRepository,
+                                   FeatureSnapshotRepository featureSnapshotRepository) {
         this.recordService = recordService;
         this.recurringExpenseService = recurringExpenseService;
         this.expenseRecordRepository = expenseRecordRepository;
+        this.featureSnapshotRepository = featureSnapshotRepository;
+        this.userRepository = userRepository;
+    }
+
+    @GetMapping("/month")
+    public SnapshotDTO getSnapshot(HttpSession session,
+                                   @RequestParam(required = false) String month) {
+//{
+//    "id": 1,
+//    "totalsByCategoryJson": "[{\"amount\":12.50,\"catId\":9,\"catName\":\"Food\",\"pct\":0.7962},{\"amount\":3.20,\"catId\":10,\"catName\":\"Transport\",\"pct\":0.2038}]",
+//    "totalSpending": 15.70,
+//    "currency": "AUD"
+//}
+        UserDTO userDTO = (UserDTO) session.getAttribute("USER");
+        Integer userId = userDTO.getId();
+        User user =  userRepository.getReferenceById(userId);
+        FeatureSnapshot fs = featureSnapshotRepository
+                .findByUserAndMonth(user, month)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "snapshot not found"));
+
+        return SnapshotDTO.toDTO(fs);
     }
 
 
