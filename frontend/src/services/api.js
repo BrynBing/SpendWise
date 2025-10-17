@@ -159,4 +159,11 @@ export const securityQuestionsService = {
   },
 };
 
+// achievements api
+export const achievementsService = {
+  getUserAchievements: () => {
+    return api.get("/api/achievements");
+  }
+};
+
 export default api;
