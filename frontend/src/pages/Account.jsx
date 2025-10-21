@@ -6,7 +6,6 @@ import {
   FaExclamationTriangle,
   FaInfoCircle,
   FaTimes,
-  FaUser,
 } from "react-icons/fa";
 import { passwordResetService, userService } from "../services/api";
 
@@ -51,11 +50,20 @@ export default function Account() {
       try {
         const response = await userService.getCurrentUser();
         const userData = response.data;
+
+        // Helper to format full name with a space between first and last name when clamped (e.g., "JohnDoe" -> "John Doe")
+        const formatFullName = (name) => {
+          if (!name) return "";
+          // If already contains space(s), collapse multiple spaces to single and trim
+          if (name.includes(" ")) return name.replace(/\s+/g, " ").trim();
+          // Insert space before capital letters that follow lowercase letters (camel/pascal case)
+          return name.replace(/([a-z])([A-Z])/g, "$1 $2").trim();
+        };
         
-        // 更新用户数据
+        // 更新用户数据（将用户名按全名显示格式化）
         setUser({
           id: userData.id,
-          username: userData.username,
+          username: formatFullName(userData.username),
           email: userData.email,
           phoneNumber: userData.phoneNumber || "",
           profilePictureUrl: userData.profilePictureUrl,
@@ -283,23 +291,23 @@ export default function Account() {
 
   const ToastIcon = TOAST_ICON[toast.type] ?? FaInfoCircle;
 
-  // 格式化更新日期
-  const formatDate = (dateString) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toLocaleString();
-  };
+  // 备用：格式化更新日期（当前未展示快照面板，保留函数以备后用）
+  // const formatDate = (dateString) => {
+  //   if (!dateString) return "";
+  //   const date = new Date(dateString);
+  //   return date.toLocaleString();
+  // };
 
   return (
-    <div className="max-w-4xl mx-auto">
+  <div className="max-w-4xl mx-auto text-gray-900 dark:text-gray-100">
       <div className="mb-10 flex flex-col gap-2">
-        <span className="text-sm uppercase tracking-[0.3em] text-gray-400">Profile</span>
-        <h1 className="text-3xl font-semibold text-gray-900">Account</h1>
-        <p className="text-gray-500">Manage how SpendWise recognizes you and keep your details up to date.</p>
+        <span className="text-sm uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Profile</span>
+        <h1 className="text-3xl font-semibold text-gray-900 dark:text-gray-100">Account</h1>
+  <p className="text-gray-500 dark:text-gray-400">Manage how SpendWise recognizes you and keep your details up to date.</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <section className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm lg:col-span-2">
+        <section className="rounded-3xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 p-6 shadow-sm lg:col-span-3">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
             <button
               type="button"
@@ -313,7 +321,7 @@ export default function Account() {
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <span className="flex h-full w-full items-center justify-center bg-gray-900 text-3xl font-semibold text-white">
+                <span className="flex h-full w-full items-center justify-center bg-gray-900 dark:bg-gray-700 text-3xl font-semibold text-white">
                   {initials()}
                 </span>
               )}
@@ -322,13 +330,13 @@ export default function Account() {
               </span>
             </button>
             <div className="flex-1">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 Use a clear, high-resolution photo so teammates recognize you easily.
               </p>
               <button
                 type="button"
                 onClick={handleImageClick}
-                className="mt-3 rounded-full border border-gray-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-gray-600 transition-colors hover:bg-gray-100"
+                className="mt-3 rounded-full border border-gray-200 dark:border-gray-700 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-gray-600 dark:text-gray-300 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 Update Photo
               </button>
@@ -339,14 +347,14 @@ export default function Account() {
             ref={fileInputRef}
             type="file"
             accept="image/*"
-            className="hidden"
+                className="hidden"
             onChange={handleImageChange}
           />
 
           <form onSubmit={handleUpdateProfile} className="mt-8 space-y-6">
             <div>
-              <label className={LABEL_CLASSES} htmlFor="username">
-                Username
+              <label className={`${LABEL_CLASSES} dark:text-gray-400`} htmlFor="username">
+                Full Name
               </label>
               <input
                 id="username"
@@ -354,13 +362,14 @@ export default function Account() {
                 type="text"
                 value={user.username}
                 onChange={handleInputChange}
-                className={INPUT_CLASSES}
+                placeholder="e.g., John Doe"
+                className={`${INPUT_CLASSES} dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:placeholder:text-gray-500`}
                 required
               />
             </div>
 
             <div>
-              <label className={LABEL_CLASSES} htmlFor="email">
+              <label className={`${LABEL_CLASSES} dark:text-gray-400`} htmlFor="email">
                 Email
               </label>
               <input
@@ -369,13 +378,13 @@ export default function Account() {
                 type="email"
                 value={user.email}
                 onChange={handleInputChange}
-                className={INPUT_CLASSES}
+                className={`${INPUT_CLASSES} dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:placeholder:text-gray-500`}
                 required
               />
             </div>
 
             <div>
-              <label className={LABEL_CLASSES} htmlFor="phoneNumber">
+              <label className={`${LABEL_CLASSES} dark:text-gray-400`} htmlFor="phoneNumber">
                 Phone Number
               </label>
               <input
@@ -384,7 +393,7 @@ export default function Account() {
                 type="tel"
                 value={user.phoneNumber || ""}
                 onChange={handleInputChange}
-                className={INPUT_CLASSES}
+                className={`${INPUT_CLASSES} dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:placeholder:text-gray-500`}
               />
             </div>
 
@@ -392,14 +401,14 @@ export default function Account() {
               <button
                 type="button"
                 onClick={handleChangePassword}
-                className="w-full rounded-full border border-gray-200 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-gray-700 transition-colors hover:bg-gray-100 sm:w-auto"
+                className="w-full rounded-full border border-gray-200 dark:border-gray-700 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-gray-700 dark:text-gray-300 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 sm:w-auto"
               >
                 Change Password
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-full bg-gray-900 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-gray-700 sm:w-auto disabled:opacity-50"
+                className="w-full rounded-full bg-gray-900 dark:bg-indigo-600 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-gray-700 dark:hover:bg-indigo-500 sm:w-auto disabled:opacity-50"
               >
                 {loading ? (
                   <span className="flex items-center justify-center">
@@ -414,49 +423,20 @@ export default function Account() {
             </div>
           </form>
         </section>
-
-        <section className="flex flex-col justify-between rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Account Snapshot</p>
-            <h2 className="mt-2 text-xl font-semibold text-gray-900">Your Details</h2>
-            <p className="mt-4 text-sm text-gray-500">
-              Keep your contact information accurate; we use it for receipts, alerts, and secure verification steps.
-            </p>
-          </div>
-          <div className="mt-6 space-y-3 text-sm text-gray-600">
-            <p className="flex items-center gap-2">
-              <FaUser className="text-gray-400" />
-              <span>{user.username}</span>
-            </p>
-            <p className="flex items-center gap-2">
-              <span className="text-gray-400">@</span>
-              <span>{user.email}</span>
-            </p>
-            <p className="flex items-center gap-2">
-              <span className="text-gray-400">☎</span>
-              <span>{user.phoneNumber || "No number added"}</span>
-            </p>
-            {user.updatedAt && (
-              <p className="text-xs text-gray-400 mt-4">
-                Last updated: {formatDate(user.updatedAt)}
-              </p>
-            )}
-          </div>
-        </section>
       </div>
 
       {passwordModal.show && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl border border-gray-100 bg-white p-6 shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 p-6 shadow-xl">
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Security</p>
-                <h2 className="text-xl font-semibold text-gray-900">Update Password</h2>
+                <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Security</p>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Update Password</h2>
               </div>
               <button
                 type="button"
                 onClick={closePasswordModal}
-                className="rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                className="rounded-full p-2 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-600"
                 aria-label="Close"
               >
                 <FaTimes />
@@ -465,7 +445,7 @@ export default function Account() {
 
             <form onSubmit={handlePasswordSubmit} className="space-y-6">
               <div>
-                <label className={LABEL_CLASSES} htmlFor="currentPassword">
+                <label className={`${LABEL_CLASSES} dark:text-gray-400`} htmlFor="currentPassword">
                   Current Password
                 </label>
                 <input
@@ -474,13 +454,13 @@ export default function Account() {
                   type="password"
                   value={passwordModal.currentPassword}
                   onChange={handlePasswordInputChange}
-                  className={INPUT_CLASSES}
+                  className={`${INPUT_CLASSES} dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:placeholder:text-gray-500`}
                   required
                 />
               </div>
 
               <div>
-                <label className={LABEL_CLASSES} htmlFor="newPassword">
+                <label className={`${LABEL_CLASSES} dark:text-gray-400`} htmlFor="newPassword">
                   New Password
                 </label>
                 <input
@@ -489,13 +469,13 @@ export default function Account() {
                   type="password"
                   value={passwordModal.newPassword}
                   onChange={handlePasswordInputChange}
-                  className={INPUT_CLASSES}
+                  className={`${INPUT_CLASSES} dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:placeholder:text-gray-500`}
                   required
                 />
               </div>
 
               <div>
-                <label className={LABEL_CLASSES} htmlFor="confirmPassword">
+                <label className={`${LABEL_CLASSES} dark:text-gray-400`} htmlFor="confirmPassword">
                   Confirm Password
                 </label>
                 <input
@@ -504,7 +484,7 @@ export default function Account() {
                   type="password"
                   value={passwordModal.confirmPassword}
                   onChange={handlePasswordInputChange}
-                  className={INPUT_CLASSES}
+                  className={`${INPUT_CLASSES} dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:placeholder:text-gray-500`}
                   required
                 />
               </div>
@@ -512,7 +492,7 @@ export default function Account() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-full bg-gray-900 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-gray-700 disabled:opacity-50"
+                className="w-full rounded-full bg-gray-900 dark:bg-indigo-600 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-gray-700 dark:hover:bg-indigo-500 disabled:opacity-50"
               >
                 {loading ? (
                   <span className="flex items-center justify-center">
