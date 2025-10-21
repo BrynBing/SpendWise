@@ -30,9 +30,16 @@ const INITIAL_TRANSACTIONS = [];
 
 const CURRENCY_OPTIONS = ["USD", "AUD", "EUR", "GBP"];
 
+const FREQUENCY_OPTIONS = [
+  { value: "DAILY", label: "Daily" },
+  { value: "WEEKLY", label: "Weekly" },
+  { value: "MONTHLY", label: "Monthly" },
+];
+
 const FILTER_OPTIONS = [
   { value: "all", label: "All" },
   { value: "expense", label: "Expenses" },
+  { value: "recurring", label: "Recurring" },
 ];
 
 const formatCurrency = (value, currency) =>
@@ -56,6 +63,7 @@ const createEmptyFormState = () => ({
   category: CATEGORY_OPTIONS.expense[0],
   description: "",
   isRecurring: false,
+  frequency: "MONTHLY",
 });
 
 export default function Expense() {
@@ -147,6 +155,7 @@ export default function Expense() {
             description: record.description || '',
             date: record.expenseDate ? new Date(record.expenseDate).toISOString() : new Date().toISOString(),
             isRecurring: record.isRecurring || false,
+            frequency: record.frequency || "MONTHLY",
           };
         });
         
@@ -221,6 +230,10 @@ export default function Expense() {
   const visibleTransactions = useMemo(() => {
     if (filter === "all") {
       return transactions;
+    }
+
+    if (filter === "recurring") {
+      return transactions.filter((transaction) => transaction.isRecurring);
     }
 
     return transactions.filter((transaction) => transaction.mode === filter);
@@ -304,7 +317,7 @@ export default function Expense() {
           expenseDate: new Date().toISOString().split('T')[0], // YYYY-MM-DD format
         };
 
-        await expenseRecordService.updateRecord(editingId, recordData);
+        await expenseRecordService.updateRecord(editingId, recordData, form.isRecurring ? form.frequency : null);
         
         // Update local state
         setTransactions((prev) =>
@@ -314,6 +327,8 @@ export default function Expense() {
                   ...transaction,
                   ...baseTransaction,
                   date: new Date().toISOString(),
+                  isRecurring: form.isRecurring,
+                  frequency: form.frequency,
                 }
               : transaction
           )
@@ -334,7 +349,7 @@ export default function Expense() {
         };
 
         console.log("Creating expense record with data:", JSON.stringify(recordData, null, 2));
-        const response = await expenseRecordService.createRecord(recordData);
+        const response = await expenseRecordService.createRecord(recordData, form.isRecurring ? form.frequency : null);
         console.log("Created expense record response:", response);
         
         // Add to local state
@@ -343,6 +358,8 @@ export default function Expense() {
             id: response.expenseId || Date.now(),
             date: new Date().toISOString(),
             ...baseTransaction,
+            isRecurring: form.isRecurring,
+            frequency: form.frequency,
           },
           ...prev,
         ]);
@@ -371,6 +388,7 @@ export default function Expense() {
       category: transaction.category,
       description: transaction.description,
       isRecurring: transaction.isRecurring || false,
+      frequency: transaction.frequency || "MONTHLY",
     });
     setErrors({});
     setEditingId(transaction.id);
@@ -447,7 +465,7 @@ export default function Expense() {
           </button>
         </div>
         <p className="text-gray-500 dark:text-gray-400">
-          Log your spending to keep an eye on your cash flow.
+          Log your spending and recurring transactions to keep an eye on your cash flow.
         </p>
       </div>
 
@@ -507,7 +525,7 @@ export default function Expense() {
                   <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
                     {formatDate(transaction.date)}
                     {transaction.isRecurring && (
-                      <span className="ml-2 text-emerald-600">• Recurring</span>
+                      <span className="ml-2 text-emerald-600">• Recurring • {transaction.frequency}</span>
                     )}
                   </p>
                   <p className="text-base font-semibold text-gray-900 dark:text-white">
@@ -677,6 +695,30 @@ export default function Expense() {
                     <span className="text-sm font-semibold text-gray-900 dark:text-white">Recurring Transaction</span>
                   </label>
                 </div>
+
+                {/* Frequency Selection - only show when recurring is checked */}
+                {form.isRecurring && (
+                  <div>
+                    <label className="text-sm uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
+                      Frequency
+                    </label>
+                    <div className="relative mt-3 border-b border-gray-200 dark:border-gray-600">
+                      <select
+                        value={form.frequency}
+                        onChange={handleChange("frequency")}
+                        className="w-full appearance-none bg-transparent py-3 text-lg font-medium text-gray-900 dark:text-white focus:outline-none"
+                        aria-label="Select frequency"
+                      >
+                        {FREQUENCY_OPTIONS.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                      <FaChevronDown className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+                    </div>
+                  </div>
+                )}
 
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-end pt-4">
                   <button

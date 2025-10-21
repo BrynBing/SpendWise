@@ -3,7 +3,6 @@ import { Link, useLocation } from "react-router-dom";
 import {
   FaHome,
   FaChartLine,
-  FaCalendarCheck,
   FaBullseye,
   FaChartBar,
   FaLightbulb,
@@ -20,7 +19,6 @@ export default function SideBar() {
   const menuItems = [
     { name: "Dashboard", icon: <FaHome />, path: "/dashboard" },
     { name: "Expense", icon: <FaChartLine />, path: "/expense" },
-    { name: "Schedule Logging", icon: <FaCalendarCheck />, path: "/schedule" },
     { name: "Spending Goals", icon: <FaBullseye />, path: "/goals" },
     { name: "Reports", icon: <FaChartBar />, path: "/reports" },
     { name: "Suggestions", icon: <FaLightbulb />, path: "/suggestions" },
