@@ -61,10 +61,11 @@ export const passwordResetService = {
   },
 
   // confirm password reset with security answer and new password
-  confirmReset: (identifier, securityAnswer, newPassword) => {
+  confirmReset: (identifier, questionId, answer, newPassword) => {
     return api.post("/api/reset-password/confirm", {
       identifier,
-      securityAnswer,
+      questionId,
+      answer,
       newPassword,
     });
   },
