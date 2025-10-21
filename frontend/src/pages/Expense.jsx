@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { FaChevronDown, FaEdit, FaTrash, FaExclamationTriangle, FaPlus, FaTimes } from "react-icons/fa";
+import { FaChevronDown, FaEdit, FaTrash, FaExclamationTriangle, FaPlus, FaTimes, FaSearch, FaFilter } from "react-icons/fa";
 import { expenseRecordService } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -34,12 +34,6 @@ const FREQUENCY_OPTIONS = [
   { value: "DAILY", label: "Daily" },
   { value: "WEEKLY", label: "Weekly" },
   { value: "MONTHLY", label: "Monthly" },
-];
-
-const FILTER_OPTIONS = [
-  { value: "all", label: "All" },
-  { value: "expense", label: "Expenses" },
-  { value: "recurring", label: "Recurring" },
 ];
 
 const formatCurrency = (value, currency) =>
@@ -78,7 +72,6 @@ export default function Expense() {
   const [transactions, setTransactions] = useState(INITIAL_TRANSACTIONS);
   const [form, setForm] = useState(() => createEmptyFormState());
   const [errors, setErrors] = useState({});
-  const [filter, setFilter] = useState("all");
   const [editingId, setEditingId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState({ show: false, transaction: null });
   const [dropdownOpen, setDropdownOpen] = useState(null);
@@ -93,6 +86,17 @@ export default function Expense() {
     "Shopping": 4,
     "Utilities": 5,
   }); // Store actual category IDs from backend
+
+  // Search and filter states
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedCurrency, setSelectedCurrency] = useState("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [amountMin, setAmountMin] = useState("");
+  const [amountMax, setAmountMax] = useState("");
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [showOnlyRecurring, setShowOnlyRecurring] = useState(false);
 
   const { mode } = form;
 
@@ -227,17 +231,71 @@ export default function Expense() {
     expense: 0,
   };
 
+  const clearAllFilters = () => {
+    setSearchTerm("");
+    setSelectedCategory("all");
+    setSelectedCurrency("all");
+    setDateFrom("");
+    setDateTo("");
+    setAmountMin("");
+    setAmountMax("");
+    setShowOnlyRecurring(false);
+  };
+
+  const hasActiveFilters = searchTerm || selectedCategory !== "all" || selectedCurrency !== "all" ||
+    dateFrom || dateTo || amountMin || amountMax || showOnlyRecurring;
+
   const visibleTransactions = useMemo(() => {
-    if (filter === "all") {
-      return transactions;
+    let filtered = transactions;
+
+    // Apply recurring filter
+    if (showOnlyRecurring) {
+      filtered = filtered.filter((transaction) => transaction.isRecurring);
     }
 
-    if (filter === "recurring") {
-      return transactions.filter((transaction) => transaction.isRecurring);
+    // Apply search term
+    if (searchTerm.trim()) {
+      const searchLower = searchTerm.toLowerCase();
+      filtered = filtered.filter((transaction) =>
+        transaction.description.toLowerCase().includes(searchLower) ||
+        transaction.category.toLowerCase().includes(searchLower) ||
+        (transaction.isRecurring && transaction.frequency?.toLowerCase().includes(searchLower))
+      );
     }
 
-    return transactions.filter((transaction) => transaction.mode === filter);
-  }, [transactions, filter]);
+    // Apply category filter
+    if (selectedCategory !== "all") {
+      filtered = filtered.filter((transaction) => transaction.category === selectedCategory);
+    }
+
+    // Apply currency filter
+    if (selectedCurrency !== "all") {
+      filtered = filtered.filter((transaction) => transaction.currency === selectedCurrency);
+    }
+
+    // Apply date range filter
+    if (dateFrom) {
+      const fromDate = new Date(dateFrom);
+      filtered = filtered.filter((transaction) => new Date(transaction.date) >= fromDate);
+    }
+    if (dateTo) {
+      const toDate = new Date(dateTo);
+      toDate.setHours(23, 59, 59, 999); // End of day
+      filtered = filtered.filter((transaction) => new Date(transaction.date) <= toDate);
+    }
+
+    // Apply amount range filter
+    if (amountMin) {
+      const minAmount = parseFloat(amountMin);
+      filtered = filtered.filter((transaction) => transaction.amount >= minAmount);
+    }
+    if (amountMax) {
+      const maxAmount = parseFloat(amountMax);
+      filtered = filtered.filter((transaction) => transaction.amount <= maxAmount);
+    }
+
+    return filtered;
+  }, [transactions, showOnlyRecurring, searchTerm, selectedCategory, selectedCurrency, dateFrom, dateTo, amountMin, amountMax]);
 
   const handleChange = (field) => (event) => {
     const value = event.target.value;
@@ -492,24 +550,150 @@ export default function Expense() {
       </div>
 
       <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-3xl shadow-sm p-6 sm:p-10 transition-colors duration-200">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Recent Activity</h2>
-          <div className="flex gap-2">
-            {FILTER_OPTIONS.map(({ value, label }) => (
+        <div className="mb-6 space-y-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Recent Activity</h2>
+            <div className="flex gap-2">
               <button
-                key={value}
-                type="button"
-                onClick={() => setFilter(value)}
-                className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                  filter === value
-                    ? "bg-gray-900 dark:bg-gray-600 text-white"
+                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                  showAdvancedFilters
+                    ? "bg-blue-600 text-white"
                     : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                 }`}
               >
-                {label}
+                <FaFilter /> Filters
               </button>
-            ))}
+              {hasActiveFilters && (
+                <button
+                  onClick={clearAllFilters}
+                  className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                >
+                  Clear All
+                </button>
+              )}
+            </div>
           </div>
+
+          {/* Search Bar */}
+          <div className="relative">
+            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+            <input
+              type="text"
+              placeholder="Search transactions by description, category, or frequency..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+
+          {/* Recurring Filter Checkbox */}
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showOnlyRecurring}
+                onChange={(e) => setShowOnlyRecurring(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
+              />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Show only recurring transactions</span>
+            </label>
+          </div>
+
+          {/* Advanced Filters */}
+          {showAdvancedFilters && (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 mb-2">
+                  Category
+                </label>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="all">All Categories</option>
+                  {CATEGORY_OPTIONS.expense.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 mb-2">
+                  Currency
+                </label>
+                <select
+                  value={selectedCurrency}
+                  onChange={(e) => setSelectedCurrency(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="all">All Currencies</option>
+                  {CURRENCY_OPTIONS.map((currency) => (
+                    <option key={currency} value={currency}>
+                      {currency}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 mb-2">
+                  Date From
+                </label>
+                <input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 mb-2">
+                  Date To
+                </label>
+                <input
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 mb-2">
+                  Min Amount
+                </label>
+                <input
+                  type="number"
+                  placeholder="0.00"
+                  value={amountMin}
+                  onChange={(e) => setAmountMin(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 mb-2">
+                  Max Amount
+                </label>
+                <input
+                  type="number"
+                  placeholder="0.00"
+                  value={amountMax}
+                  onChange={(e) => setAmountMax(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {visibleTransactions.length === 0 ? (
