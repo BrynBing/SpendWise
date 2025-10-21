@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { FaChevronDown, FaExclamationTriangle, FaPlus, FaTimes } from "react-icons/fa";
+import { FaChevronDown, FaEdit, FaExclamationTriangle, FaPlus, FaTimes } from "react-icons/fa";
 import { goalsService } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -58,11 +58,11 @@ const formatDate = (value) => {
 const formatPeriodLabel = (period) => {
   switch (period) {
     case "WEEKLY":
-      return "Weekly";
+      return "Weekly Goal";
     case "MONTHLY":
-      return "Monthly";
+      return "Monthly Goal";
     case "YEARLY":
-      return "Yearly";
+      return "Yearly Goal";
     default:
       return "Goal";
   }
@@ -92,6 +92,7 @@ const ALERT_STYLES = {
 
 const createEmptyFormState = (categories = DEFAULT_CATEGORIES) => ({
   categoryId: categories[0]?.id ? String(categories[0].id) : "",
+  goalName: categories[0]?.name ? `${categories[0].name} Goal` : "",
   period: "MONTHLY",
   targetAmount: "",
   startNextPeriod: false,
@@ -110,6 +111,8 @@ export default function Goals() {
   const [form, setForm] = useState(() => createEmptyFormState(DEFAULT_CATEGORIES));
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
+  const [editingGoalId, setEditingGoalId] = useState(null);
+  const [goalNameEdited, setGoalNameEdited] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -122,15 +125,25 @@ export default function Goals() {
   useEffect(() => {
     setForm((prev) => {
       if (!categories.length) {
-        return { ...prev, categoryId: "" };
+        return { ...prev, categoryId: "", goalName: "" };
       }
-      const exists = categories.some((category) => String(category.id) === String(prev.categoryId));
+      const exists = categories.some(
+        (category) => String(category.id) === String(prev.categoryId),
+      );
       if (exists) {
         return prev;
       }
-      return { ...prev, categoryId: String(categories[0].id) };
+      if (editingGoalId || goalNameEdited) {
+        return prev;
+      }
+      const defaultName = `${categories[0].name} Goal`;
+      return {
+        ...prev,
+        categoryId: String(categories[0].id),
+        goalName: defaultName,
+      };
     });
-  }, [categories]);
+  }, [categories, editingGoalId, goalNameEdited]);
 
   const fetchGoals = useCallback(async () => {
     try {
@@ -145,7 +158,8 @@ export default function Goals() {
       const isUnauthorized = [progressResponse, activeResponse].some(
         (result) =>
           result.status === "rejected" &&
-          (result.reason?.response?.status === 401 || result.reason?.response?.status === 403),
+          (result.reason?.response?.status === 401 ||
+            result.reason?.response?.status === 403),
       );
 
       if (isUnauthorized) {
@@ -173,7 +187,9 @@ export default function Goals() {
           progressError: progressResponse.reason,
           activeError: activeResponse.reason,
         });
-        setFetchError("Some goal information could not be loaded. Showing available data.");
+        setFetchError(
+          "Some goal information could not be loaded. Showing available data.",
+        );
       } else {
         setFetchError(null);
       }
@@ -188,15 +204,14 @@ export default function Goals() {
       const combined = activeGoals.map((goal) => {
         const progress = progressMap.get(goal.goalId);
         const categoryName = goal.categoryName ?? progress?.categoryName ?? "Unknown";
-        const period = goal.period ?? progress?.period ?? "MONTHLY";
-        const displayName = `${categoryName} ${formatPeriodLabel(period)}`;
+        const derivedGoalName = goal.goalName ?? progress?.goalName ?? categoryName;
 
         return {
           goalId: goal.goalId,
           categoryId: goal.categoryId,
           categoryName,
-          period,
-          displayName,
+          goalName: derivedGoalName,
+          period: goal.period ?? progress?.period ?? "MONTHLY",
           targetAmount: parseNumber(progress?.targetAmount ?? goal.targetAmount),
           spentAmount: parseNumber(progress?.spentAmount),
           remainingAmount: parseNumber(progress?.remainingAmount ?? goal.targetAmount),
@@ -204,8 +219,8 @@ export default function Goals() {
           daysLeft: progress?.daysLeft ?? 0,
           health: progress?.health ?? "ON_TRACK",
           alertLevel: progress?.alertLevel ?? "NONE",
-          startDate: progress?.startDate ?? goal.startDate ?? null,
-          endDate: progress?.endDate ?? goal.endDate ?? null,
+          startDate: progress?.startDate ?? null,
+          endDate: progress?.endDate ?? null,
           warningThreshold: progress?.warningThreshold ?? 80,
           overBudgetThreshold: progress?.overBudgetThreshold ?? 100,
         };
@@ -213,15 +228,15 @@ export default function Goals() {
 
       progressData.forEach((progress) => {
         const alreadyIncluded = combined.some((goal) => goal.goalId === progress.goalId);
+
         if (!alreadyIncluded) {
           const categoryName = progress.categoryName ?? "Unknown";
-          const period = progress.period ?? "MONTHLY";
           combined.push({
             goalId: progress.goalId,
             categoryId: null,
             categoryName,
-            period,
-            displayName: `${categoryName} ${formatPeriodLabel(period)}`,
+            goalName: progress.goalName ?? categoryName,
+            period: progress.period ?? "MONTHLY",
             targetAmount: parseNumber(progress.targetAmount),
             spentAmount: parseNumber(progress.spentAmount),
             remainingAmount: parseNumber(progress.remainingAmount),
@@ -234,8 +249,8 @@ export default function Goals() {
             warningThreshold: progress.warningThreshold ?? 80,
             overBudgetThreshold: progress.overBudgetThreshold ?? 100,
           });
-        }
-      });
+      }
+    });
 
       setGoals(combined);
 
@@ -250,7 +265,9 @@ export default function Goals() {
               });
             }
           });
-          return Array.from(byId.values()).sort((a, b) => a.name.localeCompare(b.name));
+          return Array.from(byId.values()).sort((a, b) =>
+            a.name.localeCompare(b.name),
+          );
         });
       }
     } catch (error) {
@@ -284,8 +301,14 @@ export default function Goals() {
       };
     }
 
-    const totalTarget = goals.reduce((sum, goal) => sum + parseNumber(goal.targetAmount), 0);
-    const totalSpent = goals.reduce((sum, goal) => sum + parseNumber(goal.spentAmount), 0);
+    const totalTarget = goals.reduce(
+      (sum, goal) => sum + parseNumber(goal.targetAmount),
+      0,
+    );
+    const totalSpent = goals.reduce(
+      (sum, goal) => sum + parseNumber(goal.spentAmount),
+      0,
+    );
     const totalRemaining = Math.max(totalTarget - totalSpent, 0);
     const overallProgress = totalTarget > 0 ? (totalSpent / totalTarget) * 100 : 0;
 
@@ -299,6 +322,7 @@ export default function Goals() {
 
   const handleOpenModal = () => {
     setErrors({});
+    setGoalNameEdited(false);
     setForm(createEmptyFormState(categories));
     setModalOpen(true);
   };
@@ -306,13 +330,25 @@ export default function Goals() {
   const handleCloseModal = () => {
     setModalOpen(false);
     setSubmitting(false);
-    setErrors({});
+    setGoalNameEdited(false);
   };
 
   const handleInputChange = (field) => (event) => {
     const { type, checked, value } = event.target;
     const nextValue = type === "checkbox" ? checked : value;
-    setForm((prev) => ({ ...prev, [field]: nextValue }));
+    if (field === "goalName") {
+      setGoalNameEdited(true);
+    }
+    setForm((prev) => {
+      const nextState = { ...prev, [field]: nextValue };
+      if (field === "categoryId" && !goalNameEdited) {
+        const selected = categories.find((category) => String(category.id) === String(nextValue));
+        if (selected) {
+          nextState.goalName = `${selected.name} Goal`;
+        }
+      }
+      return nextState;
+    });
     if (errors[field]) {
       setErrors((prev) => {
         const { [field]: _removed, ...rest } = prev;
@@ -323,6 +359,13 @@ export default function Goals() {
 
   const validateForm = () => {
     const validationErrors = {};
+
+    const trimmedGoalName = form.goalName ? form.goalName.trim() : "";
+    if (!trimmedGoalName) {
+      validationErrors.goalName = "Enter a name to identify this goal";
+    } else if (trimmedGoalName.length > 128) {
+      validationErrors.goalName = "Goal name must be 128 characters or fewer";
+    }
 
     if (!form.categoryId) {
       validationErrors.categoryId = "Select a spending category";
@@ -353,6 +396,7 @@ export default function Goals() {
       categoryId: Number(form.categoryId),
       period: form.period,
       targetAmount: parseNumber(form.targetAmount),
+      goalName: form.goalName.trim(),
       confirmDuplicate: form.confirmDuplicate,
       startNextPeriod: form.startNextPeriod,
     };
@@ -362,9 +406,11 @@ export default function Goals() {
       setErrors({});
       await goalsService.createGoal(payload);
       await fetchGoals();
-      handleCloseModal();
+      setModalOpen(false);
+      setForm(createEmptyFormState(categories));
+      setGoalNameEdited(false);
     } catch (error) {
-      console.error("Failed to save goal", error);
+      console.error("Failed to create goal", error);
       const message =
         error.response?.data?.message ||
         error.response?.data?.error ||
@@ -412,7 +458,7 @@ export default function Goals() {
             Across {goals.length} active {goals.length === 1 ? "goal" : "goals"}
           </p>
         </div>
-
+        
         <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm transition-colors duration-200">
           <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Target Budget</p>
           <p className="mt-3 text-2xl font-semibold text-gray-900 dark:text-white">
@@ -452,8 +498,10 @@ export default function Goals() {
           <ul className="divide-y divide-gray-100 dark:divide-gray-700">
             {goals.map((goal) => {
               const progress = Math.min(Math.max(goal.progressPercent ?? 0, 0), 120);
-              const healthLabel = HEALTH_LABELS[goal.health] ?? HEALTH_LABELS.ON_TRACK;
-              const healthStyle = HEALTH_STYLES[goal.health] ?? HEALTH_STYLES.ON_TRACK;
+              const healthLabel =
+                HEALTH_LABELS[goal.health] ?? HEALTH_LABELS.ON_TRACK;
+              const healthStyle =
+                HEALTH_STYLES[goal.health] ?? HEALTH_STYLES.ON_TRACK;
               const alertLabel = ALERT_LABELS[goal.alertLevel];
               const alertStyle = ALERT_STYLES[goal.alertLevel];
 
@@ -466,10 +514,10 @@ export default function Goals() {
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between">
                       <div>
                         <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                          {goal.displayName}
+                          {goal.goalName}
                         </p>
                         <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
-                          {formatPeriodLabel(goal.period)} Goal • {formatDate(goal.startDate)} — {formatDate(goal.endDate)}
+                          {goal.categoryName} • {formatPeriodLabel(goal.period)} • {formatDate(goal.startDate)} — {formatDate(goal.endDate)}
                         </p>
                       </div>
                       <span className="text-sm font-semibold uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
@@ -486,19 +534,25 @@ export default function Goals() {
 
                     <div className="mt-3 grid gap-3 text-sm text-gray-500 dark:text-gray-400 sm:grid-cols-3">
                       <div>
-                        <p className="text-xs uppercase tracking-[0.25em] text-gray-400 dark:text-gray-500">Spent</p>
+                        <p className="text-xs uppercase tracking-[0.25em] text-gray-400 dark:text-gray-500">
+                          Spent
+                        </p>
                         <p className="mt-1 font-medium text-gray-600 dark:text-gray-300">
                           {formatCurrency(goal.spentAmount)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs uppercase tracking-[0.25em] text-gray-400 dark:text-gray-500">Remaining</p>
+                        <p className="text-xs uppercase tracking-[0.25em] text-gray-400 dark:text-gray-500">
+                          Remaining
+                        </p>
                         <p className="mt-1 font-medium text-gray-600 dark:text-gray-300">
                           {formatCurrency(goal.remainingAmount)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs uppercase tracking-[0.25em] text-gray-400 dark:text-gray-500">Progress</p>
+                        <p className="text-xs uppercase tracking-[0.25em] text-gray-400 dark:text-gray-500">
+                          Progress
+                        </p>
                         <p className="mt-1 font-medium text-gray-600 dark:text-gray-300">
                           {parseNumber(goal.progressPercent).toFixed(1)}%
                         </p>
@@ -533,7 +587,9 @@ export default function Goals() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="w-full max-w-xl bg-white dark:bg-gray-800 rounded-3xl shadow-xl max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 px-6 sm:px-10 py-6 rounded-t-3xl flex items-center justify-between">
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Add Spending Goal</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                Add Spending Goal
+              </h2>
               <button
                 type="button"
                 onClick={handleCloseModal}
@@ -550,6 +606,22 @@ export default function Goals() {
                     {errors.submit}
                   </div>
                 )}
+
+                <div>
+                  <label className={LABEL_CLASSES}>Goal Name</label>
+                  <div className={BORDER_SECTION_CLASSES}>
+                    <input
+                      type="text"
+                      value={form.goalName}
+                      onChange={handleInputChange("goalName")}
+                      className={INPUT_BASE_CLASSES}
+                      placeholder="e.g., Groceries Monthly Budget"
+                    />
+                  </div>
+                  {errors.goalName && (
+                    <p className="mt-2 text-xs text-rose-500">{errors.goalName}</p>
+                  )}
+                </div>
 
                 <div>
                   <label className={LABEL_CLASSES}>Category</label>
@@ -634,7 +706,7 @@ export default function Goals() {
                       className="mt-1 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
                     />
                     <span>
-                      Replace an active goal for the same category and period.
+                      Replace any active goal for the same category and period.
                     </span>
                   </label>
                 </div>
