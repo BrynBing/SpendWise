@@ -700,62 +700,71 @@ export default function Expense() {
           <p className="text-sm text-gray-500 dark:text-gray-400">No transactions logged yet.</p>
         ) : (
           <ul className="divide-y divide-gray-100 dark:divide-gray-700">
-            {visibleTransactions.map((transaction) => (
-              <li
-                key={transaction.id}
-                className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between relative"
-              >
-                <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
-                    {formatDate(transaction.date)}
-                    {transaction.isRecurring && (
-                      <span className="ml-2 text-emerald-600">• Recurring • {transaction.frequency}</span>
-                    )}
-                  </p>
-                  <p className="text-base font-semibold text-gray-900 dark:text-white">
-                    {transaction.category}
-                  </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{transaction.description}</p>
-                </div>
-                <div className="flex flex-col items-end gap-3 sm:flex-row sm:items-center sm:gap-6">
-                  <button
-                    onClick={() => toggleDropdown(transaction.id)}
-                    className="flex items-center gap-2 cursor-pointer"
-                  >
-                    <span
-                      className={`text-base font-semibold ${
-                        transaction.mode === "expense"
-                          ? "text-rose-500"
-                          : "text-emerald-500"
-                      }`}
-                    >
-                      {transaction.mode === "expense" ? "-" : "+"}
-                      {formatCurrency(transaction.amount, transaction.currency)}
-                    </span>
-                    <FaChevronDown className="text-gray-400 dark:text-gray-500 text-sm" />
-                  </button>
-                  
-                  {dropdownOpen === transaction.id && (
-                    <div className="absolute right-0 top-full mt-2 z-10 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-2xl shadow-lg min-w-[120px]">
-                      <button
-                        type="button"
-                        onClick={() => handleEdit(transaction)}
-                        className="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 first:rounded-t-2xl"
-                      >
-                        <FaEdit className="text-gray-500 dark:text-gray-400" /> Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => openDeleteConfirm(transaction)}
-                        className="w-full flex items-center gap-2 px-4 py-3 text-sm text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 last:rounded-b-2xl border-t border-gray-100 dark:border-gray-700"
-                      >
-                        <FaTrash className="text-rose-500" /> Delete
-                      </button>
+            {visibleTransactions.map((transaction) => {
+              const amountColor = transaction.mode === "expense" ? "text-rose-500" : "text-emerald-500";
+              return (
+                <li
+                  key={transaction.id}
+                  className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between relative"
+                >
+                  <div className="flex-1">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between">
+                      <div>
+                        <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                          {transaction.category}
+                        </p>
+                        <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
+                          {formatDate(transaction.date)}
+                          {transaction.isRecurring && transaction.frequency && (
+                            <span className="ml-2 text-emerald-500">
+                              • Recurring • {transaction.frequency}
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                      <span className={`text-sm font-semibold uppercase tracking-[0.3em] ${amountColor}`}>
+                        {transaction.mode === "expense" ? "-" : "+"}
+                        {formatCurrency(transaction.amount, transaction.currency)}
+                      </span>
                     </div>
-                  )}
-                </div>
-              </li>
-            ))}
+                    {transaction.description && (
+                      <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{transaction.description}</p>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col items-start gap-3 sm:items-end">
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => toggleDropdown(transaction.id)}
+                        className="flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-gray-600 dark:text-gray-300 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
+                      >
+                        Manage
+                        <FaChevronDown className="text-gray-400 dark:text-gray-500 text-sm" />
+                      </button>
+                      {dropdownOpen === transaction.id && (
+                        <div className="absolute right-0 top-full mt-2 z-10 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-2xl shadow-lg min-w-[140px]">
+                          <button
+                            type="button"
+                            onClick={() => handleEdit(transaction)}
+                            className="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 first:rounded-t-2xl"
+                          >
+                            <FaEdit className="text-gray-500 dark:text-gray-400" /> Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => openDeleteConfirm(transaction)}
+                            className="w-full flex items-center gap-2 px-4 py-3 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 last:rounded-b-2xl border-t border-gray-100 dark:border-gray-700"
+                          >
+                            <FaTrash className="text-rose-500" /> Delete
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
