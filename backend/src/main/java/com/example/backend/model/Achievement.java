@@ -17,4 +17,11 @@ public class Achievement {
     private String title;
     private String description;
     private String icon;
+
+    public Achievement(String code, String title, String description, String icon) {
+        this.code = code;
+        this.title = title;
+        this.description = description;
+        this.icon = icon;
+    }
 }

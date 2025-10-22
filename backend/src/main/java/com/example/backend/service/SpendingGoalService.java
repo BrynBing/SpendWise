@@ -26,6 +26,7 @@ public class SpendingGoalService {
     private final SpendingGoalRepository goalRepo;
     private final CategoryRepository categoryRepo;
     private final ExpenseRecordRepository expenseRepo;
+    private final AchievementService achievementService;
 
     private static final int WARNING_THRESHOLD = 80;   // %
     private static final int OVER_BUDGET_THRESHOLD = 100; // %
@@ -86,6 +87,7 @@ public class SpendingGoalService {
         goal.setActive(true);
 
         var saved = goalRepo.save(goal);
+        achievementService.checkSetGoal(user.getUser_id());
         return toResp(saved);
     }
 

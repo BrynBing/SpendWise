@@ -159,5 +159,8 @@ public interface ExpenseRecordRepository extends JpaRepository<ExpenseRecord, In
             @Param("end") LocalDate end,
             @Param("categoryId") Integer categoryId
     );
+
+    @Query("SELECT COUNT(e) FROM ExpenseRecord e WHERE e.user.user_id = :userId")
+    long countRecordsByUserId(@Param("userId") Integer userId);
     
 }
