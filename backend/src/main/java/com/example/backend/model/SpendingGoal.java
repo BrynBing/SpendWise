@@ -39,6 +39,9 @@ public class SpendingGoal {
     @Column(name = "target_amount", nullable = false, precision = 12, scale = 2)
     private BigDecimal targetAmount;
 
+    @Column(name = "goal_name", nullable = false, length = 128)
+    private String goalName;
+
 
     @Column(name = "start_date")
     private LocalDate startDate;

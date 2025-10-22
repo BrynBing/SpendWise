@@ -69,9 +69,10 @@ public class SpendingGoalService {
             start = range[0]; end = range[1];
         }
 
+        // Deactivate existing goal before creating new one to avoid unique constraint violation
         existingOpt.ifPresent(old -> {
             old.setActive(false);
-            goalRepo.save(old);
+            goalRepo.saveAndFlush(old);  // Use saveAndFlush to ensure DB update happens immediately
         });
 
         var goal = new SpendingGoal();
@@ -79,6 +80,7 @@ public class SpendingGoalService {
         goal.setCategory(category);
         goal.setPeriod(req.getPeriod());
         goal.setTargetAmount(req.getTargetAmount());
+        goal.setGoalName(buildGoalName(category.getCategoryName(), req.getPeriod()));
         goal.setStartDate(start);
         goal.setEndDate(end);
         goal.setActive(true);
@@ -126,6 +128,16 @@ public class SpendingGoalService {
         resp.setActive(g.isActive());
         return resp;
     }
+
+      private String buildGoalName(String categoryName, GoalPeriod period) {
+        var periodLabel = switch (period) {
+            case WEEKLY -> "Weekly";
+            case MONTHLY -> "Monthly";
+            case YEARLY -> "Yearly";
+        };
+        return "%s %s Goal".formatted(categoryName, periodLabel);
+    }
+
 
     // ------------------- progress tracking ------------------
     @Transactional(readOnly = true)

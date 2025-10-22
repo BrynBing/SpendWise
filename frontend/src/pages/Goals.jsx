@@ -1,304 +1,578 @@
-import React, { useRef, useState } from "react";
-import { FaChevronDown, FaEdit, FaTrash, FaExclamationTriangle } from "react-icons/fa";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { FaChevronDown, FaEdit, FaExclamationTriangle, FaPlus, FaTimes } from "react-icons/fa";
+import { goalsService } from "../services/api";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
-const INITIAL_GOALS = [
-  {
-    id: 1,
-    name: "Phone",
-    targetAmount: 1500,
-    currentAmount: 450,
-    category: "Electronics",
-    deadline: "2024-12-01",
-  },
-  {
-    id: 2,
-    name: "Fitness watch",
-    targetAmount: 500,
-    currentAmount: 200,
-    category: "Health",
-    deadline: "2024-10-15",
-  },
-  {
-    id: 3,
-    name: "Laptop",
-    targetAmount: 2000,
-    currentAmount: 800,
-    category: "Electronics",
-    deadline: "2024-11-30",
-  },
-  {
-    id: 4,
-    name: "Emergency fund",
-    targetAmount: 2000,
-    currentAmount: 1200,
-    category: "General",
-    deadline: "2025-06-01",
-  },
-  {
-    id: 5,
-    name: "University Tuition",
-    targetAmount: 3000,
-    currentAmount: 900,
-    category: "Education",
-    deadline: "2024-12-31",
-  },
-  {
-    id: 6,
-    name: "Monthly budget",
-    targetAmount: 2000,
-    currentAmount: 1234.60,
-    category: "General",
-    deadline: "2024-09-30",
-  },
+const DEFAULT_CURRENCY = "AUD";
+
+const DEFAULT_CATEGORIES = [
+  { id: 1, name: "Food" },
+  { id: 2, name: "Transport" },
+  { id: 3, name: "Entertainment" },
+  { id: 4, name: "Shopping" },
+  { id: 5, name: "Utilities" },
 ];
 
-const formatCurrency = (value, currency = "USD") =>
+const PERIOD_OPTIONS = [
+  { value: "WEEKLY", label: "Weekly" },
+  { value: "MONTHLY", label: "Monthly" },
+  { value: "YEARLY", label: "Yearly" },
+];
+
+const LABEL_CLASSES = "text-sm uppercase tracking-[0.3em] text-gray-400";
+const INPUT_BASE_CLASSES =
+  "w-full bg-transparent py-3 text-base text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none";
+const BORDER_SECTION_CLASSES = "mt-3 border-b border-gray-200 dark:border-gray-600";
+
+const parseNumber = (value) => {
+  if (value === null || value === undefined) {
+    return 0;
+  }
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : 0;
+  }
+  const num = Number(value);
+  return Number.isFinite(num) ? num : 0;
+};
+
+const formatCurrency = (value, currency = DEFAULT_CURRENCY) =>
   new Intl.NumberFormat("en-US", {
     style: "currency",
     currency,
-  }).format(value);
+    minimumFractionDigits: 2,
+  }).format(parseNumber(value));
 
-const createEmptyFormState = () => ({
-  name: "",
+const formatDate = (value) => {
+  if (!value) {
+    return "—";
+  }
+  const date = new Date(`${value}T00:00:00`);
+  return date.toLocaleDateString("en-AU", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+const formatPeriodLabel = (period) => {
+  switch (period) {
+    case "WEEKLY":
+      return "Weekly Goal";
+    case "MONTHLY":
+      return "Monthly Goal";
+    case "YEARLY":
+      return "Yearly Goal";
+    default:
+      return "Goal";
+  }
+};
+
+const HEALTH_LABELS = {
+  ON_TRACK: "On track",
+  AT_RISK: "At risk",
+  OVERSPENT: "Overspent",
+};
+
+const HEALTH_STYLES = {
+  ON_TRACK: "bg-emerald-100 text-emerald-600",
+  AT_RISK: "bg-amber-100 text-amber-600",
+  OVERSPENT: "bg-rose-100 text-rose-600",
+};
+
+const ALERT_LABELS = {
+  WARNING: "Approaching target",
+  OVER_BUDGET: "Exceeded target",
+};
+
+const ALERT_STYLES = {
+  WARNING: "text-amber-600 dark:text-amber-400",
+  OVER_BUDGET: "text-rose-600 dark:text-rose-400",
+};
+
+const createEmptyFormState = (categories = DEFAULT_CATEGORIES) => ({
+  categoryId: categories[0]?.id ? String(categories[0].id) : "",
+  goalName: categories[0]?.name ? `${categories[0].name} Goal` : "",
+  period: "MONTHLY",
   targetAmount: "",
-  currentAmount: "",
-  category: "General",
-  deadline: "",
+  startNextPeriod: false,
+  confirmDuplicate: false,
 });
 
-const LABEL_CLASSES = "text-sm uppercase tracking-[0.3em] text-gray-400";
-const INPUT_BASE_CLASSES = "w-full bg-transparent py-3 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none";
-const BORDER_SECTION_CLASSES = "mt-3 border-b border-gray-200";
-
 export default function Goals() {
-  const [goals, setGoals] = useState(INITIAL_GOALS);
-  const [form, setForm] = useState(() => createEmptyFormState());
+  const { isAuthenticated, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+
+  const [goals, setGoals] = useState([]);
+  const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [form, setForm] = useState(() => createEmptyFormState(DEFAULT_CATEGORIES));
   const [errors, setErrors] = useState({});
-  const [editingId, setEditingId] = useState(null);
-  const [confirmDelete, setConfirmDelete] = useState({ show: false, goal: null });
-  const [dropdownOpen, setDropdownOpen] = useState(null);
-  const formRef = useRef(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [editingGoalId, setEditingGoalId] = useState(null);
+  const [goalNameEdited, setGoalNameEdited] = useState(false);
 
-  // Calculate current and target spending
-  const currentSpending = goals.reduce((sum, goal) => sum + goal.currentAmount, 0);
-  const targetSpending = goals.reduce((sum, goal) => sum + goal.targetAmount, 0);
-  const spendingProgress = targetSpending > 0 ? (currentSpending / targetSpending) * 100 : 0;
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      navigate("/login", {
+        state: { message: "Please log in to manage your spending goals" },
+      });
+    }
+  }, [authLoading, isAuthenticated, navigate]);
 
-  const validateForm = () => {
-    const newErrors = {};
+  useEffect(() => {
+    setForm((prev) => {
+      if (!categories.length) {
+        return { ...prev, categoryId: "", goalName: "" };
+      }
+      const exists = categories.some(
+        (category) => String(category.id) === String(prev.categoryId),
+      );
+      if (exists) {
+        return prev;
+      }
+      if (editingGoalId || goalNameEdited) {
+        return prev;
+      }
+      const defaultName = `${categories[0].name} Goal`;
+      return {
+        ...prev,
+        categoryId: String(categories[0].id),
+        goalName: defaultName,
+      };
+    });
+  }, [categories, editingGoalId, goalNameEdited]);
 
-    if (!form.name.trim()) {
-      newErrors.name = "Goal name is required";
+  const fetchGoals = useCallback(async () => {
+    try {
+      setLoading(true);
+      setFetchError(null);
+
+      const [progressResponse, activeResponse] = await Promise.allSettled([
+        goalsService.listProgress(),
+        goalsService.listActiveGoals(),
+      ]);
+
+      const isUnauthorized = [progressResponse, activeResponse].some(
+        (result) =>
+          result.status === "rejected" &&
+          (result.reason?.response?.status === 401 ||
+            result.reason?.response?.status === 403),
+      );
+
+      if (isUnauthorized) {
+        navigate("/login", {
+          state: { message: "Session expired. Please log in again." },
+        });
+        return;
+      }
+
+      const progressRejected = progressResponse.status === "rejected";
+      const activeRejected = activeResponse.status === "rejected";
+
+      if (progressRejected && activeRejected) {
+        console.error("Failed to load any goal data", {
+          progressError: progressResponse.reason,
+          activeError: activeResponse.reason,
+        });
+        setFetchError("Unable to load goals right now. Please try again shortly.");
+        setGoals([]);
+        return;
+      }
+
+      if (progressRejected || activeRejected) {
+        console.warn("Partial goal data loaded", {
+          progressError: progressResponse.reason,
+          activeError: activeResponse.reason,
+        });
+        setFetchError(
+          "Some goal information could not be loaded. Showing available data.",
+        );
+      } else {
+        setFetchError(null);
+      }
+
+      const progressData =
+        progressResponse.status === "fulfilled" ? progressResponse.value : [];
+      const activeGoals =
+        activeResponse.status === "fulfilled" ? activeResponse.value : [];
+
+      const progressMap = new Map(progressData.map((item) => [item.goalId, item]));
+
+      const combined = activeGoals.map((goal) => {
+        const progress = progressMap.get(goal.goalId);
+        const categoryName = goal.categoryName ?? progress?.categoryName ?? "Unknown";
+        const derivedGoalName = goal.goalName ?? progress?.goalName ?? categoryName;
+
+        return {
+          goalId: goal.goalId,
+          categoryId: goal.categoryId,
+          categoryName,
+          goalName: derivedGoalName,
+          period: goal.period ?? progress?.period ?? "MONTHLY",
+          targetAmount: parseNumber(progress?.targetAmount ?? goal.targetAmount),
+          spentAmount: parseNumber(progress?.spentAmount),
+          remainingAmount: parseNumber(progress?.remainingAmount ?? goal.targetAmount),
+          progressPercent: parseNumber(progress?.progressPercent),
+          daysLeft: progress?.daysLeft ?? 0,
+          health: progress?.health ?? "ON_TRACK",
+          alertLevel: progress?.alertLevel ?? "NONE",
+          startDate: progress?.startDate ?? null,
+          endDate: progress?.endDate ?? null,
+          warningThreshold: progress?.warningThreshold ?? 80,
+          overBudgetThreshold: progress?.overBudgetThreshold ?? 100,
+        };
+      });
+
+      progressData.forEach((progress) => {
+        const alreadyIncluded = combined.some((goal) => goal.goalId === progress.goalId);
+
+        if (!alreadyIncluded) {
+          const categoryName = progress.categoryName ?? "Unknown";
+          combined.push({
+            goalId: progress.goalId,
+            categoryId: null,
+            categoryName,
+            goalName: progress.goalName ?? categoryName,
+            period: progress.period ?? "MONTHLY",
+            targetAmount: parseNumber(progress.targetAmount),
+            spentAmount: parseNumber(progress.spentAmount),
+            remainingAmount: parseNumber(progress.remainingAmount),
+            progressPercent: parseNumber(progress.progressPercent),
+            daysLeft: progress.daysLeft ?? 0,
+            health: progress.health ?? "ON_TRACK",
+            alertLevel: progress.alertLevel ?? "NONE",
+            startDate: progress.startDate ?? null,
+            endDate: progress.endDate ?? null,
+            warningThreshold: progress.warningThreshold ?? 80,
+            overBudgetThreshold: progress.overBudgetThreshold ?? 100,
+          });
+      }
+    });
+
+      setGoals(combined);
+
+      if (activeGoals.length > 0) {
+        setCategories((prev) => {
+          const byId = new Map(prev.map((category) => [category.id, category]));
+          activeGoals.forEach((goal) => {
+            if (goal.categoryId && goal.categoryName) {
+              byId.set(goal.categoryId, {
+                id: goal.categoryId,
+                name: goal.categoryName,
+              });
+            }
+          });
+          return Array.from(byId.values()).sort((a, b) =>
+            a.name.localeCompare(b.name),
+          );
+        });
+      }
+    } catch (error) {
+      console.error("Failed to fetch goals", error);
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        navigate("/login", {
+          state: { message: "Session expired. Please log in again." },
+        });
+      } else {
+        setFetchError("Unable to load goals right now. Please try again shortly.");
+      }
+      setGoals([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      fetchGoals();
+    }
+  }, [authLoading, isAuthenticated, fetchGoals]);
+
+  const totals = useMemo(() => {
+    if (!goals.length) {
+      return {
+        totalTarget: 0,
+        totalSpent: 0,
+        totalRemaining: 0,
+        overallProgress: 0,
+      };
     }
 
-    const targetAmount = Number(form.targetAmount);
-    if (!form.targetAmount || targetAmount <= 0) {
-      newErrors.targetAmount = "Target amount must be greater than 0";
-    }
+    const totalTarget = goals.reduce(
+      (sum, goal) => sum + parseNumber(goal.targetAmount),
+      0,
+    );
+    const totalSpent = goals.reduce(
+      (sum, goal) => sum + parseNumber(goal.spentAmount),
+      0,
+    );
+    const totalRemaining = Math.max(totalTarget - totalSpent, 0);
+    const overallProgress = totalTarget > 0 ? (totalSpent / totalTarget) * 100 : 0;
 
-    const currentAmount = Number(form.currentAmount);
-    if (form.currentAmount && (currentAmount < 0 || currentAmount > targetAmount)) {
-      newErrors.currentAmount = "Current amount must be between 0 and target amount";
-    }
+    return {
+      totalTarget,
+      totalSpent,
+      totalRemaining,
+      overallProgress,
+    };
+  }, [goals]);
 
-    if (!form.deadline) {
-      newErrors.deadline = "Deadline is required";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const handleOpenModal = () => {
+    setErrors({});
+    setGoalNameEdited(false);
+    setForm(createEmptyFormState(categories));
+    setModalOpen(true);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setSubmitting(false);
+    setGoalNameEdited(false);
+  };
 
-    if (!validateForm()) {
+  const handleInputChange = (field) => (event) => {
+    const { type, checked, value } = event.target;
+    const nextValue = type === "checkbox" ? checked : value;
+    if (field === "goalName") {
+      setGoalNameEdited(true);
+    }
+    setForm((prev) => {
+      const nextState = { ...prev, [field]: nextValue };
+      if (field === "categoryId" && !goalNameEdited) {
+        const selected = categories.find((category) => String(category.id) === String(nextValue));
+        if (selected) {
+          nextState.goalName = `${selected.name} Goal`;
+        }
+      }
+      return nextState;
+    });
+    if (errors[field]) {
+      setErrors((prev) => {
+        const { [field]: _removed, ...rest } = prev;
+        return rest;
+      });
+    }
+  };
+
+  const validateForm = () => {
+    const validationErrors = {};
+
+    const trimmedGoalName = form.goalName ? form.goalName.trim() : "";
+    if (!trimmedGoalName) {
+      validationErrors.goalName = "Enter a name to identify this goal";
+    } else if (trimmedGoalName.length > 128) {
+      validationErrors.goalName = "Goal name must be 128 characters or fewer";
+    }
+
+    if (!form.categoryId) {
+      validationErrors.categoryId = "Select a spending category";
+    }
+
+    if (!form.period) {
+      validationErrors.period = "Choose how often this goal should apply";
+    }
+
+    const amount = parseNumber(form.targetAmount);
+    if (!form.targetAmount || Number.isNaN(amount) || amount <= 0) {
+      validationErrors.targetAmount = "Enter a target amount greater than 0";
+    }
+
+    return validationErrors;
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const validationErrors = validateForm();
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
       return;
     }
 
-    const goalData = {
-      name: form.name.trim(),
-      targetAmount: Number(form.targetAmount),
-      currentAmount: Number(form.currentAmount) || 0,
-      category: form.category,
-      deadline: form.deadline,
+    const payload = {
+      categoryId: Number(form.categoryId),
+      period: form.period,
+      targetAmount: parseNumber(form.targetAmount),
+      goalName: form.goalName.trim(),
+      confirmDuplicate: form.confirmDuplicate,
+      startNextPeriod: form.startNextPeriod,
     };
 
-    if (editingId) {
-      setGoals(prev => prev.map(goal => 
-        goal.id === editingId ? { ...goal, ...goalData } : goal
-      ));
-      cancelEditing();
-    } else {
-      const newGoal = {
-        ...goalData,
-        id: Date.now(),
-      };
-      setGoals(prev => [newGoal, ...prev]);
-      setForm(createEmptyFormState());
-    }
-
-    setErrors({});
-  };
-
-  const startEditing = (goal) => {
-    setForm({
-      name: goal.name,
-      targetAmount: String(goal.targetAmount),
-      currentAmount: String(goal.currentAmount),
-      category: goal.category,
-      deadline: goal.deadline,
-    });
-    setEditingId(goal.id);
-    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
-  const cancelEditing = () => {
-    setForm(createEmptyFormState());
-    setEditingId(null);
-    setErrors({});
-  };
-
-  const openDeleteConfirm = (goal) => {
-    setConfirmDelete({ show: true, goal });
-    setDropdownOpen(null);
-  };
-
-  const closeDeleteConfirm = () => {
-    setConfirmDelete({ show: false, goal: null });
-  };
-
-  const toggleDropdown = (goalId) => {
-    setDropdownOpen(dropdownOpen === goalId ? null : goalId);
-  };
-
-  const handleEdit = (goal) => {
-    startEditing(goal);
-    setDropdownOpen(null);
-  };
-
-  const confirmDeleteGoal = () => {
-    setGoals(prev => prev.filter(goal => goal.id !== confirmDelete.goal.id));
-    closeDeleteConfirm();
-  };
-
-  const handleFormChange = (field, value) => {
-    setForm(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: "" }));
+    try {
+      setSubmitting(true);
+      setErrors({});
+      await goalsService.createGoal(payload);
+      await fetchGoals();
+      setModalOpen(false);
+      setForm(createEmptyFormState(categories));
+      setGoalNameEdited(false);
+    } catch (error) {
+      console.error("Failed to create goal", error);
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Failed to save goal. Please try again.";
+      setErrors({ submit: message });
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const getProgressPercentage = (current, target) => {
-    return target > 0 ? Math.min((current / target) * 100, 100) : 0;
-  };
+  const safeOverallProgress = Math.min(Math.max(totals.overallProgress, 0), 100);
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="mb-10 flex flex-col gap-2">
+      <div className="flex flex-col gap-2 mb-10">
         <span className="text-sm uppercase tracking-[0.3em] text-gray-400">Overview</span>
-        <h1 className="text-3xl font-semibold text-gray-900">Spending Goals</h1>
-        <p className="text-gray-500">
-          Set and track your spending goals to achieve your financial targets.
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="text-3xl font-semibold text-gray-900 dark:text-white">Spending Goals</h1>
+          <button
+            type="button"
+            onClick={handleOpenModal}
+            className="flex items-center gap-2 rounded-full bg-gray-900 dark:bg-gray-700 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-gray-700 dark:hover:bg-gray-600"
+          >
+            <FaPlus /> Add Goal
+          </button>
+        </div>
+        <p className="text-gray-500 dark:text-gray-400">
+          Track how each category is pacing against the budget you set.
         </p>
       </div>
 
-      {/* Spending Overview */}
+      {fetchError && (
+        <div className="mb-6 rounded-3xl border border-rose-200 bg-rose-50 px-6 py-4 text-sm text-rose-700 dark:border-rose-900/40 dark:bg-rose-900/10 dark:text-rose-200">
+          {fetchError}
+        </div>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-2 mb-10">
         <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm transition-colors duration-200">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 transition-colors duration-200">Current Spending</p>
-          <p className="mt-3 text-2xl font-semibold text-gray-900 dark:text-white transition-colors duration-200">
-            {formatCurrency(currentSpending)}
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Current Spending</p>
+          <p className="mt-3 text-2xl font-semibold text-gray-900 dark:text-white">
+            {formatCurrency(totals.totalSpent)}
+          </p>
+          <p className="mt-2 text-xs uppercase tracking-[0.25em] text-gray-400 dark:text-gray-500">
+            Across {goals.length} active {goals.length === 1 ? "goal" : "goals"}
           </p>
         </div>
         
         <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm transition-colors duration-200">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 transition-colors duration-200">Target Budget</p>
-          <p className="mt-3 text-2xl font-semibold text-gray-900 dark:text-white transition-colors duration-200">
-            {formatCurrency(targetSpending)}
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Target Budget</p>
+          <p className="mt-3 text-2xl font-semibold text-gray-900 dark:text-white">
+            {formatCurrency(totals.totalTarget)}
+          </p>
+          <p className="mt-2 text-xs uppercase tracking-[0.25em] text-gray-400 dark:text-gray-500">
+            Remaining {formatCurrency(totals.totalRemaining)}
           </p>
         </div>
       </div>
 
-      {/* Progress Bar */}
       <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-3xl shadow-sm p-6 mb-10 transition-colors duration-200">
-        <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 mb-4 transition-colors duration-200">Progress Bar</p>
+        <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 mb-4">Progress</p>
         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 transition-colors duration-200">
           <div
             className="h-3 rounded-full bg-gray-900 dark:bg-indigo-500 transition-all duration-300"
-            style={{ width: `${Math.min(spendingProgress, 100)}%` }}
+            style={{ width: `${safeOverallProgress}%` }}
           ></div>
         </div>
         <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 transition-colors duration-200">
-          {spendingProgress.toFixed(1)}% of total target achieved
+          {safeOverallProgress.toFixed(1)}% of total targets achieved
         </p>
       </div>
 
-      {/* Current Goals */}
       <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-3xl shadow-sm p-6 sm:p-10 transition-colors duration-200">
         <div className="mb-8">
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 transition-colors duration-200">Current Goals</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Current Goals</p>
         </div>
 
-        {goals.length === 0 ? (
-          <p className="text-sm text-gray-500 dark:text-gray-400 transition-colors duration-200">No goals set yet.</p>
+        {loading ? (
+          <p className="text-sm text-gray-500 dark:text-gray-400">Loading goals...</p>
+        ) : goals.length === 0 ? (
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            No goals yet. Start by creating one with the button above.
+          </p>
         ) : (
-          <ul className="divide-y divide-gray-100 dark:divide-gray-700 transition-colors duration-200">
+          <ul className="divide-y divide-gray-100 dark:divide-gray-700">
             {goals.map((goal) => {
-              const progress = getProgressPercentage(goal.currentAmount, goal.targetAmount);
+              const progress = Math.min(Math.max(goal.progressPercent ?? 0, 0), 120);
+              const healthLabel =
+                HEALTH_LABELS[goal.health] ?? HEALTH_LABELS.ON_TRACK;
+              const healthStyle =
+                HEALTH_STYLES[goal.health] ?? HEALTH_STYLES.ON_TRACK;
+              const alertLabel = ALERT_LABELS[goal.alertLevel];
+              const alertStyle = ALERT_STYLES[goal.alertLevel];
+
               return (
                 <li
-                  key={goal.id}
-                  className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between relative"
+                  key={goal.goalId}
+                  className="flex flex-col gap-4 py-6 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="flex-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-base font-semibold text-gray-900 dark:text-white transition-colors duration-200">{goal.name}</p>
-                      <span className="text-sm font-semibold uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 transition-colors duration-200">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between">
+                      <div>
+                        <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                          {goal.goalName}
+                        </p>
+                        <p className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
+                          {goal.categoryName} • {formatPeriodLabel(goal.period)} • {formatDate(goal.startDate)} — {formatDate(goal.endDate)}
+                        </p>
+                      </div>
+                      <span className="text-sm font-semibold uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
                         {formatCurrency(goal.targetAmount)}
                       </span>
                     </div>
 
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2 transition-colors duration-200">
+                    <div className="mt-4 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                       <div
                         className="h-2 rounded-full bg-gray-900 dark:bg-indigo-500 transition-all duration-300"
-                        style={{ width: `${progress}%` }}
+                        style={{ width: `${Math.min(progress, 100)}%` }}
                       ></div>
                     </div>
 
-                    <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400 transition-colors duration-200">
-                      <span>{formatCurrency(goal.currentAmount)} saved</span>
-                      <span>{progress.toFixed(0)}% complete</span>
+                    <div className="mt-3 grid gap-3 text-sm text-gray-500 dark:text-gray-400 sm:grid-cols-3">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.25em] text-gray-400 dark:text-gray-500">
+                          Spent
+                        </p>
+                        <p className="mt-1 font-medium text-gray-600 dark:text-gray-300">
+                          {formatCurrency(goal.spentAmount)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.25em] text-gray-400 dark:text-gray-500">
+                          Remaining
+                        </p>
+                        <p className="mt-1 font-medium text-gray-600 dark:text-gray-300">
+                          {formatCurrency(goal.remainingAmount)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.25em] text-gray-400 dark:text-gray-500">
+                          Progress
+                        </p>
+                        <p className="mt-1 font-medium text-gray-600 dark:text-gray-300">
+                          {parseNumber(goal.progressPercent).toFixed(1)}%
+                        </p>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-end gap-3 sm:flex-row sm:items-center sm:gap-6">
-                    <button
-                      onClick={() => toggleDropdown(goal.id)}
-                      className="flex items-center gap-2 cursor-pointer"
+                  <div className="flex flex-col items-start gap-3 sm:items-end">
+                    <span
+                      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] ${healthStyle}`}
                     >
-                      <span className="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500 transition-colors duration-200">
-                        {goal.category} • {new Date(goal.deadline).toLocaleDateString()}
-                      </span>
-                      <FaChevronDown className="text-gray-400 dark:text-gray-500 text-sm transition-colors duration-200" />
-                    </button>
-                    
-                    {dropdownOpen === goal.id && (
-                      <div className="absolute right-0 top-full mt-2 z-10 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg min-w-[120px] transition-colors duration-200">
-                        <button
-                          type="button"
-                          onClick={() => handleEdit(goal)}
-                          className="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 first:rounded-t-2xl transition-colors duration-200"
-                        >
-                          <FaEdit className="text-gray-500 dark:text-gray-400 transition-colors duration-200" /> Edit
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => openDeleteConfirm(goal)}
-                          className="w-full flex items-center gap-2 px-4 py-3 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 last:rounded-b-2xl border-t border-gray-100 dark:border-gray-700 transition-colors duration-200"
-                        >
-                          <FaTrash className="text-rose-500 dark:text-rose-400 transition-colors duration-200" /> Delete
-                        </button>
+                      {healthLabel}
+                    </span>
+                    <p className="text-xs uppercase tracking-[0.25em] text-gray-400 dark:text-gray-500">
+                      {goal.daysLeft} {goal.daysLeft === 1 ? "day" : "days"} left
+                    </p>
+                    {alertLabel && (
+                      <div className={`flex items-center gap-2 text-sm ${alertStyle}`}>
+                        <FaExclamationTriangle className="text-xs" />
+                        <span>{alertLabel}</span>
                       </div>
                     )}
                   </div>
@@ -309,162 +583,151 @@ export default function Goals() {
         )}
       </div>
 
-      <div
-        ref={formRef}
-        className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-3xl shadow-sm px-6 sm:px-10 py-10 mt-10 transition-colors duration-200"
-      >
-        <div className="flex items-center justify-between text-gray-400 dark:text-gray-500 text-sm uppercase tracking-[0.3em] transition-colors duration-200">
-          <span>{editingId ? "Update Goal" : "Add Goal"}</span>
-        </div>
-
-        <div className="max-w-xl mx-auto mt-10">
-          <div className="mb-10 text-center">
-            <h2 className="text-2xl font-semibold text-gray-900">Goal</h2>
-            {editingId && (
-              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-500">
-                Editing existing entry
-              </p>
-            )}
-          </div>
-
-          <form className="space-y-8" onSubmit={handleSubmit} noValidate>
-            <div>
-              <label className={LABEL_CLASSES}>Goal Name</label>
-              <div className={BORDER_SECTION_CLASSES}>
-                <input
-                  type="text"
-                  value={form.name}
-                  onChange={(e) => handleFormChange("name", e.target.value)}
-                  className={INPUT_BASE_CLASSES}
-                  placeholder="e.g., Emergency Fund"
-                />
-              </div>
-              {errors.name && <p className="mt-2 text-xs text-red-500">{errors.name}</p>}
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-xl bg-white dark:bg-gray-800 rounded-3xl shadow-xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 px-6 sm:px-10 py-6 rounded-t-3xl flex items-center justify-between">
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                Add Spending Goal
+              </h2>
+              <button
+                type="button"
+                onClick={handleCloseModal}
+                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              >
+                <FaTimes className="text-2xl" />
+              </button>
             </div>
 
-            <div className="grid gap-6 sm:grid-cols-2">
-              <div>
-                <label className={LABEL_CLASSES}>Target Amount</label>
-                <div className={BORDER_SECTION_CLASSES}>
-                  <input
-                    type="number"
-                    value={form.targetAmount}
-                    onChange={(e) => handleFormChange("targetAmount", e.target.value)}
-                    className={`${INPUT_BASE_CLASSES} appearance-none`}
-                    placeholder="0.00"
-                    min="0"
-                    step="0.01"
-                  />
-                </div>
-                {errors.targetAmount && (
-                  <p className="mt-2 text-xs text-red-500">{errors.targetAmount}</p>
+            <div className="px-6 sm:px-10 py-8">
+              <form className="space-y-8" onSubmit={handleSubmit} noValidate>
+                {errors.submit && (
+                  <div className="p-3 bg-rose-100 dark:bg-rose-900/30 border border-rose-300 dark:border-rose-700 text-rose-700 dark:text-rose-200 rounded-md">
+                    {errors.submit}
+                  </div>
                 )}
-              </div>
 
-              <div>
-                <label className={LABEL_CLASSES}>Current Amount</label>
-                <div className={BORDER_SECTION_CLASSES}>
-                  <input
-                    type="number"
-                    value={form.currentAmount}
-                    onChange={(e) => handleFormChange("currentAmount", e.target.value)}
-                    className={`${INPUT_BASE_CLASSES} appearance-none`}
-                    placeholder="0.00"
-                    min="0"
-                    step="0.01"
-                  />
+                <div>
+                  <label className={LABEL_CLASSES}>Goal Name</label>
+                  <div className={BORDER_SECTION_CLASSES}>
+                    <input
+                      type="text"
+                      value={form.goalName}
+                      onChange={handleInputChange("goalName")}
+                      className={INPUT_BASE_CLASSES}
+                      placeholder="e.g., Groceries Monthly Budget"
+                    />
+                  </div>
+                  {errors.goalName && (
+                    <p className="mt-2 text-xs text-rose-500">{errors.goalName}</p>
+                  )}
                 </div>
-                {errors.currentAmount && (
-                  <p className="mt-2 text-xs text-red-500">{errors.currentAmount}</p>
-                )}
-              </div>
-            </div>
 
-            <div className="grid gap-6 sm:grid-cols-2">
-              <div>
-                <label className={LABEL_CLASSES}>Category</label>
-                <div className={`${BORDER_SECTION_CLASSES} relative`}>
-                  <select
-                    value={form.category}
-                    onChange={(e) => handleFormChange("category", e.target.value)}
-                    className={`${INPUT_BASE_CLASSES} appearance-none pr-10`}
+                <div>
+                  <label className={LABEL_CLASSES}>Category</label>
+                  <div className={`${BORDER_SECTION_CLASSES} relative`}>
+                    <select
+                      value={form.categoryId}
+                      onChange={handleInputChange("categoryId")}
+                      className={`${INPUT_BASE_CLASSES} appearance-none pr-10`}
+                    >
+                      <option value="" disabled>
+                        Select category
+                      </option>
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                    <FaChevronDown className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-xs text-gray-400 dark:text-gray-500" />
+                  </div>
+                  {errors.categoryId && (
+                    <p className="mt-2 text-xs text-rose-500">{errors.categoryId}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className={LABEL_CLASSES}>Target Amount</label>
+                  <div className={BORDER_SECTION_CLASSES}>
+                    <input
+                      type="number"
+                      value={form.targetAmount}
+                      onChange={handleInputChange("targetAmount")}
+                      className={`${INPUT_BASE_CLASSES} appearance-none`}
+                      placeholder="0.00"
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                  {errors.targetAmount && (
+                    <p className="mt-2 text-xs text-rose-500">{errors.targetAmount}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className={LABEL_CLASSES}>Goal Period</label>
+                  <div className={`${BORDER_SECTION_CLASSES} relative`}>
+                    <select
+                      value={form.period}
+                      onChange={handleInputChange("period")}
+                      className={`${INPUT_BASE_CLASSES} appearance-none pr-10`}
+                    >
+                      {PERIOD_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    <FaChevronDown className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-xs text-gray-400 dark:text-gray-500" />
+                  </div>
+                  {errors.period && (
+                    <p className="mt-2 text-xs text-rose-500">{errors.period}</p>
+                  )}
+                </div>
+
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <label className="flex items-start gap-3 text-sm text-gray-600 dark:text-gray-300">
+                    <input
+                      type="checkbox"
+                      checked={form.startNextPeriod}
+                      onChange={handleInputChange("startNextPeriod")}
+                      className="mt-1 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
+                    />
+                    <span>
+                      Start from next {form.period.toLowerCase()} instead of the current one.
+                    </span>
+                  </label>
+                  <label className="flex items-start gap-3 text-sm text-gray-600 dark:text-gray-300">
+                    <input
+                      type="checkbox"
+                      checked={form.confirmDuplicate}
+                      onChange={handleInputChange("confirmDuplicate")}
+                      className="mt-1 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
+                    />
+                    <span>
+                      Replace any active goal for the same category and period.
+                    </span>
+                  </label>
+                </div>
+
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-end">
+                  <button
+                    type="button"
+                    onClick={handleCloseModal}
+                    className="w-full sm:w-auto rounded-full border border-gray-200 dark:border-gray-600 px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-gray-600 dark:text-gray-300 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
-                    <option value="General">General</option>
-                    <option value="Electronics">Electronics</option>
-                    <option value="Health">Health</option>
-                    <option value="Education">Education</option>
-                    <option value="Travel">Travel</option>
-                    <option value="Other">Other</option>
-                  </select>
-                  <FaChevronDown className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-xs text-gray-400" />
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full sm:w-auto rounded-full bg-gray-900 px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-gray-700 disabled:cursor-not-allowed disabled:bg-gray-600"
+                  >
+                    {submitting ? "Saving..." : "Save Goal"}
+                  </button>
                 </div>
-              </div>
-
-              <div>
-                <label className={LABEL_CLASSES}>Deadline</label>
-                <div className={BORDER_SECTION_CLASSES}>
-                  <input
-                    type="date"
-                    value={form.deadline}
-                    onChange={(e) => handleFormChange("deadline", e.target.value)}
-                    className={INPUT_BASE_CLASSES}
-                  />
-                </div>
-                {errors.deadline && (
-                  <p className="mt-2 text-xs text-red-500">{errors.deadline}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              {editingId && (
-                <button
-                  type="button"
-                  onClick={cancelEditing}
-                  className="w-full rounded-full border border-gray-200 px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-gray-600 transition-colors hover:bg-gray-100 sm:w-auto sm:min-w-[140px]"
-                >
-                  Cancel
-                </button>
-              )}
-              <button
-                type="submit"
-                className="w-full rounded-full bg-gray-900 px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-gray-700 sm:w-auto sm:min-w-[140px]"
-              >
-                {editingId ? "Save Changes" : "Save"}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      {/* Delete Confirmation Modal */}
-      {confirmDelete.show && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl border border-gray-100 bg-white p-6 shadow-xl">
-            <div className="flex items-center gap-3 text-rose-500">
-              <FaExclamationTriangle />
-              <p className="text-xs font-semibold uppercase tracking-[0.3em]">Delete Goal</p>
-            </div>
-            <h3 className="mt-4 text-xl font-semibold text-gray-900">Are you sure?</h3>
-            <p className="mt-2 text-sm text-gray-500">
-              This will permanently remove "{confirmDelete.goal?.name}" from
-              your goals. You can't undo this action.
-            </p>
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
-              <button
-                type="button"
-                onClick={closeDeleteConfirm}
-                className="w-full rounded-full border border-gray-200 px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-gray-600 transition-colors hover:bg-gray-100 sm:w-auto sm:min-w-[120px]"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={confirmDeleteGoal}
-                className="w-full rounded-full bg-rose-500 px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-colors hover:bg-rose-600 sm:w-auto sm:min-w-[120px]"
-              >
-                Delete
-              </button>
+              </form>
             </div>
           </div>
         </div>

@@ -393,11 +393,11 @@ export default function Reports() {
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-lg">
-          <p className="font-semibold text-gray-900">
+          <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 shadow-lg">
+            <p className="font-semibold text-gray-900 dark:text-gray-100">
             {payload[0].payload.name}
           </p>
-          <p className="text-indigo-600">{formatCurrency(payload[0].value)}</p>
+            <p className="text-indigo-600 dark:text-indigo-400">{formatCurrency(payload[0].value)}</p>
         </div>
       );
     }
@@ -415,7 +415,7 @@ export default function Reports() {
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               >
                 {yearOptions.map((year) => (
                   <option key={year} value={year}>
@@ -430,7 +430,7 @@ export default function Reports() {
               <select
                 value={selectedWeek}
                 onChange={(e) => setSelectedWeek(parseInt(e.target.value))}
-                className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               >
                 {weekOptions.map((week) => (
                   <option key={week} value={week}>
@@ -449,7 +449,7 @@ export default function Reports() {
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               >
                 {yearOptions.map((year) => (
                   <option key={year} value={year}>
@@ -464,7 +464,7 @@ export default function Reports() {
               <select
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               >
                 {monthOptions.map((month) => (
                   <option key={month.value} value={month.value}>
@@ -482,7 +482,7 @@ export default function Reports() {
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             >
               {yearOptions.map((year) => (
                 <option key={year} value={year}>
@@ -533,23 +533,23 @@ export default function Reports() {
         <span className="text-sm uppercase tracking-[0.3em] text-gray-400">
           Insights
         </span>
-        <h1 className="text-3xl font-semibold text-gray-900">
+  <h1 className="text-3xl font-semibold text-gray-900 dark:text-gray-100">
           {getReportTitle()}
         </h1>
-        <p className="text-gray-500">
+  <p className="text-gray-500 dark:text-gray-400">
           Understand your spending patterns across different time periods.
         </p>
       </div>
 
       {/* Report type selector */}
       <div className="mb-6">
-        <div className="flex border-b border-gray-200">
+  <div className="flex border-b border-gray-200 dark:border-gray-700">
           <button
             onClick={() => setReportType("weekly")}
             className={`py-3 px-6 font-medium text-sm ${
               reportType === "weekly"
                 ? "border-b-2 border-indigo-600 text-indigo-600"
-                : "text-gray-500 hover:text-gray-700"
+                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
             }`}
           >
             Weekly
@@ -559,7 +559,7 @@ export default function Reports() {
             className={`py-3 px-6 font-medium text-sm ${
               reportType === "monthly"
                 ? "border-b-2 border-indigo-600 text-indigo-600"
-                : "text-gray-500 hover:text-gray-700"
+                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
             }`}
           >
             Monthly
@@ -569,7 +569,7 @@ export default function Reports() {
             className={`py-3 px-6 font-medium text-sm ${
               reportType === "yearly"
                 ? "border-b-2 border-indigo-600 text-indigo-600"
-                : "text-gray-500 hover:text-gray-700"
+                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
             }`}
           >
             Yearly
@@ -616,8 +616,8 @@ export default function Reports() {
       {/* Chart section */}
       {!loading && !error && (
         <>
-          <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-xl font-semibold text-gray-900">
+          <div className="mb-6 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800 p-6 shadow-sm">
+            <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-gray-100">
               {getChartTitle()}
             </h2>
             <div className="h-80">
@@ -654,29 +654,29 @@ export default function Reports() {
 
           {/* Category cards */}
           <div>
-            <h2 className="mb-4 text-xl font-semibold text-gray-900">
+            <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-gray-100">
               Spending Details
             </h2>
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
               {categoryCards.map((category) => (
                 <div
                   key={category.name}
-                  className="flex flex-col rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
+                  className="flex flex-col rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800 p-4 shadow-sm"
                 >
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                       {category.icon}
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900">
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">
                         {category.name}
                       </p>
-                      <p className="text-xs uppercase tracking-widest text-gray-500">
+                      <p className="text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400">
                         SPENT
                       </p>
                     </div>
                   </div>
-                  <p className="mt-auto text-xl font-bold text-gray-900">
+                  <p className="mt-auto text-xl font-bold text-gray-900 dark:text-gray-100">
                     {formatCurrency(category.amount)}
                   </p>
                 </div>

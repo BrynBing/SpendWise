@@ -3,6 +3,7 @@ package com.example.backend.controller;
 import com.example.backend.dto.ChangePasswordDTO;
 import com.example.backend.dto.ResetPasswordConfirmDTO;
 import com.example.backend.dto.ResetPasswordRequestDTO;
+import com.example.backend.dto.SecurityQuestionResponseDTO;
 import com.example.backend.model.User;
 import com.example.backend.security.SessionUserResolver;
 
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import java.security.InvalidParameterException;
+import jakarta.persistence.EntityNotFoundException;
 
 import com.example.backend.service.PasswordResetService;
 
@@ -30,9 +31,13 @@ public class PasswordResetController {
     }
 
     @PostMapping("/request")
-    public ResponseEntity<String> requestQuestion(@RequestBody ResetPasswordRequestDTO dto) {
-        String question = passwordResetService.getSecurityQuestion(dto.getIdentifier());
-        return ResponseEntity.ok(question);
+    public ResponseEntity<SecurityQuestionResponseDTO> requestQuestion(@RequestBody ResetPasswordRequestDTO dto) {
+        try {
+            SecurityQuestionResponseDTO question = passwordResetService.getSecurityQuestion(dto.getIdentifier());
+            return ResponseEntity.ok(question);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(404).build();
+        }
     }
 
     @PostMapping("/confirm")

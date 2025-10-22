@@ -1,7 +1,9 @@
 package com.example.backend.service;
 
 import com.example.backend.dto.ResetPasswordConfirmDTO;
+import com.example.backend.dto.SecurityQuestionResponseDTO;
 import com.example.backend.model.User;
+import com.example.backend.model.SecurityQuestion;
 import com.example.backend.model.UserSecurityAnswer;
 import com.example.backend.repository.UserRepository;
 import com.example.backend.repository.UserSecurityAnswerRepository;
@@ -9,7 +11,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
-import java.security.InvalidParameterException;
 
 @Service
 public class PasswordResetService {
@@ -26,12 +27,19 @@ public class PasswordResetService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public String getSecurityQuestion(String identifier) {
+    public SecurityQuestionResponseDTO getSecurityQuestion(String identifier) {
         User user = userRepository.findByUsernameOrEmail(identifier, identifier);
-        if (user == null) throw new RuntimeException("User not found");
+        if (user == null) {
+            throw new EntityNotFoundException("User not found");
+        }
 
         UserSecurityAnswer answer = answerRepository.findByUser(user);
-        return answer.getQuestion().getQuestionText();
+        if (answer == null || answer.getQuestion() == null) {
+            throw new EntityNotFoundException("Security question not configured");
+        }
+
+        SecurityQuestion question = answer.getQuestion();
+        return new SecurityQuestionResponseDTO(question.getId(), question.getQuestionText());
     }
 
     public boolean resetPassword(ResetPasswordConfirmDTO dto) {
@@ -72,4 +80,3 @@ public class PasswordResetService {
         }
     }
 }
-

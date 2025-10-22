@@ -6,7 +6,6 @@ import Dashboard from "./pages/Dashboard";
 import ForgotPassword from "./pages/ForgotPassword";
 import Signup from "./pages/Signup";
 import Expense from "./pages/Expense";
-import Schedule from "./pages/Schedule";
 import Goals from "./pages/Goals";
 import Reports from "./pages/Reports";
 import Achievements from "./pages/Achievements";
@@ -43,7 +42,6 @@ function App() {
                 <Route element={<DashboardLayout />}>
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/expense" element={<Expense />} />
-                  <Route path="/schedule" element={<Schedule />} />
                   <Route path="/goals" element={<Goals />} />
                   <Route path="/reports" element={<Reports />} />
                   <Route path="/suggestions" element={<Suggestions />} />
