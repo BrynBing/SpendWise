@@ -61,10 +61,11 @@ export const passwordResetService = {
   },
 
   // confirm password reset with security answer and new password
-  confirmReset: (identifier, securityAnswer, newPassword) => {
+  confirmReset: (identifier, questionId, answer, newPassword) => {
     return api.post("/api/reset-password/confirm", {
       identifier,
-      securityAnswer,
+      questionId,
+      answer,
       newPassword,
     });
   },
@@ -133,14 +134,27 @@ export const expenseRecordService = {
 // create goals api
 export const goalsService = {
   // include list, create, update, delete goals
-  listActiveGoals: () => {
-    return api.get("/api/goals");
+  listActiveGoals: async () => {
+    const response = await api.get("/api/goals");
+    return response.data;
   },
 
-  createGoal: (goalData) => {
-    // include name, targetAmount, category, deadline
-    return api.post("/api/goals", goalData);
+  listProgress: async () => {
+    const response = await api.get("/api/goals/progress");
+    return response.data;
   },
+
+  getGoalProgress: async (goalId) => {
+    const response = await api.get(`/api/goals/${goalId}/progress`);
+    return response.data;
+  },
+
+  createGoal: async (goalData) => {
+    // include name, targetAmount, category, deadline
+    const response = await api.post("/api/goals", goalData);
+    return response.data;
+  },
+
 };
 
 // ai suggestions api

@@ -1,270 +1,252 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { passwordResetService } from "../services/api";
 
 export default function ForgotPassword() {
-  const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
+  const [question, setQuestion] = useState(null);
+  const [answer, setAnswer] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [recoveryMethod, setRecoveryMethod] = useState("email");
+  const [step, setStep] = useState(1);
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
-  // For security questions
-  const [securityQuestion, setSecurityQuestion] = useState("");
-  const [securityAnswer, setSecurityAnswer] = useState("");
-  const [username, setUsername] = useState("");
-
-  // Mock security questions (in a real app, these would come from the backend)
-  const securityQuestions = [
-    "What was the name of your first pet?",
-    "What was the name of the street you grew up on?",
-    "What is your mother's maiden name?",
-    "In what city were you born?",
-    "What was the make of your first car?",
-  ];
-
-  const handleSubmit = (e) => {
+  const handleRequestQuestion = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setError("");
 
-    // Simulate API call
-    setTimeout(() => {
-      if (recoveryMethod === "email") {
-        console.log("Reset password email sent to:", email);
-        setSubmitted(true);
+    if (!identifier.trim()) {
+      setError("Please enter your email or username.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await passwordResetService.requestSecurityQuestion(identifier.trim());
+      setQuestion(response.data);
+      setStep(2);
+    } catch (err) {
+      console.error("Failed to load security question:", err);
+      if (err.response?.status === 404) {
+        setError("We couldn't find an account with those details. Please double-check and try again.");
       } else {
-        console.log("Security question verification attempt:", {
-          username,
-          question: securityQuestion,
-          answer: securityAnswer,
-        });
-        // In a real app, you'd verify the answer and then either show a password reset form
-        // or redirect to a password reset page
-        setSubmitted(true);
+        setError("Unable to load your security question right now. Please try again later.");
       }
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
-  const toggleRecoveryMethod = () => {
-    setRecoveryMethod(recoveryMethod === "email" ? "security" : "email");
-    // Reset form state when switching methods
-    setSubmitted(false);
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (newPassword !== confirmPassword) {
+      setError("New password and confirmation do not match.");
+      return;
+    }
+
+    if (!question?.id) {
+      setError("Security question details are missing. Please restart the recovery process.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await passwordResetService.confirmReset(
+        identifier.trim(),
+        question.id,
+        answer.trim(),
+        newPassword
+      );
+      setSuccessMessage("Password reset successful. You can now log in with your new password.");
+      setStep(3);
+    } catch (err) {
+      console.error("Password reset failed:", err);
+      const message = err.response?.data || "Security answer incorrect. Please try again.";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetFlow = () => {
+    setQuestion(null);
+    setAnswer("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setSuccessMessage("");
+    setIdentifier("");
+    setError("");
+    setStep(1);
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md animate-fade-in">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-8 dark:bg-gray-950">
+      <div className="w-full max-w-lg rounded-xl bg-white p-8 shadow-md transition dark:bg-gray-900">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-800">Account Recovery</h1>
-          <p className="mt-2 text-gray-600">
-            {recoveryMethod === "email"
-              ? "Enter your email and we'll send you a link to reset your password"
-              : "Answer your security question to recover your account"}
+          <h1 className="text-3xl font-semibold text-gray-900 dark:text-gray-100">Account Recovery</h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-300">
+            {step === 1
+              ? "Enter your email or username to retrieve your security question."
+              : step === 2
+              ? "Answer your security question and choose a new password."
+              : "All set! Your password has been updated."}
           </p>
         </div>
 
-        {!submitted ? (
-          <>
-            <div className="flex border border-gray-300 rounded-md overflow-hidden">
-              <button
-                className={`flex-1 py-2 px-4 text-center ${recoveryMethod === "email" ? "bg-gray-800 text-white" : "bg-gray-100 text-gray-700"}`}
-                onClick={() => setRecoveryMethod("email")}
-                type="button"
-              >
-                Email Recovery
-              </button>
-              <button
-                className={`flex-1 py-2 px-4 text-center ${recoveryMethod === "security" ? "bg-gray-800 text-white" : "bg-gray-100 text-gray-700"}`}
-                onClick={() => setRecoveryMethod("security")}
-                type="button"
-              >
-                Security Questions
-              </button>
-            </div>
-
-            <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
-              {recoveryMethod === "email" ? (
-                <div>
-                  <label htmlFor="email" className="sr-only">
-                    Email
-                  </label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    required
-                    className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div>
-                    <label htmlFor="username" className="sr-only">
-                      Username
-                    </label>
-                    <input
-                      id="username"
-                      name="username"
-                      type="text"
-                      required
-                      className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Username"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="securityQuestion" className="sr-only">
-                      Security Question
-                    </label>
-                    <select
-                      id="securityQuestion"
-                      name="securityQuestion"
-                      required
-                      className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                      value={securityQuestion}
-                      onChange={(e) => setSecurityQuestion(e.target.value)}
-                    >
-                      <option value="">Select your security question</option>
-                      {securityQuestions.map((question, index) => (
-                        <option key={index} value={question}>
-                          {question}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label htmlFor="securityAnswer" className="sr-only">
-                      Answer
-                    </label>
-                    <input
-                      id="securityAnswer"
-                      name="securityAnswer"
-                      type="text"
-                      required
-                      className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Your answer"
-                      value={securityAnswer}
-                      onChange={(e) => setSecurityAnswer(e.target.value)}
-                    />
-                  </div>
-                </div>
-              )}
-
-              <button
-                type="submit"
-                className="w-full px-4 py-3 text-white bg-gray-800 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors cursor-pointer disabled:opacity-50"
-                disabled={loading}
-              >
-                {loading ? (
-                  <span className="flex items-center justify-center">
-                    <svg
-                      className="w-5 h-5 mr-2 animate-spin"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    {recoveryMethod === "email" ? "Sending..." : "Verifying..."}
-                  </span>
-                ) : recoveryMethod === "email" ? (
-                  "Send Reset Link"
-                ) : (
-                  "Continue"
-                )}
-              </button>
-            </form>
-          </>
-        ) : (
-          <div className="mt-6 text-center">
-            <div className="flex justify-center">
-              <svg
-                className="w-16 h-16 text-green-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                ></path>
-              </svg>
-            </div>
-            <h2 className="mt-2 text-xl font-bold text-gray-800">
-              {recoveryMethod === "email"
-                ? "Check your email"
-                : "Verification Successful"}
-            </h2>
-            {recoveryMethod === "email" ? (
-              <>
-                <p className="mt-2 text-gray-600">
-                  We've sent a password reset link to:{" "}
-                  <span className="font-medium">{email}</span>
-                </p>
-                <p className="mt-4 text-sm text-gray-500">
-                  If you don't see it, please check your spam folder.
-                </p>
-              </>
-            ) : (
-              <p className="mt-2 text-gray-600">
-                Your identity has been verified. You can now reset your
-                password.
-              </p>
-            )}
-            <div className="mt-6 space-y-2">
-              {recoveryMethod === "email" && (
-                <button
-                  onClick={() => setSubmitted(false)}
-                  className="text-sm text-blue-600 hover:text-blue-800 focus:outline-none block w-full"
-                >
-                  Use a different email address
-                </button>
-              )}
-              <button
-                onClick={toggleRecoveryMethod}
-                className="text-sm text-blue-600 hover:text-blue-800 focus:outline-none block w-full"
-              >
-                {recoveryMethod === "email"
-                  ? "Try security questions instead"
-                  : "Try email recovery instead"}
-              </button>
-              {recoveryMethod === "security" && (
-                <button
-                  className="w-full px-4 py-3 mt-4 text-white bg-gray-800 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
-                  onClick={() => navigate("/dashboard")}
-                >
-                  Go to Dashboard to Reset Password
-                </button>
-              )}
-            </div>
+        {error && (
+          <div className="mt-6 rounded-md border border-red-300 bg-red-100 px-4 py-3 text-sm text-red-700 dark:border-red-500 dark:bg-red-500/20 dark:text-red-200">
+            {error}
           </div>
         )}
 
-        <div className="text-center mt-4">
-          <p className="text-sm text-gray-600">
+        <div className="mt-6">
+          {step === 1 && (
+            <form onSubmit={handleRequestQuestion} className="space-y-5">
+              <div>
+                <label htmlFor="identifier" className="sr-only">
+                  Email or Username
+                </label>
+                <input
+                  id="identifier"
+                  name="identifier"
+                  type="text"
+                  required
+                  autoComplete="username"
+                  placeholder="Email or username"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  className="w-full rounded-md border border-gray-300 bg-white px-3 py-3 text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full rounded-md bg-gray-800 px-4 py-3 text-white transition hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200 dark:focus:ring-offset-gray-900"
+              >
+                {loading ? "Loading..." : "Continue"}
+              </button>
+            </form>
+          )}
+
+          {step === 2 && question && (
+            <form onSubmit={handleResetPassword} className="space-y-5">
+              <div className="rounded-md border border-gray-200 bg-gray-50 px-4 py-3 text-gray-700 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-200">
+                <p className="text-sm uppercase tracking-wider text-gray-500 dark:text-gray-400">Security Question</p>
+                <p className="mt-1 text-base font-medium">{question.questionText}</p>
+              </div>
+
+              <div>
+                <label htmlFor="answer" className="sr-only">
+                  Security answer
+                </label>
+                <input
+                  id="answer"
+                  name="answer"
+                  type="text"
+                  required
+                  value={answer}
+                  onChange={(e) => setAnswer(e.target.value)}
+                  placeholder="Enter your answer"
+                  className="w-full rounded-md border border-gray-300 bg-white px-3 py-3 text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
+                />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="newPassword" className="sr-only">
+                    New password
+                  </label>
+                  <input
+                    id="newPassword"
+                    name="newPassword"
+                    type="password"
+                    required
+                    minLength={8}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="New password"
+                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-3 text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="confirmPassword" className="sr-only">
+                    Confirm new password
+                  </label>
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    required
+                    minLength={8}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirm password"
+                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-3 text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <button
+                  type="button"
+                  onClick={resetFlow}
+                  className="inline-flex items-center justify-center rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+                >
+                  Start over
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="inline-flex items-center justify-center rounded-md bg-gray-800 px-6 py-3 text-white transition hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200 dark:focus:ring-offset-gray-900"
+                >
+                  {loading ? "Resetting..." : "Reset Password"}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {step === 3 && (
+            <div className="text-center">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-500/20 dark:text-green-300">
+                <svg
+                  className="h-10 w-10"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
+              </div>
+              <h2 className="mt-4 text-2xl font-semibold text-gray-900 dark:text-gray-100">Password Reset!</h2>
+              <p className="mt-2 text-gray-600 dark:text-gray-300">{successMessage}</p>
+              <div className="mt-6 space-y-3">
+                <Link
+                  to="/login"
+                  className="block w-full rounded-md bg-gray-800 px-4 py-3 text-center text-white transition hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200 dark:focus:ring-offset-gray-900"
+                >
+                  Back to Login
+                </Link>
+                <button
+                  onClick={resetFlow}
+                  className="w-full rounded-md border border-gray-300 px-4 py-3 text-sm text-gray-700 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+                >
+                  Reset another account
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-8 text-center">
+          <p className="text-sm text-gray-600 dark:text-gray-300">
             Remember your password?{" "}
-            <Link to="/login" className="text-blue-600 hover:text-blue-800">
+            <Link to="/login" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
               Back to login
             </Link>
           </p>

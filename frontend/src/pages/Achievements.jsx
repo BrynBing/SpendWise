@@ -93,28 +93,28 @@ export default function Achievements() {
   });
 
   return (
-    <div className="max-w-6xl mx-auto p-4">
+  <div className="max-w-6xl mx-auto p-4 text-gray-900 dark:text-gray-100">
       <div className="mb-8 flex flex-col gap-2">
-        <span className="text-sm uppercase tracking-[0.3em] text-gray-400">Progress</span>
-        <h1 className="text-3xl font-semibold text-gray-900">Your Achievements</h1>
-        <p className="text-gray-500">
+  <span className="text-sm uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Progress</span>
+  <h1 className="text-3xl font-semibold text-gray-900 dark:text-gray-100">Your Achievements</h1>
+  <p className="text-gray-500 dark:text-gray-400">
           Track your progress and celebrate your financial milestones.
         </p>
       </div>
 
       {/* Progress summary */}
-      <div className="mb-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+  <div className="mb-8 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800 p-6 shadow-sm">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-gray-900">Progress Summary</h2>
-          <div className="rounded-full bg-indigo-50 px-3 py-1 text-sm font-medium text-indigo-700">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Progress Summary</h2>
+          <div className="rounded-full bg-indigo-50 dark:bg-indigo-900/40 px-3 py-1 text-sm font-medium text-indigo-700 dark:text-indigo-300">
             {achievements.filter(a => a.earned).length} / {achievements.length} Achieved
           </div>
         </div>
         
         {/* Progress bar */}
-        <div className="h-3 w-full rounded-full bg-gray-100">
+        <div className="h-3 w-full rounded-full bg-gray-100 dark:bg-gray-700">
           <div 
-            className="h-3 rounded-full bg-indigo-600 transition-all duration-500"
+            className="h-3 rounded-full bg-indigo-600 dark:bg-indigo-500 transition-all duration-500"
             style={{ width: `${achievements.length > 0 ? (achievements.filter(a => a.earned).length / achievements.length) * 100 : 0}%` }}
           ></div>
         </div>
@@ -128,15 +128,15 @@ export default function Achievements() {
               key={achievement.id} 
               className={`flex flex-col rounded-2xl border p-5 ${
                 achievement.earned 
-                  ? "border-gray-200 bg-white" 
-                  : "border-gray-200 bg-gray-50"
+                  ? "border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800" 
+                  : "border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50"
               }`}
             >
               <div className="mb-4 flex items-center gap-4">
                 <div className={`flex h-12 w-12 items-center justify-center rounded-full ${
                   achievement.earned 
-                    ? "bg-indigo-100" 
-                    : "bg-gray-100"
+                    ? "bg-indigo-100 dark:bg-indigo-900/40" 
+                    : "bg-gray-100 dark:bg-gray-700"
                 }`}>
                   {achievement.earned ? (
                     getAchievementIcon(achievement.achievement.code)
@@ -146,11 +146,11 @@ export default function Achievements() {
                 </div>
                 <div>
                   <h3 className={`font-semibold ${
-                    achievement.earned ? "text-gray-900" : "text-gray-500"
+                    achievement.earned ? "text-gray-900 dark:text-gray-100" : "text-gray-500 dark:text-gray-400"
                   }`}>
                     {achievement.achievement.title}
                   </h3>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     {achievement.earned ? (
                       formatDate(achievement.earnedAt)
                     ) : (
@@ -161,13 +161,13 @@ export default function Achievements() {
               </div>
               
               <p className={`text-sm ${
-                achievement.earned ? "text-gray-600" : "text-gray-400"
+                achievement.earned ? "text-gray-600 dark:text-gray-300" : "text-gray-400 dark:text-gray-500"
               }`}>
                 {achievement.achievement.description}
               </p>
               
               {achievement.earned && (
-                <div className="mt-4 flex items-center text-xs text-indigo-600">
+                <div className="mt-4 flex items-center text-xs text-indigo-600 dark:text-indigo-400">
                   <FaStar className="mr-1" />
                   <span>Achievement unlocked!</span>
                 </div>
@@ -175,7 +175,7 @@ export default function Achievements() {
             </div>
           ))
         ) : (
-          <div className="col-span-3 py-8 text-center text-gray-500">
+          <div className="col-span-3 py-8 text-center text-gray-500 dark:text-gray-400">
             <p>No achievements available yet. Keep using the app to earn achievements!</p>
           </div>
         )}
