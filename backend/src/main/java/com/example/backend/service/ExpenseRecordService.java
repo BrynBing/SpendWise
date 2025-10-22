@@ -28,11 +28,13 @@ public class ExpenseRecordService {
     private final ExpenseRecordRepository expenseRecordRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
+    private final AchievementService achievementService;
 
-    public ExpenseRecordService(ExpenseRecordRepository expenseRecordRepository, UserRepository userRepository, CategoryRepository categoryRepository) {
+    public ExpenseRecordService(ExpenseRecordRepository expenseRecordRepository, UserRepository userRepository, CategoryRepository categoryRepository, AchievementService achievementService) {
         this.expenseRecordRepository = expenseRecordRepository;
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
+        this.achievementService = achievementService;
     }
 
     public List<ExpenseRecord> getRecordsForUser(Integer userId) {
@@ -46,7 +48,10 @@ public class ExpenseRecordService {
                 .orElseThrow(() -> new RuntimeException("Category not found"));
         recordData.setUser(user);
         recordData.setCategory(category);
-        return expenseRecordRepository.save(recordData);
+        ExpenseRecord saved = expenseRecordRepository.save(recordData);
+        achievementService.checkFirstExpense(userId);
+        achievementService.checkTenRecords(userId);
+        return saved;
     }
 
     public ExpenseRecord updateRecord(Integer userId, Integer recordId, ExpenseRecord updatedData) {
