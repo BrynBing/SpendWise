@@ -66,6 +66,23 @@ export default function Achievements() {
     return achievementIcons[code] || achievementIcons['DEFAULT'];
   };
 
+  // Sort achievements by earned status (earned first) and then by earnedAt date (newest first)
+  const sortedAchievements = [...achievements].sort((a, b) => {
+    if (a.earned && !b.earned) return -1;
+    if (!a.earned && b.earned) return 1;
+    if (a.earned && b.earned) {
+      return new Date(b.earnedAt) - new Date(a.earnedAt); // newest first
+    }
+    return 0;
+  });
+
+  // Progress based on a fixed total of 4 goals
+  const TOTAL_GOALS = 4;
+  const earnedCount = new Set(
+    achievements.filter(a => a.earned).map(a => a.achievement?.code)
+  ).size;
+  const progressPct = Math.min(100, Math.max(0, (earnedCount / TOTAL_GOALS) * 100));
+
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -82,32 +99,22 @@ export default function Achievements() {
     );
   }
 
-  // Sort achievements by earned status (earned first) and then by earnedAt date (newest first)
-  const sortedAchievements = [...achievements].sort((a, b) => {
-    if (a.earned && !b.earned) return -1;
-    if (!a.earned && b.earned) return 1;
-    if (a.earned && b.earned) {
-      return new Date(b.earnedAt) - new Date(a.earnedAt); // newest first
-    }
-    return 0;
-  });
-
   return (
   <div className="max-w-6xl mx-auto p-4 text-gray-900 dark:text-gray-100">
       <div className="mb-8 flex flex-col gap-2">
-  <span className="text-sm uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Progress</span>
-  <h1 className="text-3xl font-semibold text-gray-900 dark:text-gray-100">Your Achievements</h1>
-  <p className="text-gray-500 dark:text-gray-400">
+        <span className="text-sm uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">Progress</span>
+        <h1 className="text-3xl font-semibold text-gray-900 dark:text-gray-100">Your Achievements</h1>
+        <p className="text-gray-500 dark:text-gray-400">
           Track your progress and celebrate your financial milestones.
         </p>
       </div>
 
       {/* Progress summary */}
-  <div className="mb-8 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800 p-6 shadow-sm">
+      <div className="mb-8 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800 p-6 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Progress Summary</h2>
           <div className="rounded-full bg-indigo-50 dark:bg-indigo-900/40 px-3 py-1 text-sm font-medium text-indigo-700 dark:text-indigo-300">
-            {achievements.filter(a => a.earned).length} / {achievements.length} Achieved
+            {earnedCount} / {TOTAL_GOALS} Achieved
           </div>
         </div>
         
@@ -115,7 +122,7 @@ export default function Achievements() {
         <div className="h-3 w-full rounded-full bg-gray-100 dark:bg-gray-700">
           <div 
             className="h-3 rounded-full bg-indigo-600 dark:bg-indigo-500 transition-all duration-500"
-            style={{ width: `${achievements.length > 0 ? (achievements.filter(a => a.earned).length / achievements.length) * 100 : 0}%` }}
+            style={{ width: `${progressPct}%` }}
           ></div>
         </div>
       </div>
