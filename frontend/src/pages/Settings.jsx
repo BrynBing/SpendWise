@@ -17,7 +17,7 @@ import { useDarkMode } from "../context/DarkModeContext";
 import { authService } from "../services/api";
 
 export default function Settings() {
-  const [notifications, setNotifications] = useState(true);
+  // const [notifications, setNotifications] = useState(true);
   const { dyslexiaFont, setDyslexiaFont } = useFont();
   const { darkMode, toggleDarkMode } = useDarkMode();
   const [loading, setLoading] = useState(false);
@@ -39,14 +39,14 @@ export default function Settings() {
   const ToastIcon = toast.type ? TOAST_ICON[toast.type] : TOAST_ICON.info;
 
   const preferenceToggles = [
-    {
-      id: "notifications",
-      label: "Notifications",
-      description: "Get reminders about bills, goals, and budget alerts.",
-      icon: FaBell,
-      value: notifications,
-      onToggle: () => setNotifications((prev) => !prev),
-    },
+    // {
+    //   id: "notifications",
+    //   label: "Notifications",
+    //   description: "Get reminders about bills, goals, and budget alerts.",
+    //   icon: FaBell,
+    //   value: notifications,
+    //   onToggle: () => setNotifications((prev) => !prev),
+    // },
     {
       id: "dyslexiaFont",
       label: "Dyslexia-friendly Font",
